@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @Controller
 public class HomeController {
+
     @RequestMapping("/")
-    public String inde() {
+    public String index() {
         return "index";
     }
 }
