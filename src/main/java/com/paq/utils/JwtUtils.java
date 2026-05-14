@@ -4,6 +4,10 @@
  */
 package com.paq.utils;
 
+import java.util.Date;
+
+import org.springframework.stereotype.Component;
+
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
@@ -12,13 +16,14 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import java.util.Date;
 
 /**
  *
  * @author paq-vi
  */
+@Component
 public class JwtUtils {
+
     private static final String SECRET = "12345678901234567890123456789012"; // 32 ký tự (AES key)
     private static final long EXPIRATION_MS = 86400000; // 1 ngày
 
@@ -39,7 +44,7 @@ public class JwtUtils {
         signedJWT.sign(signer);
 
         return signedJWT.serialize();
-    }
+    }       
 
     public static String validateTokenAndGetUsername(String token) throws Exception {
         SignedJWT signedJWT = SignedJWT.parse(token);
