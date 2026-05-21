@@ -324,5 +324,9 @@ public class Resource implements Serializable {
     public String toString() {
         return "com.paq.pojo.Resource[ id=" + id + " ]";
     }
+
+    public Object getCreatedDate() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
     
 }
