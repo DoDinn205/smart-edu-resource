@@ -23,6 +23,7 @@ import com.paq.pojo.User;
 import com.paq.pojo.request.ReqRegisterDTO;
 import com.paq.repository.UserRepository;
 import com.paq.service.UserService;
+import com.paq.utils.constant.RoleEnum;
 
 @Service("userDetailsService")
 public class UserServiceImpl implements UserService {
@@ -56,7 +57,7 @@ public class UserServiceImpl implements UserService {
         u.setEmail(req.getEmail());
         u.setPhone(req.getPhone());
         u.setPassword(this.passwordEncoder.encode(req.getPassword()));
-        u.setRole("STUDENT");
+        u.setRole(RoleEnum.STUDENT);
         u.setIsActive(true);
         u.setCreatedAt(new Date());
 
@@ -82,7 +83,9 @@ public class UserServiceImpl implements UserService {
         }
 
         Set<GrantedAuthority> authorities = new HashSet<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+        if (user.getRole() != null) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        }
 
         return new org.springframework.security.core.userdetails.User(user.getUsername(),
                 user.getPassword(), authorities);

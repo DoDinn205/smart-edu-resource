@@ -7,6 +7,8 @@ package com.paq.pojo;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,6 +21,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
+
+import com.paq.utils.constant.PathItemTypeEnum;
 
 /**
  *
@@ -42,9 +46,9 @@ public class LearningPathItem implements Serializable {
     @Basic(optional = false)
     @Column(name = "id")
     private Integer id;
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "item_type")
-    private String itemType;
+    private PathItemTypeEnum itemType;
     @Basic(optional = false)
     @NotNull
     @Column(name = "reference_id")
@@ -77,11 +81,11 @@ public class LearningPathItem implements Serializable {
         this.id = id;
     }
 
-    public String getItemType() {
+    public PathItemTypeEnum getItemType() {
         return itemType;
     }
 
-    public void setItemType(String itemType) {
+    public void setItemType(PathItemTypeEnum itemType) {
         this.itemType = itemType;
     }
 

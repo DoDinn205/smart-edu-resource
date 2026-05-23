@@ -8,6 +8,8 @@ import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,6 +27,8 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+
+import com.paq.utils.constant.EnrollmentStatusEnum;
 
 /**
  *
@@ -54,9 +58,9 @@ public class Enrollment implements Serializable {
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "overall_progress")
     private Double overallProgress;
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private String status;
+    private EnrollmentStatusEnum status;
     @Column(name = "total_study_time")
     private Integer totalStudyTime;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "enrollmentId")
@@ -101,11 +105,11 @@ public class Enrollment implements Serializable {
         this.overallProgress = overallProgress;
     }
 
-    public String getStatus() {
+    public EnrollmentStatusEnum getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(EnrollmentStatusEnum status) {
         this.status = status;
     }
 

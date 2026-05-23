@@ -8,6 +8,8 @@ import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,6 +31,9 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+
+import com.paq.utils.constant.FormatEnum;
+import com.paq.utils.constant.LevelEnum;
 
 /**
  *
@@ -72,14 +77,14 @@ public class Resource implements Serializable {
     @Size(max = 255)
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
-    @Size(max = 20)
+    @Enumerated(EnumType.STRING)
     @Column(name = "format")
-    private String format;
+    private FormatEnum format;
     @Column(name = "file_size")
     private Integer fileSize;
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "level")
-    private String level;
+    private LevelEnum level;
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -172,11 +177,11 @@ public class Resource implements Serializable {
         this.thumbnailUrl = thumbnailUrl;
     }
 
-    public String getFormat() {
+    public FormatEnum getFormat() {
         return format;
     }
 
-    public void setFormat(String format) {
+    public void setFormat(FormatEnum format) {
         this.format = format;
     }
 
@@ -188,11 +193,11 @@ public class Resource implements Serializable {
         this.fileSize = fileSize;
     }
 
-    public String getLevel() {
+    public LevelEnum getLevel() {
         return level;
     }
 
-    public void setLevel(String level) {
+    public void setLevel(LevelEnum level) {
         this.level = level;
     }
 

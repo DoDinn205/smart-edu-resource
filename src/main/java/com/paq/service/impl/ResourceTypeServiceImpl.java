@@ -1,0 +1,67 @@
+package com.paq.service.impl;
+
+import com.paq.pojo.ResourceType;
+import com.paq.pojo.request.ReqCategoryDTO;
+import com.paq.pojo.response.ResCategoryDTO;
+import com.paq.repository.ResourceTypeRepository;
+import com.paq.service.ResourceTypeService;
+import com.paq.utils.DTOMapper;
+import com.paq.utils.error.IdInvalidException;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ResourceTypeServiceImpl implements ResourceTypeService {
+
+    @Autowired
+    private ResourceTypeRepository resourceTypeRepo;
+
+    @Override
+    public List<ResCategoryDTO> getResourceTypes(Map<String, String> params) {
+        return this.resourceTypeRepo.getResourceTypes(params).stream()
+                .map(DTOMapper::toResCategoryDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ResCategoryDTO getResourceTypeById(int id) {
+        ResourceType resourceType = this.resourceTypeRepo.getResourceTypeById(id);
+        if (resourceType == null) {
+            throw new IdInvalidException("Resource type khong ton tai");
+        }
+
+        return DTOMapper.toResCategoryDTO(resourceType);
+    }
+
+    @Override
+    public ResCategoryDTO createResourceType(ReqCategoryDTO request) {
+        ResourceType resourceType = new ResourceType();
+        resourceType.setName(request.getName());
+
+        return DTOMapper.toResCategoryDTO(this.resourceTypeRepo.addOrUpdateResourceType(resourceType));
+    }
+
+    @Override
+    public ResCategoryDTO updateResourceType(int id, ReqCategoryDTO request) {
+        ResourceType resourceType = this.resourceTypeRepo.getResourceTypeById(id);
+        if (resourceType == null) {
+            throw new IdInvalidException("Resource type khong ton tai");
+        }
+
+        resourceType.setName(request.getName());
+
+        return DTOMapper.toResCategoryDTO(this.resourceTypeRepo.addOrUpdateResourceType(resourceType));
+    }
+
+    @Override
+    public void deleteResourceType(int id) {
+        if (this.resourceTypeRepo.getResourceTypeById(id) == null) {
+            throw new IdInvalidException("Resource type khong ton tai");
+        }
+
+        this.resourceTypeRepo.deleteResourceType(id);
+    }
+}

@@ -8,6 +8,8 @@ import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,6 +28,9 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+
+import com.paq.utils.constant.EduLevelEnum;
+import com.paq.utils.constant.ExpLevelEnum;
 
 /**
  *
@@ -58,12 +63,12 @@ public class Student implements Serializable {
     private Date dob;
     @Column(name = "gender")
     private Integer gender;
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "experience_level")
-    private String experienceLevel;
-    @Size(max = 50)
+    private ExpLevelEnum experienceLevel;
+    @Enumerated(EnumType.STRING)
     @Column(name = "education_level")
-    private String educationLevel;
+    private EduLevelEnum educationLevel;
     @Lob
     @Size(max = 65535)
     @Column(name = "learning_goal")
@@ -119,19 +124,19 @@ public class Student implements Serializable {
         this.gender = gender;
     }
 
-    public String getExperienceLevel() {
+    public ExpLevelEnum getExperienceLevel() {
         return experienceLevel;
     }
 
-    public void setExperienceLevel(String experienceLevel) {
+    public void setExperienceLevel(ExpLevelEnum experienceLevel) {
         this.experienceLevel = experienceLevel;
     }
 
-    public String getEducationLevel() {
+    public EduLevelEnum getEducationLevel() {
         return educationLevel;
     }
 
-    public void setEducationLevel(String educationLevel) {
+    public void setEducationLevel(EduLevelEnum educationLevel) {
         this.educationLevel = educationLevel;
     }
 

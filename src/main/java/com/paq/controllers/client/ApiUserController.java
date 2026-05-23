@@ -56,7 +56,8 @@ public class ApiUserController {
 
         User user = this.userService.getUserByUsername(req.getUsername());
         String accessToken = this.jwtUtils.generateToken(user.getUsername());
-        ResLoginDTO resLogin = new ResLoginDTO(accessToken, user.getId(), user.getUsername(), user.getRole());
+        String role = user.getRole() != null ? user.getRole().name() : null;
+        ResLoginDTO resLogin = new ResLoginDTO(accessToken, user.getId(), user.getUsername(), role);
 
         ResResponse<ResLoginDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());

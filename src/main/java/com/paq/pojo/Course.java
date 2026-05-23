@@ -8,6 +8,8 @@ import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,6 +30,8 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+
+import com.paq.utils.constant.LevelEnum;
 
 /**
  *
@@ -69,9 +73,9 @@ public class Course implements Serializable {
     private Date endDate;
     @Column(name = "is_paid")
     private Boolean isPaid;
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "target_level")
-    private String targetLevel;
+    private LevelEnum targetLevel;
     @JoinTable(name = "course_subject", joinColumns = {
         @JoinColumn(name = "course_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "subject_id", referencedColumnName = "id")})
@@ -144,11 +148,11 @@ public class Course implements Serializable {
         this.isPaid = isPaid;
     }
 
-    public String getTargetLevel() {
+    public LevelEnum getTargetLevel() {
         return targetLevel;
     }
 
-    public void setTargetLevel(String targetLevel) {
+    public void setTargetLevel(LevelEnum targetLevel) {
         this.targetLevel = targetLevel;
     }
 

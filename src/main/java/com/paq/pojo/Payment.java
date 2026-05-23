@@ -7,6 +7,8 @@ package com.paq.pojo;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,6 +24,9 @@ import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Date;
+
+import com.paq.utils.constant.PaymentMethodEnum;
+import com.paq.utils.constant.PaymentStatusEnum;
 
 /**
  *
@@ -51,12 +56,12 @@ public class Payment implements Serializable {
     @NotNull
     @Column(name = "amount")
     private long amount;
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "payment_method")
-    private String paymentMethod;
-    @Size(max = 50)
+    private PaymentMethodEnum paymentMethod;
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private String status;
+    private PaymentStatusEnum status;
     @Size(max = 100)
     @Column(name = "transaction_code")
     private String transactionCode;
@@ -98,19 +103,19 @@ public class Payment implements Serializable {
         this.amount = amount;
     }
 
-    public String getPaymentMethod() {
+    public PaymentMethodEnum getPaymentMethod() {
         return paymentMethod;
     }
 
-    public void setPaymentMethod(String paymentMethod) {
+    public void setPaymentMethod(PaymentMethodEnum paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
 
-    public String getStatus() {
+    public PaymentStatusEnum getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(PaymentStatusEnum status) {
         this.status = status;
     }
 

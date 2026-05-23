@@ -8,6 +8,8 @@ import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,6 +27,8 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+
+import com.paq.utils.constant.RoleEnum;
 
 /**
  *
@@ -81,9 +85,9 @@ public class User implements Serializable {
     private String phone;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "role")
-    private String role;
+    private RoleEnum role;
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -125,7 +129,7 @@ public class User implements Serializable {
         this.id = id;
     }
 
-    public User(Integer id, String fullName, String email, String password, String role) {
+    public User(Integer id, String fullName, String email, String password, RoleEnum role) {
         this.id = id;
         this.fullName = fullName;
         this.email = email;
@@ -189,11 +193,11 @@ public class User implements Serializable {
         this.phone = phone;
     }
 
-    public String getRole() {
+    public RoleEnum getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(RoleEnum role) {
         this.role = role;
     }
 

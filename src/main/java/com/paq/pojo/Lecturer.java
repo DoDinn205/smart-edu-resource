@@ -7,6 +7,8 @@ package com.paq.pojo;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,6 +24,8 @@ import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Date;
+
+import com.paq.utils.constant.DegreeEnum;
 
 /**
  *
@@ -46,9 +50,9 @@ public class Lecturer implements Serializable {
     @Basic(optional = false)
     @Column(name = "id")
     private Integer id;
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "degree")
-    private String degree;
+    private DegreeEnum degree;
     @Size(max = 255)
     @Column(name = "certificate_url")
     private String certificateUrl;
@@ -83,11 +87,11 @@ public class Lecturer implements Serializable {
         this.id = id;
     }
 
-    public String getDegree() {
+    public DegreeEnum getDegree() {
         return degree;
     }
 
-    public void setDegree(String degree) {
+    public void setDegree(DegreeEnum degree) {
         this.degree = degree;
     }
 
