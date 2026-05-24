@@ -56,4 +56,17 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
         return q.getResultList();
     }
 
+    @Override
+    public List<Enrollment> getEnrollmentsByUsername(String username) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        Query<Enrollment> q = s.createQuery(
+                "FROM Enrollment e WHERE e.studentId.userId.username=:username",
+                Enrollment.class
+        );
+
+        q.setParameter("username", username);
+        return q.getResultList();
+    }
+
 }
