@@ -1,12 +1,8 @@
 package com.paq.controllers.client;
 
-import com.paq.pojo.request.ReqSubjectDTO;
-import com.paq.pojo.response.ResResponse;
-import com.paq.pojo.response.ResSubjectDTO;
-import com.paq.service.SubjectService;
-import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +15,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.paq.pojo.request.ReqSubjectDTO;
+import com.paq.pojo.response.ResResponse;
+import com.paq.pojo.response.ResSubjectDTO;
+import com.paq.service.SubjectService;
+
+import jakarta.validation.Valid;
+
 @RestController
 public class ApiSubjectController {
 
@@ -29,7 +32,7 @@ public class ApiSubjectController {
     public ResponseEntity<ResResponse<List<ResSubjectDTO>>> getSubjects(@RequestParam Map<String, String> params) {
         ResResponse<List<ResSubjectDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
-        res.setMessage("Get subjects successfully");
+        res.setMessage("Lấy danh sách môn học thành công");
         res.setData(this.subjectService.getSubjects(params));
         return ResponseEntity.ok(res);
     }
@@ -38,7 +41,7 @@ public class ApiSubjectController {
     public ResponseEntity<ResResponse<ResSubjectDTO>> getSubjectById(@PathVariable int id) {
         ResResponse<ResSubjectDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
-        res.setMessage("Get subject successfully");
+        res.setMessage("Lấy thông tin môn học thành công");
         res.setData(this.subjectService.getSubjectById(id));
         return ResponseEntity.ok(res);
     }
@@ -47,7 +50,7 @@ public class ApiSubjectController {
     public ResponseEntity<ResResponse<ResSubjectDTO>> createSubject(@Valid @RequestBody ReqSubjectDTO request) {
         ResResponse<ResSubjectDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.CREATED.value());
-        res.setMessage("Create subject successfully");
+        res.setMessage("Tạo môn học thành công");
         res.setData(this.subjectService.createSubject(request));
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
@@ -57,7 +60,7 @@ public class ApiSubjectController {
             @Valid @RequestBody ReqSubjectDTO request) {
         ResResponse<ResSubjectDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
-        res.setMessage("Update subject successfully");
+        res.setMessage("Cập nhật môn học thành công");
         res.setData(this.subjectService.updateSubject(id, request));
         return ResponseEntity.ok(res);
     }
@@ -67,7 +70,7 @@ public class ApiSubjectController {
         this.subjectService.deleteSubject(id);
         ResResponse<Object> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
-        res.setMessage("Delete subject successfully");
+        res.setMessage("Xóa môn học thành công");
         return ResponseEntity.ok(res);
     }
 }

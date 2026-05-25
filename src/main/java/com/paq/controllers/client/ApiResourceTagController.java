@@ -1,12 +1,8 @@
 package com.paq.controllers.client;
 
-import com.paq.pojo.request.ReqCategoryDTO;
-import com.paq.pojo.response.ResCategoryDTO;
-import com.paq.pojo.response.ResResponse;
-import com.paq.service.ResourceTagService;
-import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +15,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.paq.pojo.request.ReqCategoryDTO;
+import com.paq.pojo.response.ResCategoryDTO;
+import com.paq.pojo.response.ResResponse;
+import com.paq.service.ResourceTagService;
+
+import jakarta.validation.Valid;
+
 @RestController
 public class ApiResourceTagController {
 
@@ -29,7 +32,7 @@ public class ApiResourceTagController {
     public ResponseEntity<ResResponse<List<ResCategoryDTO>>> getResourceTags(@RequestParam Map<String, String> params) {
         ResResponse<List<ResCategoryDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
-        res.setMessage("Get resource tags successfully");
+        res.setMessage("Lấy danh sách thẻ tài nguyên thành công");
         res.setData(this.resourceTagService.getResourceTags(params));
         return ResponseEntity.ok(res);
     }
@@ -38,7 +41,7 @@ public class ApiResourceTagController {
     public ResponseEntity<ResResponse<ResCategoryDTO>> getResourceTagById(@PathVariable int id) {
         ResResponse<ResCategoryDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
-        res.setMessage("Get resource tag successfully");
+        res.setMessage("Lấy thông tin thẻ tài nguyên thành công");
         res.setData(this.resourceTagService.getResourceTagById(id));
         return ResponseEntity.ok(res);
     }
@@ -47,7 +50,7 @@ public class ApiResourceTagController {
     public ResponseEntity<ResResponse<ResCategoryDTO>> createResourceTag(@Valid @RequestBody ReqCategoryDTO request) {
         ResResponse<ResCategoryDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.CREATED.value());
-        res.setMessage("Create resource tag successfully");
+        res.setMessage("Tạo thẻ tài nguyên thành công");
         res.setData(this.resourceTagService.createResourceTag(request));
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
@@ -57,7 +60,7 @@ public class ApiResourceTagController {
             @Valid @RequestBody ReqCategoryDTO request) {
         ResResponse<ResCategoryDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
-        res.setMessage("Update resource tag successfully");
+        res.setMessage("Cập nhật thẻ tài nguyên thành công");
         res.setData(this.resourceTagService.updateResourceTag(id, request));
         return ResponseEntity.ok(res);
     }
@@ -67,7 +70,7 @@ public class ApiResourceTagController {
         this.resourceTagService.deleteResourceTag(id);
         ResResponse<Object> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
-        res.setMessage("Delete resource tag successfully");
+        res.setMessage("Xóa thẻ tài nguyên thành công");
         return ResponseEntity.ok(res);
     }
 }

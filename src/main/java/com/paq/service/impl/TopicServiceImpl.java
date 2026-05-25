@@ -1,5 +1,12 @@
 package com.paq.service.impl;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.paq.pojo.Topic;
 import com.paq.pojo.request.ReqCategoryDTO;
 import com.paq.pojo.response.ResCategoryDTO;
@@ -7,11 +14,6 @@ import com.paq.repository.TopicRepository;
 import com.paq.service.TopicService;
 import com.paq.utils.DTOMapper;
 import com.paq.utils.error.IdInvalidException;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class TopicServiceImpl implements TopicService {
@@ -30,7 +32,7 @@ public class TopicServiceImpl implements TopicService {
     public ResCategoryDTO getTopicById(int id) {
         Topic topic = this.topicRepo.getTopicById(id);
         if (topic == null) {
-            throw new IdInvalidException("Topic khong ton tai");
+            throw new IdInvalidException("Topic không tồn tại");
         }
 
         return DTOMapper.toResCategoryDTO(topic);
@@ -48,7 +50,7 @@ public class TopicServiceImpl implements TopicService {
     public ResCategoryDTO updateTopic(int id, ReqCategoryDTO request) {
         Topic topic = this.topicRepo.getTopicById(id);
         if (topic == null) {
-            throw new IdInvalidException("Topic khong ton tai");
+            throw new IdInvalidException("Topic không tồn tại");
         }
 
         topic.setName(request.getName());
@@ -59,7 +61,7 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public void deleteTopic(int id) {
         if (this.topicRepo.getTopicById(id) == null) {
-            throw new IdInvalidException("Topic khong ton tai");
+            throw new IdInvalidException("Topic không tồn tại");
         }
 
         this.topicRepo.deleteTopic(id);

@@ -1,5 +1,12 @@
 package com.paq.service.impl;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.paq.pojo.ResourceType;
 import com.paq.pojo.request.ReqCategoryDTO;
 import com.paq.pojo.response.ResCategoryDTO;
@@ -7,11 +14,6 @@ import com.paq.repository.ResourceTypeRepository;
 import com.paq.service.ResourceTypeService;
 import com.paq.utils.DTOMapper;
 import com.paq.utils.error.IdInvalidException;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class ResourceTypeServiceImpl implements ResourceTypeService {
@@ -30,7 +32,7 @@ public class ResourceTypeServiceImpl implements ResourceTypeService {
     public ResCategoryDTO getResourceTypeById(int id) {
         ResourceType resourceType = this.resourceTypeRepo.getResourceTypeById(id);
         if (resourceType == null) {
-            throw new IdInvalidException("Resource type khong ton tai");
+            throw new IdInvalidException("Resource type không tồn tại");
         }
 
         return DTOMapper.toResCategoryDTO(resourceType);
@@ -48,7 +50,7 @@ public class ResourceTypeServiceImpl implements ResourceTypeService {
     public ResCategoryDTO updateResourceType(int id, ReqCategoryDTO request) {
         ResourceType resourceType = this.resourceTypeRepo.getResourceTypeById(id);
         if (resourceType == null) {
-            throw new IdInvalidException("Resource type khong ton tai");
+            throw new IdInvalidException("Resource type không tồn tại");
         }
 
         resourceType.setName(request.getName());
@@ -59,7 +61,7 @@ public class ResourceTypeServiceImpl implements ResourceTypeService {
     @Override
     public void deleteResourceType(int id) {
         if (this.resourceTypeRepo.getResourceTypeById(id) == null) {
-            throw new IdInvalidException("Resource type khong ton tai");
+            throw new IdInvalidException("Resource type không tồn tại");
         }
 
         this.resourceTypeRepo.deleteResourceType(id);

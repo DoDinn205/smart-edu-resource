@@ -1,5 +1,13 @@
 package com.paq.service.impl;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.paq.pojo.Subject;
 import com.paq.pojo.request.ReqSubjectDTO;
 import com.paq.pojo.response.ResSubjectDTO;
@@ -7,12 +15,6 @@ import com.paq.repository.SubjectRepository;
 import com.paq.service.SubjectService;
 import com.paq.utils.DTOMapper;
 import com.paq.utils.error.IdInvalidException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class SubjectServiceImpl implements SubjectService {
@@ -31,7 +33,7 @@ public class SubjectServiceImpl implements SubjectService {
     public ResSubjectDTO getSubjectById(int id) {
         Subject subject = this.subjectRepo.getSubjectById(id);
         if (subject == null) {
-            throw new IdInvalidException("Subject khong ton tai");
+            throw new IdInvalidException("Subject không tồn tại");
         }
 
         return DTOMapper.toResSubjectDTO(subject);
@@ -52,7 +54,7 @@ public class SubjectServiceImpl implements SubjectService {
     public ResSubjectDTO updateSubject(int id, ReqSubjectDTO request) {
         Subject subject = this.subjectRepo.getSubjectById(id);
         if (subject == null) {
-            throw new IdInvalidException("Subject khong ton tai");
+            throw new IdInvalidException("Subject không tồn tại");
         }
 
         subject.setCode(request.getCode());
@@ -65,7 +67,7 @@ public class SubjectServiceImpl implements SubjectService {
     @Override
     public void deleteSubject(int id) {
         if (this.subjectRepo.getSubjectById(id) == null) {
-            throw new IdInvalidException("Subject khong ton tai");
+            throw new IdInvalidException("Subject không tồn tại");
         }
 
         this.subjectRepo.deleteSubject(id);

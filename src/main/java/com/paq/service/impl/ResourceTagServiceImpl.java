@@ -1,5 +1,12 @@
 package com.paq.service.impl;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.paq.pojo.ResourceTag;
 import com.paq.pojo.request.ReqCategoryDTO;
 import com.paq.pojo.response.ResCategoryDTO;
@@ -7,11 +14,6 @@ import com.paq.repository.ResourceTagRepository;
 import com.paq.service.ResourceTagService;
 import com.paq.utils.DTOMapper;
 import com.paq.utils.error.IdInvalidException;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class ResourceTagServiceImpl implements ResourceTagService {
@@ -30,7 +32,7 @@ public class ResourceTagServiceImpl implements ResourceTagService {
     public ResCategoryDTO getResourceTagById(int id) {
         ResourceTag resourceTag = this.resourceTagRepo.getResourceTagById(id);
         if (resourceTag == null) {
-            throw new IdInvalidException("Resource tag khong ton tai");
+            throw new IdInvalidException("Resource tag không tồn tại");
         }
 
         return DTOMapper.toResCategoryDTO(resourceTag);
@@ -48,7 +50,7 @@ public class ResourceTagServiceImpl implements ResourceTagService {
     public ResCategoryDTO updateResourceTag(int id, ReqCategoryDTO request) {
         ResourceTag resourceTag = this.resourceTagRepo.getResourceTagById(id);
         if (resourceTag == null) {
-            throw new IdInvalidException("Resource tag khong ton tai");
+            throw new IdInvalidException("Resource tag không tồn tại");
         }
 
         resourceTag.setName(request.getName());
@@ -59,7 +61,7 @@ public class ResourceTagServiceImpl implements ResourceTagService {
     @Override
     public void deleteResourceTag(int id) {
         if (this.resourceTagRepo.getResourceTagById(id) == null) {
-            throw new IdInvalidException("Resource tag khong ton tai");
+            throw new IdInvalidException("Resource tag không tồn tại");
         }
 
         this.resourceTagRepo.deleteResourceTag(id);
