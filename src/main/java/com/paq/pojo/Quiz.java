@@ -4,6 +4,7 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -70,6 +71,7 @@ public class Quiz implements Serializable {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "quizId")
+    @JsonIgnore
     private Set<QuizAttempt> quizAttemptSet;
     @JoinColumn(name = "course_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
@@ -78,6 +80,7 @@ public class Quiz implements Serializable {
     @ManyToOne(optional = false)
     private User createdBy;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "quizId")
+    @JsonIgnore
     private Set<Question> questionSet;
 
     public Quiz() {

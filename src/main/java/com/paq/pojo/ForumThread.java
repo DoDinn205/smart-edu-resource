@@ -4,6 +4,7 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -70,6 +71,7 @@ public class ForumThread implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateAt;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "threadId")
+    @JsonIgnore
     private Set<ForumPost> forumPostSet;
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     @ManyToOne(optional = false)

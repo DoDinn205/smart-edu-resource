@@ -4,6 +4,7 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -61,8 +62,10 @@ public class ChatRoom implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "roomId")
+    @JsonIgnore
     private Set<ChatMessage> chatMessageSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "roomId")
+    @JsonIgnore
     private Set<ChatParticipant> chatParticipantSet;
     @JoinColumn(name = "course_id", referencedColumnName = "id")
     @ManyToOne

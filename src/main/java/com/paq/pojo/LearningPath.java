@@ -4,6 +4,7 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -71,6 +72,7 @@ public class LearningPath implements Serializable {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "pathId")
+    @JsonIgnore
     private Set<LearningPathItem> learningPathItemSet;
     @JoinColumn(name = "student_id", referencedColumnName = "id")
     @ManyToOne(optional = false)

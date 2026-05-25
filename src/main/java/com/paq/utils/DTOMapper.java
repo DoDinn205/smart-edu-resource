@@ -5,11 +5,13 @@ import com.paq.pojo.Enrollment;
 import com.paq.pojo.AnswerOption;
 import com.paq.pojo.Question;
 import com.paq.pojo.Quiz;
+import com.paq.pojo.QuizAttempt;
 import com.paq.pojo.Resource;
 import com.paq.pojo.ResourceRelation;
 import com.paq.pojo.ResourceTag;
 import com.paq.pojo.ResourceType;
 import com.paq.pojo.Student;
+import com.paq.pojo.StudentAnswer;
 import com.paq.pojo.Subject;
 import com.paq.pojo.Topic;
 import com.paq.pojo.User;
@@ -17,9 +19,12 @@ import com.paq.pojo.response.ResCategoryDTO;
 import com.paq.pojo.response.ResCourseDTO;
 import com.paq.pojo.response.ResEnrollmentDTO;
 import com.paq.pojo.response.ResAnswerOptionDTO;
+import com.paq.pojo.response.ResLearningProgressDTO;
 import com.paq.pojo.response.ResQuestionDTO;
+import com.paq.pojo.response.ResQuizAttemptDTO;
 import com.paq.pojo.response.ResQuizDTO;
 import com.paq.pojo.response.ResResourceDTO;
+import com.paq.pojo.response.ResStudentAnswerResultDTO;
 import com.paq.pojo.response.ResSubjectDTO;
 import com.paq.pojo.response.ResUserDTO;
 import java.util.List;
@@ -280,6 +285,108 @@ public class DTOMapper {
         dto.setContent(answer.getContent());
         if (includeCorrectAnswer) {
             dto.setIsCorrect(answer.getIsCorrect());
+        }
+
+        return dto;
+    }
+
+    public static ResQuizAttemptDTO toResQuizAttemptDTO(QuizAttempt attempt, boolean includeAnswers) {
+        if (attempt == null) {
+            return null;
+        }
+
+        ResQuizAttemptDTO dto = new ResQuizAttemptDTO();
+        dto.setId(attempt.getId());
+        dto.setStartedAt(attempt.getStartedAt());
+        dto.setSubmittedAt(attempt.getSubmittedAt());
+        dto.setScore(attempt.getScore());
+        dto.setStatus(attempt.getStatus() != null ? attempt.getStatus().name() : null);
+
+        Quiz quiz = attempt.getQuizId();
+        if (quiz != null) {
+            dto.setQuizId(quiz.getId());
+            dto.setQuizTitle(quiz.getTitle());
+            dto.setTotalScore(quiz.getTotalScore());
+            if (quiz.getCourseId() != null) {
+                dto.setCourseId(quiz.getCourseId().getId());
+                dto.setCourseName(quiz.getCourseId().getName());
+            }
+        }
+
+        Student student = attempt.getStudentId();
+        if (student != null) {
+            dto.setStudentId(student.getId());
+            dto.setStudentCode(student.getStudentCode());
+            dto.setStudentUser(toResUserDTO(student.getUserId()));
+        }
+
+        if (includeAnswers && attempt.getStudentAnswerSet() != null) {
+            dto.setAnswers(attempt.getStudentAnswerSet().stream()
+                    .map(DTOMapper::toResStudentAnswerResultDTO)
+                    .collect(Collectors.toList()));
+        }
+
+        return dto;
+    }
+
+    public static ResStudentAnswerResultDTO toResStudentAnswerResultDTO(StudentAnswer answer) {
+        if (answer == null) {
+            return null;
+        }
+
+        ResStudentAnswerResultDTO dto = new ResStudentAnswerResultDTO();
+        dto.setId(answer.getId());
+        dto.setAnswerText(answer.getAnswerText());
+        dto.setIsCorrect(answer.getIsCorrect());
+        dto.setScore(answer.getScore());
+
+        Question question = answer.getQuestionId();
+        if (question != null) {
+            dto.setQuestionId(question.getId());
+            dto.setQuestionContent(question.getContent());
+            dto.setQuestionScore(question.getScore());
+            dto.setQuestionType(question.getType() != null ? question.getType().name() : null);
+            dto.setExplanation(question.getExplanation());
+            if (question.getAnswerOptionSet() != null) {
+                dto.setCorrectOptions(question.getAnswerOptionSet().stream()
+                        .filter(a -> Boolean.TRUE.equals(a.getIsCorrect()))
+                        .filter(a -> !Boolean.TRUE.equals(a.getIsDeleted()))
+                        .map(a -> toResAnswerOptionDTO(a, true))
+                        .collect(Collectors.toList()));
+            }
+        }
+
+        AnswerOption selectedOption = answer.getOptionId();
+        if (selectedOption != null) {
+            dto.setSelectedOptionId(selectedOption.getId());
+            dto.setSelectedOptionContent(selectedOption.getContent());
+        }
+
+        return dto;
+    }
+
+    public static ResLearningProgressDTO toResLearningProgressDTO(Enrollment enrollment) {
+        if (enrollment == null) {
+            return null;
+        }
+
+        ResLearningProgressDTO dto = new ResLearningProgressDTO();
+        dto.setEnrollmentId(enrollment.getId());
+        dto.setEnrollDate(enrollment.getEnrollDate());
+        dto.setOverallProgress(enrollment.getOverallProgress());
+        dto.setStatus(enrollment.getStatus() != null ? enrollment.getStatus().name() : null);
+        dto.setTotalStudyTime(enrollment.getTotalStudyTime());
+
+        if (enrollment.getCourseId() != null) {
+            dto.setCourseId(enrollment.getCourseId().getId());
+            dto.setCourseName(enrollment.getCourseId().getName());
+        }
+
+        Student student = enrollment.getStudentId();
+        if (student != null) {
+            dto.setStudentId(student.getId());
+            dto.setStudentCode(student.getStudentCode());
+            dto.setStudentUser(toResUserDTO(student.getUserId()));
         }
 
         return dto;

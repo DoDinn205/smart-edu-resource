@@ -4,6 +4,7 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Set;
 
@@ -49,6 +50,7 @@ public class Topic implements Serializable {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
     @ManyToMany(mappedBy = "topicSet")
+    @JsonIgnore
     private Set<Resource> resourceSet;
 
     public Topic() {

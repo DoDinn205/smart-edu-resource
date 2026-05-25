@@ -4,6 +4,7 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -81,6 +82,7 @@ public class Interaction implements Serializable {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "interactionId")
+    @JsonIgnore
     private Set<InteractionReply> interactionReplySet;
     @JoinColumn(name = "resource_id", referencedColumnName = "id")
     @ManyToOne(optional = false)

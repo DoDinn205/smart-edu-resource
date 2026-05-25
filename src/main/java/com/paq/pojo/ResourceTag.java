@@ -4,6 +4,7 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -48,6 +49,7 @@ public class ResourceTag implements Serializable {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
     @ManyToMany(mappedBy = "resourceTagSet")
+    @JsonIgnore
     private Set<Resource> resourceSet;
 
     public ResourceTag() {

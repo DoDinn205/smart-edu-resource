@@ -4,6 +4,8 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -75,6 +77,7 @@ public class User implements Serializable {
     @NotNull
     @Size(min = 1, max = 100)
     @Column(name = "password")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     @Size(max = 255)
     @Column(name = "avatar")
@@ -94,32 +97,46 @@ public class User implements Serializable {
     @Column(name = "is_active")
     private Boolean isActive;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Student student;
     @OneToMany(mappedBy = "createdBy")
+    @JsonIgnore
     private Set<Subject> subjectSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "senderId")
+    @JsonIgnore
     private Set<ChatMessage> chatMessageSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Set<Notification> notificationSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Set<ChatParticipant> chatParticipantSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdBy")
+    @JsonIgnore
     private Set<Quiz> quizSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Set<ForumPost> forumPostSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "uploadBy")
+    @JsonIgnore
     private Set<Resource> resourceSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Set<InteractionReply> interactionReplySet;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Lecturer lecturer;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdBy")
+    @JsonIgnore
     private Set<ChatRoom> chatRoomSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdBy")
+    @JsonIgnore
     private Set<ForumThread> forumThreadSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Set<Interaction> interactionSet;
     @OneToMany(mappedBy = "recommendedBy")
+    @JsonIgnore
     private Set<LearningPath> learningPathSet;
 
     public User() {

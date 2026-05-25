@@ -4,6 +4,7 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
@@ -117,15 +118,19 @@ public class Resource implements Serializable {
     @ManyToMany
     private Set<Topic> topicSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "resourceId")
+    @JsonIgnore
     private Set<LearningLog> learningLogSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "relatedId")
+    @JsonIgnore
     private Set<ResourceRelation> resourceRelationSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "sourceId")
+    @JsonIgnore
     private Set<ResourceRelation> resourceRelationSet1;
     @JoinColumn(name = "upload_by", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User uploadBy;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "resourceId")
+    @JsonIgnore
     private Set<Interaction> interactionSet;
 
     public Resource() {

@@ -4,6 +4,7 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -71,6 +72,7 @@ public class QuizAttempt implements Serializable {
     @ManyToOne(optional = false)
     private Student studentId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "attemptId")
+    @JsonIgnore
     private Set<StudentAnswer> studentAnswerSet;
 
     public QuizAttempt() {
