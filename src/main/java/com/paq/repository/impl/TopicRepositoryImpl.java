@@ -37,17 +37,19 @@ public class TopicRepositoryImpl implements TopicRepository {
         CriteriaQuery<Topic> q = b.createQuery(Topic.class);
         Root<Topic> root = q.from(Topic.class);
         q.select(root);
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(b.or(
+                b.isFalse(root.get("isDeleted")),
+                b.isNull(root.get("isDeleted"))));
 
         if (params != null) {
-            List<Predicate> predicates = new ArrayList<>();
-
             String kw = params.get("kw");
             if (kw != null && !kw.isEmpty()) {
                 predicates.add(b.like(root.get("name"), String.format("%%%s%%", kw)));
             }
-
-            q.where(predicates.toArray(Predicate[]::new));
         }
+
+        q.where(predicates.toArray(Predicate[]::new));
 
         q.orderBy(b.desc(root.get("id")));
 
@@ -97,6 +99,7 @@ public class TopicRepositoryImpl implements TopicRepository {
     public void deleteTopic(int id) {
         Session session = this.factory.getObject().getCurrentSession();
         Topic topic = this.getTopicById(id);
-        session.remove(topic);
+        topic.setIsDeleted(Boolean.TRUE);
+        session.merge(topic);
     }
 }

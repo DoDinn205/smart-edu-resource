@@ -65,6 +65,8 @@ public class Question implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
     private QuestionTypeEnum type;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "questionId")
     private Set<AnswerOption> answerOptionSet;
     @JoinColumn(name = "quiz_id", referencedColumnName = "id")
@@ -123,6 +125,14 @@ public class Question implements Serializable {
 
     public void setType(QuestionTypeEnum type) {
         this.type = type;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     @XmlTransient

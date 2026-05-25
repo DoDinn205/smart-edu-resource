@@ -1,13 +1,20 @@
 package com.paq.utils;
 
+import com.paq.pojo.Course;
+import com.paq.pojo.Enrollment;
 import com.paq.pojo.ResourceTag;
 import com.paq.pojo.ResourceType;
+import com.paq.pojo.Student;
 import com.paq.pojo.Subject;
 import com.paq.pojo.Topic;
 import com.paq.pojo.User;
 import com.paq.pojo.response.ResCategoryDTO;
+import com.paq.pojo.response.ResCourseDTO;
+import com.paq.pojo.response.ResEnrollmentDTO;
 import com.paq.pojo.response.ResSubjectDTO;
 import com.paq.pojo.response.ResUserDTO;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class DTOMapper {
 
@@ -75,6 +82,58 @@ public class DTOMapper {
         ResCategoryDTO dto = new ResCategoryDTO();
         dto.setId(resourceTag.getId());
         dto.setName(resourceTag.getName());
+
+        return dto;
+    }
+
+    public static ResCourseDTO toResCourseDTO(Course course) {
+        if (course == null) {
+            return null;
+        }
+
+        ResCourseDTO dto = new ResCourseDTO();
+        dto.setId(course.getId());
+        dto.setName(course.getName());
+        dto.setDescription(course.getDescription());
+        dto.setStartDate(course.getStartDate());
+        dto.setEndDate(course.getEndDate());
+        dto.setIsPaid(course.getIsPaid());
+        dto.setIsDeleted(course.getIsDeleted());
+        dto.setTargetLevel(course.getTargetLevel() != null ? course.getTargetLevel().name() : null);
+
+        if (course.getSubjectSet() != null) {
+            List<ResSubjectDTO> subjects = course.getSubjectSet().stream()
+                    .map(DTOMapper::toResSubjectDTO)
+                    .collect(Collectors.toList());
+            dto.setSubjects(subjects);
+        }
+
+        if (course.getEnrollmentSet() != null) {
+            dto.setEnrollmentCount(course.getEnrollmentSet().size());
+        }
+
+        return dto;
+    }
+
+    public static ResEnrollmentDTO toResEnrollmentDTO(Enrollment enrollment) {
+        if (enrollment == null) {
+            return null;
+        }
+
+        ResEnrollmentDTO dto = new ResEnrollmentDTO();
+        dto.setId(enrollment.getId());
+        dto.setEnrollDate(enrollment.getEnrollDate());
+        dto.setOverallProgress(enrollment.getOverallProgress());
+        dto.setStatus(enrollment.getStatus() != null ? enrollment.getStatus().name() : null);
+        dto.setTotalStudyTime(enrollment.getTotalStudyTime());
+        dto.setCourseId(enrollment.getCourseId() != null ? enrollment.getCourseId().getId() : null);
+
+        Student student = enrollment.getStudentId();
+        if (student != null) {
+            dto.setStudentId(student.getId());
+            dto.setStudentCode(student.getStudentCode());
+            dto.setUser(toResUserDTO(student.getUserId()));
+        }
 
         return dto;
     }

@@ -52,6 +52,8 @@ public class AnswerOption implements Serializable {
     private String content;
     @Column(name = "is_correct")
     private Boolean isCorrect;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @JoinColumn(name = "question_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Question questionId;
@@ -92,6 +94,14 @@ public class AnswerOption implements Serializable {
 
     public void setIsCorrect(Boolean isCorrect) {
         this.isCorrect = isCorrect;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     public Question getQuestionId() {

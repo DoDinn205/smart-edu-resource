@@ -58,6 +58,8 @@ public class Notification implements Serializable {
     private String content;
     @Column(name = "is_read")
     private Boolean isRead;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -108,6 +110,14 @@ public class Notification implements Serializable {
 
     public void setIsRead(Boolean isRead) {
         this.isRead = isRead;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     public Date getCreatedAt() {

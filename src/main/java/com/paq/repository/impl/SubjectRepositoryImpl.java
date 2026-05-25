@@ -37,19 +37,21 @@ public class SubjectRepositoryImpl implements SubjectRepository {
         CriteriaQuery<Subject> q = b.createQuery(Subject.class);
         Root<Subject> root = q.from(Subject.class);
         q.select(root);
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(b.or(
+                b.isFalse(root.get("isDeleted")),
+                b.isNull(root.get("isDeleted"))));
 
         if (params != null) {
-            List<Predicate> predicates = new ArrayList<>();
-
             String kw = params.get("kw");
             if (kw != null && !kw.isEmpty()) {
                 predicates.add(b.or(
                         b.like(root.get("name"), String.format("%%%s%%", kw)),
                         b.like(root.get("code"), String.format("%%%s%%", kw))));
             }
-
-            q.where(predicates.toArray(Predicate[]::new));
         }
+
+        q.where(predicates.toArray(Predicate[]::new));
 
         q.orderBy(b.desc(root.get("id")));
 
@@ -111,6 +113,7 @@ public class SubjectRepositoryImpl implements SubjectRepository {
     public void deleteSubject(int id) {
         Session session = this.factory.getObject().getCurrentSession();
         Subject subject = this.getSubjectById(id);
-        session.remove(subject);
+        subject.setIsDeleted(Boolean.TRUE);
+        session.merge(subject);
     }
 }

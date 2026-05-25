@@ -1,10 +1,12 @@
 package com.paq.repository.impl;
 
-import com.paq.pojo.ResourceType;
-import com.paq.repository.ResourceTypeRepository;
+import com.paq.pojo.Enrollment;
+import com.paq.repository.EnrollmentRepository;
+import com.paq.utils.constant.EnrollmentStatusEnum;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -22,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 @PropertySource("classpath:configs.properties")
 @Transactional
-public class ResourceTypeRepositoryImpl implements ResourceTypeRepository {
+public class EnrollmentRepositoryImpl implements EnrollmentRepository {
 
     @Autowired
     private Environment env;
@@ -31,32 +33,32 @@ public class ResourceTypeRepositoryImpl implements ResourceTypeRepository {
     private LocalSessionFactoryBean factory;
 
     @Override
-    public List<ResourceType> getResourceTypes(Map<String, String> params) {
+    public List<Enrollment> getEnrollmentsByCourseId(int courseId, Map<String, String> params) {
         Session session = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = session.getCriteriaBuilder();
-        CriteriaQuery<ResourceType> q = b.createQuery(ResourceType.class);
-        Root<ResourceType> root = q.from(ResourceType.class);
-        q.select(root);
+        CriteriaQuery<Enrollment> q = b.createQuery(Enrollment.class);
+        Root<Enrollment> root = q.from(Enrollment.class);
+        root.fetch("courseId", JoinType.LEFT);
+        root.fetch("studentId", JoinType.LEFT).fetch("userId", JoinType.LEFT);
+        q.select(root).distinct(true);
+
         List<Predicate> predicates = new ArrayList<>();
-        predicates.add(b.or(
-                b.isFalse(root.get("isDeleted")),
-                b.isNull(root.get("isDeleted"))));
+        predicates.add(b.equal(root.get("courseId").get("id"), courseId));
 
         if (params != null) {
-            String kw = params.get("kw");
-            if (kw != null && !kw.isEmpty()) {
-                predicates.add(b.like(root.get("name"), String.format("%%%s%%", kw)));
+            String status = params.get("status");
+            if (status != null && !status.isEmpty()) {
+                predicates.add(b.equal(root.get("status"), EnrollmentStatusEnum.valueOf(status)));
             }
         }
 
         q.where(predicates.toArray(Predicate[]::new));
-
         q.orderBy(b.desc(root.get("id")));
 
-        Query<ResourceType> query = session.createQuery(q);
+        Query<Enrollment> query = session.createQuery(q);
 
         if (params != null) {
-            int pageSize = this.env.getProperty("resource_types.page_size", Integer.class);
+            int pageSize = this.env.getProperty("enrollments.page_size", Integer.class);
             int page = Integer.parseInt(params.getOrDefault("page", "1"));
             int start = (page - 1) * pageSize;
 
@@ -68,17 +70,17 @@ public class ResourceTypeRepositoryImpl implements ResourceTypeRepository {
     }
 
     @Override
-    public ResourceType getResourceTypeById(int id) {
-        Session session = this.factory.getObject().getCurrentSession();
-        return session.get(ResourceType.class, id);
-    }
-
-    @Override
-    public ResourceType getResourceTypeByName(String name) {
+    public Enrollment getEnrollmentById(int id) {
         try {
             Session session = this.factory.getObject().getCurrentSession();
-            Query<ResourceType> q = session.createNamedQuery("ResourceType.findByName", ResourceType.class);
-            q.setParameter("name", name);
+            Query<Enrollment> q = session.createQuery(
+                    "SELECT e FROM Enrollment e "
+                    + "JOIN FETCH e.courseId "
+                    + "JOIN FETCH e.studentId s "
+                    + "JOIN FETCH s.userId "
+                    + "WHERE e.id = :id",
+                    Enrollment.class);
+            q.setParameter("id", id);
             return q.getSingleResult();
         } catch (NoResultException ex) {
             return null;
@@ -86,20 +88,23 @@ public class ResourceTypeRepositoryImpl implements ResourceTypeRepository {
     }
 
     @Override
-    public ResourceType addOrUpdateResourceType(ResourceType resourceType) {
+    public Enrollment addOrUpdateEnrollment(Enrollment enrollment) {
         Session session = this.factory.getObject().getCurrentSession();
-        if (resourceType.getId() != null) {
-            return session.merge(resourceType);
+        if (enrollment.getId() != null) {
+            return session.merge(enrollment);
         }
-        session.persist(resourceType);
-        return resourceType;
+
+        session.persist(enrollment);
+        return enrollment;
     }
 
     @Override
-    public void deleteResourceType(int id) {
+    public boolean existsByCourseId(int courseId) {
         Session session = this.factory.getObject().getCurrentSession();
-        ResourceType resourceType = this.getResourceTypeById(id);
-        resourceType.setIsDeleted(Boolean.TRUE);
-        session.merge(resourceType);
+        Query<Long> q = session.createQuery(
+                "SELECT COUNT(e.id) FROM Enrollment e WHERE e.courseId.id = :courseId",
+                Long.class);
+        q.setParameter("courseId", courseId);
+        return q.getSingleResult() > 0;
     }
 }

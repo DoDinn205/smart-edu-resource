@@ -57,6 +57,8 @@ public class LearningPathItem implements Serializable {
     private Integer orderNumber;
     @Column(name = "is_required")
     private Boolean isRequired;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @JoinColumn(name = "path_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private LearningPath pathId;
@@ -111,6 +113,14 @@ public class LearningPathItem implements Serializable {
 
     public void setIsRequired(Boolean isRequired) {
         this.isRequired = isRequired;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     public LearningPath getPathId() {

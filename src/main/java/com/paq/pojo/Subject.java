@@ -63,6 +63,8 @@ public class Subject implements Serializable {
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @ManyToMany(mappedBy = "subjectSet")
     private Set<Course> courseSet;
     @ManyToMany(mappedBy = "subjectSet")
@@ -121,6 +123,14 @@ public class Subject implements Serializable {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     @XmlTransient

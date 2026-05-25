@@ -93,6 +93,8 @@ public class Resource implements Serializable {
     private Date updateAt;
     @Column(name = "page_count")
     private Integer pageCount;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @JoinTable(name = "resource_type_map", joinColumns = {
         @JoinColumn(name = "resource_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "type_id", referencedColumnName = "id")})
@@ -223,6 +225,14 @@ public class Resource implements Serializable {
 
     public void setPageCount(Integer pageCount) {
         this.pageCount = pageCount;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     @XmlTransient

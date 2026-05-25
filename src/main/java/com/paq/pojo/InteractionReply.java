@@ -45,6 +45,8 @@ public class InteractionReply implements Serializable {
     @Size(min = 1, max = 65535)
     @Column(name = "content")
     private String content;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @JoinColumn(name = "interaction_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Interaction interactionId;
@@ -78,6 +80,14 @@ public class InteractionReply implements Serializable {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     public Interaction getInteractionId() {

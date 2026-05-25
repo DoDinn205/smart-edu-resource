@@ -45,6 +45,8 @@ public class ResourceType implements Serializable {
     @Size(min = 1, max = 100)
     @Column(name = "name")
     private String name;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @ManyToMany(mappedBy = "resourceTypeSet")
     private Set<Resource> resourceSet;
 
@@ -74,6 +76,14 @@ public class ResourceType implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     @XmlTransient

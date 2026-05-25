@@ -51,6 +51,8 @@ public class ForumCategory implements Serializable {
     @Size(max = 65535)
     @Column(name = "description")
     private String description;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "categoryId")
     private Set<ForumThread> forumThreadSet;
 
@@ -88,6 +90,14 @@ public class ForumCategory implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     @XmlTransient

@@ -37,17 +37,19 @@ public class ResourceTagRepositoryImpl implements ResourceTagRepository {
         CriteriaQuery<ResourceTag> q = b.createQuery(ResourceTag.class);
         Root<ResourceTag> root = q.from(ResourceTag.class);
         q.select(root);
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(b.or(
+                b.isFalse(root.get("isDeleted")),
+                b.isNull(root.get("isDeleted"))));
 
         if (params != null) {
-            List<Predicate> predicates = new ArrayList<>();
-
             String kw = params.get("kw");
             if (kw != null && !kw.isEmpty()) {
                 predicates.add(b.like(root.get("name"), String.format("%%%s%%", kw)));
             }
-
-            q.where(predicates.toArray(Predicate[]::new));
         }
+
+        q.where(predicates.toArray(Predicate[]::new));
 
         q.orderBy(b.desc(root.get("id")));
 
@@ -97,6 +99,7 @@ public class ResourceTagRepositoryImpl implements ResourceTagRepository {
     public void deleteResourceTag(int id) {
         Session session = this.factory.getObject().getCurrentSession();
         ResourceTag resourceTag = this.getResourceTagById(id);
-        session.remove(resourceTag);
+        resourceTag.setIsDeleted(Boolean.TRUE);
+        session.merge(resourceTag);
     }
 }

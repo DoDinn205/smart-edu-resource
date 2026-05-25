@@ -31,7 +31,7 @@ public class ResourceTypeServiceImpl implements ResourceTypeService {
     @Override
     public ResCategoryDTO getResourceTypeById(int id) {
         ResourceType resourceType = this.resourceTypeRepo.getResourceTypeById(id);
-        if (resourceType == null) {
+        if (resourceType == null || Boolean.TRUE.equals(resourceType.getIsDeleted())) {
             throw new IdInvalidException("Resource type không tồn tại");
         }
 
@@ -42,6 +42,7 @@ public class ResourceTypeServiceImpl implements ResourceTypeService {
     public ResCategoryDTO createResourceType(ReqCategoryDTO request) {
         ResourceType resourceType = new ResourceType();
         resourceType.setName(request.getName());
+        resourceType.setIsDeleted(Boolean.FALSE);
 
         return DTOMapper.toResCategoryDTO(this.resourceTypeRepo.addOrUpdateResourceType(resourceType));
     }
@@ -49,7 +50,7 @@ public class ResourceTypeServiceImpl implements ResourceTypeService {
     @Override
     public ResCategoryDTO updateResourceType(int id, ReqCategoryDTO request) {
         ResourceType resourceType = this.resourceTypeRepo.getResourceTypeById(id);
-        if (resourceType == null) {
+        if (resourceType == null || Boolean.TRUE.equals(resourceType.getIsDeleted())) {
             throw new IdInvalidException("Resource type không tồn tại");
         }
 
@@ -60,7 +61,8 @@ public class ResourceTypeServiceImpl implements ResourceTypeService {
 
     @Override
     public void deleteResourceType(int id) {
-        if (this.resourceTypeRepo.getResourceTypeById(id) == null) {
+        ResourceType resourceType = this.resourceTypeRepo.getResourceTypeById(id);
+        if (resourceType == null || Boolean.TRUE.equals(resourceType.getIsDeleted())) {
             throw new IdInvalidException("Resource type không tồn tại");
         }
 

@@ -31,7 +31,7 @@ public class ResourceTagServiceImpl implements ResourceTagService {
     @Override
     public ResCategoryDTO getResourceTagById(int id) {
         ResourceTag resourceTag = this.resourceTagRepo.getResourceTagById(id);
-        if (resourceTag == null) {
+        if (resourceTag == null || Boolean.TRUE.equals(resourceTag.getIsDeleted())) {
             throw new IdInvalidException("Resource tag không tồn tại");
         }
 
@@ -42,6 +42,7 @@ public class ResourceTagServiceImpl implements ResourceTagService {
     public ResCategoryDTO createResourceTag(ReqCategoryDTO request) {
         ResourceTag resourceTag = new ResourceTag();
         resourceTag.setName(request.getName());
+        resourceTag.setIsDeleted(Boolean.FALSE);
 
         return DTOMapper.toResCategoryDTO(this.resourceTagRepo.addOrUpdateResourceTag(resourceTag));
     }
@@ -49,7 +50,7 @@ public class ResourceTagServiceImpl implements ResourceTagService {
     @Override
     public ResCategoryDTO updateResourceTag(int id, ReqCategoryDTO request) {
         ResourceTag resourceTag = this.resourceTagRepo.getResourceTagById(id);
-        if (resourceTag == null) {
+        if (resourceTag == null || Boolean.TRUE.equals(resourceTag.getIsDeleted())) {
             throw new IdInvalidException("Resource tag không tồn tại");
         }
 
@@ -60,7 +61,8 @@ public class ResourceTagServiceImpl implements ResourceTagService {
 
     @Override
     public void deleteResourceTag(int id) {
-        if (this.resourceTagRepo.getResourceTagById(id) == null) {
+        ResourceTag resourceTag = this.resourceTagRepo.getResourceTagById(id);
+        if (resourceTag == null || Boolean.TRUE.equals(resourceTag.getIsDeleted())) {
             throw new IdInvalidException("Resource tag không tồn tại");
         }
 

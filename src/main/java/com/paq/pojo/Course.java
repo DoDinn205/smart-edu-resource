@@ -73,6 +73,8 @@ public class Course implements Serializable {
     private Date endDate;
     @Column(name = "is_paid")
     private Boolean isPaid;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @Enumerated(EnumType.STRING)
     @Column(name = "target_level")
     private LevelEnum targetLevel;
@@ -146,6 +148,14 @@ public class Course implements Serializable {
 
     public void setIsPaid(Boolean isPaid) {
         this.isPaid = isPaid;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     public LevelEnum getTargetLevel() {

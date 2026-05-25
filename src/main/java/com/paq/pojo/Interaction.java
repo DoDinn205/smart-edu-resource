@@ -78,6 +78,8 @@ public class Interaction implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
     private TypeInteractionEnum type;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "interactionId")
     private Set<InteractionReply> interactionReplySet;
     @JoinColumn(name = "resource_id", referencedColumnName = "id")
@@ -164,6 +166,14 @@ public class Interaction implements Serializable {
 
     public void setType(TypeInteractionEnum type) {
         this.type = type;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     @XmlTransient

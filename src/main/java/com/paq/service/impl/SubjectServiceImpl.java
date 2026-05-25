@@ -32,7 +32,7 @@ public class SubjectServiceImpl implements SubjectService {
     @Override
     public ResSubjectDTO getSubjectById(int id) {
         Subject subject = this.subjectRepo.getSubjectById(id);
-        if (subject == null) {
+        if (subject == null || Boolean.TRUE.equals(subject.getIsDeleted())) {
             throw new IdInvalidException("Subject không tồn tại");
         }
 
@@ -46,6 +46,7 @@ public class SubjectServiceImpl implements SubjectService {
         subject.setName(request.getName());
         subject.setDescription(request.getDescription());
         subject.setCreatedAt(new Date());
+        subject.setIsDeleted(Boolean.FALSE);
 
         return DTOMapper.toResSubjectDTO(this.subjectRepo.addOrUpdateSubject(subject));
     }
@@ -53,7 +54,7 @@ public class SubjectServiceImpl implements SubjectService {
     @Override
     public ResSubjectDTO updateSubject(int id, ReqSubjectDTO request) {
         Subject subject = this.subjectRepo.getSubjectById(id);
-        if (subject == null) {
+        if (subject == null || Boolean.TRUE.equals(subject.getIsDeleted())) {
             throw new IdInvalidException("Subject không tồn tại");
         }
 
@@ -66,7 +67,8 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public void deleteSubject(int id) {
-        if (this.subjectRepo.getSubjectById(id) == null) {
+        Subject subject = this.subjectRepo.getSubjectById(id);
+        if (subject == null || Boolean.TRUE.equals(subject.getIsDeleted())) {
             throw new IdInvalidException("Subject không tồn tại");
         }
 

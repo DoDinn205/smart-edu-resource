@@ -31,7 +31,7 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public ResCategoryDTO getTopicById(int id) {
         Topic topic = this.topicRepo.getTopicById(id);
-        if (topic == null) {
+        if (topic == null || Boolean.TRUE.equals(topic.getIsDeleted())) {
             throw new IdInvalidException("Topic không tồn tại");
         }
 
@@ -42,6 +42,7 @@ public class TopicServiceImpl implements TopicService {
     public ResCategoryDTO createTopic(ReqCategoryDTO request) {
         Topic topic = new Topic();
         topic.setName(request.getName());
+        topic.setIsDeleted(Boolean.FALSE);
 
         return DTOMapper.toResCategoryDTO(this.topicRepo.addOrUpdateTopic(topic));
     }
@@ -49,7 +50,7 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public ResCategoryDTO updateTopic(int id, ReqCategoryDTO request) {
         Topic topic = this.topicRepo.getTopicById(id);
-        if (topic == null) {
+        if (topic == null || Boolean.TRUE.equals(topic.getIsDeleted())) {
             throw new IdInvalidException("Topic không tồn tại");
         }
 
@@ -60,7 +61,8 @@ public class TopicServiceImpl implements TopicService {
 
     @Override
     public void deleteTopic(int id) {
-        if (this.topicRepo.getTopicById(id) == null) {
+        Topic topic = this.topicRepo.getTopicById(id);
+        if (topic == null || Boolean.TRUE.equals(topic.getIsDeleted())) {
             throw new IdInvalidException("Topic không tồn tại");
         }
 
