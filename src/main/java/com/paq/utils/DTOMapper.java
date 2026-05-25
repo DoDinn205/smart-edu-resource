@@ -2,6 +2,9 @@ package com.paq.utils;
 
 import com.paq.pojo.Course;
 import com.paq.pojo.Enrollment;
+import com.paq.pojo.AnswerOption;
+import com.paq.pojo.Question;
+import com.paq.pojo.Quiz;
 import com.paq.pojo.Resource;
 import com.paq.pojo.ResourceRelation;
 import com.paq.pojo.ResourceTag;
@@ -13,6 +16,9 @@ import com.paq.pojo.User;
 import com.paq.pojo.response.ResCategoryDTO;
 import com.paq.pojo.response.ResCourseDTO;
 import com.paq.pojo.response.ResEnrollmentDTO;
+import com.paq.pojo.response.ResAnswerOptionDTO;
+import com.paq.pojo.response.ResQuestionDTO;
+import com.paq.pojo.response.ResQuizDTO;
 import com.paq.pojo.response.ResResourceDTO;
 import com.paq.pojo.response.ResSubjectDTO;
 import com.paq.pojo.response.ResUserDTO;
@@ -205,6 +211,75 @@ public class DTOMapper {
             dto.setStudentId(student.getId());
             dto.setStudentCode(student.getStudentCode());
             dto.setUser(toResUserDTO(student.getUserId()));
+        }
+
+        return dto;
+    }
+
+    public static ResQuizDTO toResQuizDTO(Quiz quiz, boolean includeCorrectAnswers) {
+        return toResQuizDTO(quiz, includeCorrectAnswers, true);
+    }
+
+    public static ResQuizDTO toResQuizDTO(Quiz quiz, boolean includeCorrectAnswers, boolean includeQuestions) {
+        if (quiz == null) {
+            return null;
+        }
+
+        ResQuizDTO dto = new ResQuizDTO();
+        dto.setId(quiz.getId());
+        dto.setTitle(quiz.getTitle());
+        dto.setDescription(quiz.getDescription());
+        dto.setDurationMinutes(quiz.getDurationMinutes());
+        dto.setTotalScore(quiz.getTotalScore());
+        dto.setCreatedAt(quiz.getCreatedAt());
+        dto.setCourseId(quiz.getCourseId() != null ? quiz.getCourseId().getId() : null);
+        dto.setCreatedBy(toResUserDTO(quiz.getCreatedBy()));
+
+        if (includeQuestions && quiz.getQuestionSet() != null) {
+            dto.setQuestions(quiz.getQuestionSet().stream()
+                    .filter(q -> !Boolean.TRUE.equals(q.getIsDeleted()))
+                    .map(q -> toResQuestionDTO(q, includeCorrectAnswers))
+                    .collect(Collectors.toList()));
+        }
+
+        return dto;
+    }
+
+    public static ResQuestionDTO toResQuestionDTO(Question question, boolean includeCorrectAnswers) {
+        if (question == null) {
+            return null;
+        }
+
+        ResQuestionDTO dto = new ResQuestionDTO();
+        dto.setId(question.getId());
+        dto.setContent(question.getContent());
+        dto.setScore(question.getScore());
+        if (includeCorrectAnswers) {
+            dto.setExplanation(question.getExplanation());
+        }
+        dto.setType(question.getType() != null ? question.getType().name() : null);
+        dto.setQuizId(question.getQuizId() != null ? question.getQuizId().getId() : null);
+
+        if (question.getAnswerOptionSet() != null) {
+            dto.setAnswers(question.getAnswerOptionSet().stream()
+                    .filter(a -> !Boolean.TRUE.equals(a.getIsDeleted()))
+                    .map(a -> toResAnswerOptionDTO(a, includeCorrectAnswers))
+                    .collect(Collectors.toList()));
+        }
+
+        return dto;
+    }
+
+    public static ResAnswerOptionDTO toResAnswerOptionDTO(AnswerOption answer, boolean includeCorrectAnswer) {
+        if (answer == null) {
+            return null;
+        }
+
+        ResAnswerOptionDTO dto = new ResAnswerOptionDTO();
+        dto.setId(answer.getId());
+        dto.setContent(answer.getContent());
+        if (includeCorrectAnswer) {
+            dto.setIsCorrect(answer.getIsCorrect());
         }
 
         return dto;

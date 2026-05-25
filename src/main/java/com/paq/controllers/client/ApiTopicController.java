@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,12 +24,13 @@ import com.paq.service.TopicService;
 import jakarta.validation.Valid;
 
 @RestController
+@RequestMapping("/api")
 public class ApiTopicController {
 
     @Autowired
     private TopicService topicService;
 
-    @GetMapping("/api/topics")
+    @GetMapping("/topics")
     public ResponseEntity<ResResponse<List<ResCategoryDTO>>> getTopics(@RequestParam Map<String, String> params) {
         ResResponse<List<ResCategoryDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -37,7 +39,7 @@ public class ApiTopicController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/api/topics/{id}")
+    @GetMapping("/topics/{id}")
     public ResponseEntity<ResResponse<ResCategoryDTO>> getTopicById(@PathVariable int id) {
         ResResponse<ResCategoryDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -46,7 +48,7 @@ public class ApiTopicController {
         return ResponseEntity.ok(res);
     }
 
-    @PostMapping("/api/secure/topics")
+    @PostMapping("/secure/topics")
     public ResponseEntity<ResResponse<ResCategoryDTO>> createTopic(@Valid @RequestBody ReqCategoryDTO request) {
         ResResponse<ResCategoryDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.CREATED.value());
@@ -55,7 +57,7 @@ public class ApiTopicController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
-    @PutMapping("/api/secure/topics/{id}")
+    @PutMapping("/secure/topics/{id}")
     public ResponseEntity<ResResponse<ResCategoryDTO>> updateTopic(@PathVariable int id,
             @Valid @RequestBody ReqCategoryDTO request) {
         ResResponse<ResCategoryDTO> res = new ResResponse<>();
@@ -65,7 +67,7 @@ public class ApiTopicController {
         return ResponseEntity.ok(res);
     }
 
-    @DeleteMapping("/api/secure/topics/{id}")
+    @DeleteMapping("/secure/topics/{id}")
     public ResponseEntity<ResResponse<Object>> deleteTopic(@PathVariable int id) {
         this.topicService.deleteTopic(id);
         ResResponse<Object> res = new ResResponse<>();

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,12 +24,13 @@ import com.paq.service.SubjectService;
 import jakarta.validation.Valid;
 
 @RestController
+@RequestMapping("/api")
 public class ApiSubjectController {
 
     @Autowired
     private SubjectService subjectService;
 
-    @GetMapping("/api/subjects")
+    @GetMapping("/subjects")
     public ResponseEntity<ResResponse<List<ResSubjectDTO>>> getSubjects(@RequestParam Map<String, String> params) {
         ResResponse<List<ResSubjectDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -37,7 +39,7 @@ public class ApiSubjectController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/api/subjects/{id}")
+    @GetMapping("/subjects/{id}")
     public ResponseEntity<ResResponse<ResSubjectDTO>> getSubjectById(@PathVariable int id) {
         ResResponse<ResSubjectDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -46,7 +48,7 @@ public class ApiSubjectController {
         return ResponseEntity.ok(res);
     }
 
-    @PostMapping("/api/secure/subjects")
+    @PostMapping("/secure/subjects")
     public ResponseEntity<ResResponse<ResSubjectDTO>> createSubject(@Valid @RequestBody ReqSubjectDTO request) {
         ResResponse<ResSubjectDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.CREATED.value());
@@ -55,7 +57,7 @@ public class ApiSubjectController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
-    @PutMapping("/api/secure/subjects/{id}")
+    @PutMapping("/secure/subjects/{id}")
     public ResponseEntity<ResResponse<ResSubjectDTO>> updateSubject(@PathVariable int id,
             @Valid @RequestBody ReqSubjectDTO request) {
         ResResponse<ResSubjectDTO> res = new ResResponse<>();
@@ -65,7 +67,7 @@ public class ApiSubjectController {
         return ResponseEntity.ok(res);
     }
 
-    @DeleteMapping("/api/secure/subjects/{id}")
+    @DeleteMapping("/secure/subjects/{id}")
     public ResponseEntity<ResResponse<Object>> deleteSubject(@PathVariable int id) {
         this.subjectService.deleteSubject(id);
         ResResponse<Object> res = new ResResponse<>();
