@@ -2,6 +2,8 @@ package com.paq.utils;
 
 import com.paq.pojo.Course;
 import com.paq.pojo.Enrollment;
+import com.paq.pojo.Resource;
+import com.paq.pojo.ResourceRelation;
 import com.paq.pojo.ResourceTag;
 import com.paq.pojo.ResourceType;
 import com.paq.pojo.Student;
@@ -11,6 +13,7 @@ import com.paq.pojo.User;
 import com.paq.pojo.response.ResCategoryDTO;
 import com.paq.pojo.response.ResCourseDTO;
 import com.paq.pojo.response.ResEnrollmentDTO;
+import com.paq.pojo.response.ResResourceDTO;
 import com.paq.pojo.response.ResSubjectDTO;
 import com.paq.pojo.response.ResUserDTO;
 import java.util.List;
@@ -111,6 +114,75 @@ public class DTOMapper {
         if (course.getEnrollmentSet() != null) {
             dto.setEnrollmentCount(course.getEnrollmentSet().size());
         }
+
+        return dto;
+    }
+
+    public static ResResourceDTO toResResourceDTO(Resource resource) {
+        if (resource == null) {
+            return null;
+        }
+
+        ResResourceDTO dto = toResResourceBasicDTO(resource);
+        dto.setDescription(resource.getDescription());
+        dto.setThumbnailUrl(resource.getThumbnailUrl());
+        dto.setFileSize(resource.getFileSize());
+        dto.setCreatedAt(resource.getCreatedAt());
+        dto.setUpdateAt(resource.getUpdateAt());
+        dto.setPageCount(resource.getPageCount());
+        dto.setIsDeleted(resource.getIsDeleted());
+        dto.setUploadBy(toResUserDTO(resource.getUploadBy()));
+
+        if (resource.getSubjectSet() != null) {
+            dto.setSubjects(resource.getSubjectSet().stream()
+                    .map(DTOMapper::toResSubjectDTO)
+                    .collect(Collectors.toList()));
+        }
+
+        if (resource.getTopicSet() != null) {
+            dto.setTopics(resource.getTopicSet().stream()
+                    .map(DTOMapper::toResCategoryDTO)
+                    .collect(Collectors.toList()));
+        }
+
+        if (resource.getResourceTagSet() != null) {
+            dto.setTags(resource.getResourceTagSet().stream()
+                    .map(DTOMapper::toResCategoryDTO)
+                    .collect(Collectors.toList()));
+        }
+
+        if (resource.getResourceTypeSet() != null) {
+            dto.setTypes(resource.getResourceTypeSet().stream()
+                    .map(DTOMapper::toResCategoryDTO)
+                    .collect(Collectors.toList()));
+        }
+
+        return dto;
+    }
+
+    public static ResResourceDTO toResResourceDTO(Resource resource, List<ResourceRelation> relations) {
+        ResResourceDTO dto = toResResourceDTO(resource);
+        if (dto != null && relations != null) {
+            dto.setRelatedResources(relations.stream()
+                    .map(ResourceRelation::getRelatedId)
+                    .map(DTOMapper::toResResourceBasicDTO)
+                    .collect(Collectors.toList()));
+        }
+
+        return dto;
+    }
+
+    private static ResResourceDTO toResResourceBasicDTO(Resource resource) {
+        if (resource == null) {
+            return null;
+        }
+
+        ResResourceDTO dto = new ResResourceDTO();
+        dto.setId(resource.getId());
+        dto.setTitle(resource.getTitle());
+        dto.setFileUrl(resource.getFileUrl());
+        dto.setFormat(resource.getFormat() != null ? resource.getFormat().name() : null);
+        dto.setLevel(resource.getLevel() != null ? resource.getLevel().name() : null);
 
         return dto;
     }

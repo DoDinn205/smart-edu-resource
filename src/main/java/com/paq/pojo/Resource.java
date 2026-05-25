@@ -4,6 +4,13 @@
  */
 package com.paq.pojo;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Set;
+
+import com.paq.utils.constant.FormatEnum;
+import com.paq.utils.constant.LevelEnum;
+
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -28,12 +35,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Set;
-
-import com.paq.utils.constant.FormatEnum;
-import com.paq.utils.constant.LevelEnum;
 
 /**
  *
