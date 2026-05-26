@@ -107,4 +107,17 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
         q.setParameter("courseId", courseId);
         return q.getSingleResult() > 0;
     }
+
+    @Override
+    public boolean existsByCourseIdAndUserId(int courseId, int userId) {
+        Session session = this.factory.getObject().getCurrentSession();
+        Query<Long> q = session.createQuery(
+                "SELECT COUNT(e.id) FROM Enrollment e "
+                + "WHERE e.courseId.id = :courseId "
+                + "AND e.studentId.userId.id = :userId",
+                Long.class);
+        q.setParameter("courseId", courseId);
+        q.setParameter("userId", userId);
+        return q.getSingleResult() > 0;
+    }
 }

@@ -18,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
@@ -79,6 +80,12 @@ public class Course implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "target_level")
     private LevelEnum targetLevel;
+    @JoinColumn(name = "created_by", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private User createdBy;
+    @JoinColumn(name = "lecturer_id", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private Lecturer lecturerId;
     @JoinTable(name = "course_subject", joinColumns = {
         @JoinColumn(name = "course_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "subject_id", referencedColumnName = "id")})
@@ -168,6 +175,22 @@ public class Course implements Serializable {
 
     public void setTargetLevel(LevelEnum targetLevel) {
         this.targetLevel = targetLevel;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Lecturer getLecturerId() {
+        return lecturerId;
+    }
+
+    public void setLecturerId(Lecturer lecturerId) {
+        this.lecturerId = lecturerId;
     }
 
     @XmlTransient

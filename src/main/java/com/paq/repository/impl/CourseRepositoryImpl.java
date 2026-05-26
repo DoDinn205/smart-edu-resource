@@ -41,6 +41,8 @@ public class CourseRepositoryImpl implements CourseRepository {
         CriteriaQuery<Course> q = b.createQuery(Course.class);
         Root<Course> root = q.from(Course.class);
         root.fetch("subjectSet", JoinType.LEFT);
+        root.fetch("createdBy", JoinType.LEFT);
+        root.fetch("lecturerId", JoinType.LEFT).fetch("userId", JoinType.LEFT);
         q.select(root).distinct(true);
 
         List<Predicate> predicates = new ArrayList<>();
@@ -71,6 +73,16 @@ public class CourseRepositoryImpl implements CourseRepository {
                 Join<Course, Subject> subjectJoin = root.join("subjectSet", JoinType.INNER);
                 predicates.add(b.equal(subjectJoin.get("id"), Integer.parseInt(subjectId)));
             }
+
+            String lecturerId = params.get("lecturerId");
+            if (lecturerId != null && !lecturerId.isEmpty()) {
+                predicates.add(b.equal(root.get("lecturerId").get("id"), Integer.parseInt(lecturerId)));
+            }
+
+            String createdBy = params.get("createdBy");
+            if (createdBy != null && !createdBy.isEmpty()) {
+                predicates.add(b.equal(root.get("createdBy").get("id"), Integer.parseInt(createdBy)));
+            }
         }
 
         q.where(predicates.toArray(Predicate[]::new));
@@ -99,6 +111,9 @@ public class CourseRepositoryImpl implements CourseRepository {
                     "SELECT DISTINCT c FROM Course c "
                     + "LEFT JOIN FETCH c.subjectSet "
                     + "LEFT JOIN FETCH c.enrollmentSet "
+                    + "LEFT JOIN FETCH c.createdBy "
+                    + "LEFT JOIN FETCH c.lecturerId l "
+                    + "LEFT JOIN FETCH l.userId "
                     + "WHERE c.id = :id "
                     + "AND (c.isDeleted = false OR c.isDeleted IS NULL)",
                     Course.class);
@@ -115,6 +130,9 @@ public class CourseRepositoryImpl implements CourseRepository {
             Session session = this.factory.getObject().getCurrentSession();
             Query<Course> q = session.createQuery(
                     "SELECT c FROM Course c "
+                    + "LEFT JOIN FETCH c.createdBy "
+                    + "LEFT JOIN FETCH c.lecturerId l "
+                    + "LEFT JOIN FETCH l.userId "
                     + "WHERE c.name = :name "
                     + "AND (c.isDeleted = false OR c.isDeleted IS NULL)",
                     Course.class);
@@ -123,6 +141,17 @@ public class CourseRepositoryImpl implements CourseRepository {
         } catch (NoResultException ex) {
             return null;
         }
+    }
+
+    @Override
+    public long countEnrollmentsByCourseId(int courseId) {
+        Session session = this.factory.getObject().getCurrentSession();
+        Query<Long> q = session.createQuery(
+                "SELECT COUNT(e.id) FROM Enrollment e WHERE e.courseId.id = :courseId",
+                Long.class);
+        q.setParameter("courseId", courseId);
+        Long result = q.getSingleResult();
+        return result != null ? result : 0L;
     }
 
     @Override

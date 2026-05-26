@@ -13,6 +13,9 @@ public class ResCourseDTO {
     private Boolean isPaid;
     private Boolean isDeleted;
     private String targetLevel;
+    private ResUserDTO createdBy;
+    private Integer lecturerId;
+    private ResUserDTO lecturerUser;
     private List<ResSubjectDTO> subjects;
     private Integer enrollmentCount;
 
@@ -78,6 +81,30 @@ public class ResCourseDTO {
 
     public void setTargetLevel(String targetLevel) {
         this.targetLevel = targetLevel;
+    }
+
+    public ResUserDTO getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(ResUserDTO createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Integer getLecturerId() {
+        return lecturerId;
+    }
+
+    public void setLecturerId(Integer lecturerId) {
+        this.lecturerId = lecturerId;
+    }
+
+    public ResUserDTO getLecturerUser() {
+        return lecturerUser;
+    }
+
+    public void setLecturerUser(ResUserDTO lecturerUser) {
+        this.lecturerUser = lecturerUser;
     }
 
     public List<ResSubjectDTO> getSubjects() {

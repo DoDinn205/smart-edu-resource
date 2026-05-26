@@ -114,6 +114,11 @@ public class DTOMapper {
         dto.setIsPaid(course.getIsPaid());
         dto.setIsDeleted(course.getIsDeleted());
         dto.setTargetLevel(course.getTargetLevel() != null ? course.getTargetLevel().name() : null);
+        dto.setCreatedBy(toResUserDTO(course.getCreatedBy()));
+        if (course.getLecturerId() != null) {
+            dto.setLecturerId(course.getLecturerId().getId());
+            dto.setLecturerUser(toResUserDTO(course.getLecturerId().getUserId()));
+        }
 
         if (course.getSubjectSet() != null) {
             List<ResSubjectDTO> subjects = course.getSubjectSet().stream()

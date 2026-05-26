@@ -12,6 +12,8 @@ public interface CourseRepository {
 
     Course getCourseByName(String name);
 
+    long countEnrollmentsByCourseId(int courseId);
+
     Course addOrUpdateCourse(Course course);
 
     void deleteCourse(int id);

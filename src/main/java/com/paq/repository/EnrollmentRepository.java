@@ -13,4 +13,6 @@ public interface EnrollmentRepository {
     Enrollment addOrUpdateEnrollment(Enrollment enrollment);
 
     boolean existsByCourseId(int courseId);
+
+    boolean existsByCourseIdAndUserId(int courseId, int userId);
 }

@@ -1,6 +1,10 @@
 package com.paq.service;
 
+import com.paq.pojo.User;
+
 public interface PermissionService {
+
+    User getCurrentUser();
 
     void requireAdmin();
 

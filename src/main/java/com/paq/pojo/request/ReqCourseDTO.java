@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.paq.utils.constant.LevelEnum;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 public class ReqCourseDTO {
@@ -27,6 +28,9 @@ public class ReqCourseDTO {
     private Boolean isPaid;
 
     private LevelEnum targetLevel;
+
+    @Positive(message = "Lecturer id phai lon hon 0")
+    private Integer lecturerId;
 
     private Set<Integer> subjectIds;
 
@@ -76,6 +80,14 @@ public class ReqCourseDTO {
 
     public void setTargetLevel(LevelEnum targetLevel) {
         this.targetLevel = targetLevel;
+    }
+
+    public Integer getLecturerId() {
+        return lecturerId;
+    }
+
+    public void setLecturerId(Integer lecturerId) {
+        this.lecturerId = lecturerId;
     }
 
     public Set<Integer> getSubjectIds() {
