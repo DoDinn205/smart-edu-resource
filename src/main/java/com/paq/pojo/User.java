@@ -4,10 +4,14 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,6 +29,8 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+
+import com.paq.utils.constant.RoleEnum;
 
 /**
  *
@@ -71,6 +77,7 @@ public class User implements Serializable {
     @NotNull
     @Size(min = 1, max = 100)
     @Column(name = "password")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     @Size(max = 255)
     @Column(name = "avatar")
@@ -81,41 +88,55 @@ public class User implements Serializable {
     private String phone;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "role")
-    private String role;
+    private RoleEnum role;
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
     @Column(name = "is_active")
     private Boolean isActive;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Student student;
     @OneToMany(mappedBy = "createdBy")
+    @JsonIgnore
     private Set<Subject> subjectSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "senderId")
+    @JsonIgnore
     private Set<ChatMessage> chatMessageSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Set<Notification> notificationSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Set<ChatParticipant> chatParticipantSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdBy")
+    @JsonIgnore
     private Set<Quiz> quizSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Set<ForumPost> forumPostSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "uploadBy")
+    @JsonIgnore
     private Set<Resource> resourceSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Set<InteractionReply> interactionReplySet;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Lecturer lecturer;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdBy")
+    @JsonIgnore
     private Set<ChatRoom> chatRoomSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "createdBy")
+    @JsonIgnore
     private Set<ForumThread> forumThreadSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @JsonIgnore
     private Set<Interaction> interactionSet;
     @OneToMany(mappedBy = "recommendedBy")
+    @JsonIgnore
     private Set<LearningPath> learningPathSet;
 
     public User() {
@@ -125,7 +146,7 @@ public class User implements Serializable {
         this.id = id;
     }
 
-    public User(Integer id, String fullName, String email, String password, String role) {
+    public User(Integer id, String fullName, String email, String password, RoleEnum role) {
         this.id = id;
         this.fullName = fullName;
         this.email = email;
@@ -189,11 +210,11 @@ public class User implements Serializable {
         this.phone = phone;
     }
 
-    public String getRole() {
+    public RoleEnum getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(RoleEnum role) {
         this.role = role;
     }
 

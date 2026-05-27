@@ -4,6 +4,7 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -63,9 +64,13 @@ public class Subject implements Serializable {
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @ManyToMany(mappedBy = "subjectSet")
+    @JsonIgnore
     private Set<Course> courseSet;
     @ManyToMany(mappedBy = "subjectSet")
+    @JsonIgnore
     private Set<Resource> resourceSet;
     @JoinColumn(name = "created_by", referencedColumnName = "id")
     @ManyToOne
@@ -121,6 +126,14 @@ public class Subject implements Serializable {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     @XmlTransient

@@ -4,6 +4,7 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -61,6 +62,8 @@ public class ForumThread implements Serializable {
     private String content;
     @Column(name = "is_lock")
     private Boolean isLock;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -68,6 +71,7 @@ public class ForumThread implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateAt;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "threadId")
+    @JsonIgnore
     private Set<ForumPost> forumPostSet;
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
@@ -118,6 +122,14 @@ public class ForumThread implements Serializable {
 
     public void setIsLock(Boolean isLock) {
         this.isLock = isLock;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     public Date getCreatedAt() {

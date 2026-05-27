@@ -4,10 +4,20 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Set;
+
+import com.paq.utils.constant.FormatEnum;
+import com.paq.utils.constant.LevelEnum;
+
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,9 +36,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Set;
 
 /**
  *
@@ -72,14 +79,14 @@ public class Resource implements Serializable {
     @Size(max = 255)
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
-    @Size(max = 20)
+    @Enumerated(EnumType.STRING)
     @Column(name = "format")
-    private String format;
+    private FormatEnum format;
     @Column(name = "file_size")
     private Integer fileSize;
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "level")
-    private String level;
+    private LevelEnum level;
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -88,6 +95,8 @@ public class Resource implements Serializable {
     private Date updateAt;
     @Column(name = "page_count")
     private Integer pageCount;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @JoinTable(name = "resource_type_map", joinColumns = {
         @JoinColumn(name = "resource_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "type_id", referencedColumnName = "id")})
@@ -109,15 +118,19 @@ public class Resource implements Serializable {
     @ManyToMany
     private Set<Topic> topicSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "resourceId")
+    @JsonIgnore
     private Set<LearningLog> learningLogSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "relatedId")
+    @JsonIgnore
     private Set<ResourceRelation> resourceRelationSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "sourceId")
+    @JsonIgnore
     private Set<ResourceRelation> resourceRelationSet1;
     @JoinColumn(name = "upload_by", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User uploadBy;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "resourceId")
+    @JsonIgnore
     private Set<Interaction> interactionSet;
 
     public Resource() {
@@ -172,11 +185,11 @@ public class Resource implements Serializable {
         this.thumbnailUrl = thumbnailUrl;
     }
 
-    public String getFormat() {
+    public FormatEnum getFormat() {
         return format;
     }
 
-    public void setFormat(String format) {
+    public void setFormat(FormatEnum format) {
         this.format = format;
     }
 
@@ -188,11 +201,11 @@ public class Resource implements Serializable {
         this.fileSize = fileSize;
     }
 
-    public String getLevel() {
+    public LevelEnum getLevel() {
         return level;
     }
 
-    public void setLevel(String level) {
+    public void setLevel(LevelEnum level) {
         this.level = level;
     }
 
@@ -218,6 +231,14 @@ public class Resource implements Serializable {
 
     public void setPageCount(Integer pageCount) {
         this.pageCount = pageCount;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     @XmlTransient

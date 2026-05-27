@@ -56,6 +56,8 @@ public class ForumPost implements Serializable {
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @JoinColumn(name = "thread_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private ForumThread threadId;
@@ -105,6 +107,14 @@ public class ForumPost implements Serializable {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     public ForumThread getThreadId() {

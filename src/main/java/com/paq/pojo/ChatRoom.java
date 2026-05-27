@@ -4,10 +4,13 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,6 +28,8 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+
+import com.paq.utils.constant.ChatRoomTypeEnum;
 
 /**
  *
@@ -47,9 +52,9 @@ public class ChatRoom implements Serializable {
     @Basic(optional = false)
     @Column(name = "id")
     private Integer id;
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "type")
-    private String type;
+    private ChatRoomTypeEnum type;
     @Size(max = 255)
     @Column(name = "name")
     private String name;
@@ -57,8 +62,10 @@ public class ChatRoom implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "roomId")
+    @JsonIgnore
     private Set<ChatMessage> chatMessageSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "roomId")
+    @JsonIgnore
     private Set<ChatParticipant> chatParticipantSet;
     @JoinColumn(name = "course_id", referencedColumnName = "id")
     @ManyToOne
@@ -82,11 +89,11 @@ public class ChatRoom implements Serializable {
         this.id = id;
     }
 
-    public String getType() {
+    public ChatRoomTypeEnum getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(ChatRoomTypeEnum type) {
         this.type = type;
     }
 

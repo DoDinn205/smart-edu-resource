@@ -4,10 +4,13 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,6 +27,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Set;
+
+import com.paq.utils.constant.QuestionTypeEnum;
 
 /**
  *
@@ -58,15 +63,19 @@ public class Question implements Serializable {
     @Size(max = 65535)
     @Column(name = "explanation")
     private String explanation;
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "type")
-    private String type;
+    private QuestionTypeEnum type;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "questionId")
+    @JsonIgnore
     private Set<AnswerOption> answerOptionSet;
     @JoinColumn(name = "quiz_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Quiz quizId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "questionId")
+    @JsonIgnore
     private Set<StudentAnswer> studentAnswerSet;
 
     public Question() {
@@ -113,12 +122,20 @@ public class Question implements Serializable {
         this.explanation = explanation;
     }
 
-    public String getType() {
+    public QuestionTypeEnum getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(QuestionTypeEnum type) {
         this.type = type;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     @XmlTransient

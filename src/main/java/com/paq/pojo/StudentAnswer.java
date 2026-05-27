@@ -4,6 +4,7 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -57,6 +58,7 @@ public class StudentAnswer implements Serializable {
     private Question questionId;
     @JoinColumn(name = "attempt_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
+    @JsonIgnore
     private QuizAttempt attemptId;
 
     public StudentAnswer() {

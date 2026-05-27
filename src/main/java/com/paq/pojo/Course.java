@@ -4,10 +4,13 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
@@ -28,6 +32,8 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+
+import com.paq.utils.constant.LevelEnum;
 
 /**
  *
@@ -69,19 +75,30 @@ public class Course implements Serializable {
     private Date endDate;
     @Column(name = "is_paid")
     private Boolean isPaid;
-    @Size(max = 50)
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+    @Enumerated(EnumType.STRING)
     @Column(name = "target_level")
-    private String targetLevel;
+    private LevelEnum targetLevel;
+    @JoinColumn(name = "created_by", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private User createdBy;
+    @JoinColumn(name = "lecturer_id", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private Lecturer lecturerId;
     @JoinTable(name = "course_subject", joinColumns = {
         @JoinColumn(name = "course_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "subject_id", referencedColumnName = "id")})
     @ManyToMany
     private Set<Subject> subjectSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "courseId")
+    @JsonIgnore
     private Set<Quiz> quizSet;
     @OneToMany(mappedBy = "courseId")
+    @JsonIgnore
     private Set<ChatRoom> chatRoomSet;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "courseId")
+    @JsonIgnore
     private Set<Enrollment> enrollmentSet;
 
     public Course() {
@@ -144,12 +161,36 @@ public class Course implements Serializable {
         this.isPaid = isPaid;
     }
 
-    public String getTargetLevel() {
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
+    public LevelEnum getTargetLevel() {
         return targetLevel;
     }
 
-    public void setTargetLevel(String targetLevel) {
+    public void setTargetLevel(LevelEnum targetLevel) {
         this.targetLevel = targetLevel;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Lecturer getLecturerId() {
+        return lecturerId;
+    }
+
+    public void setLecturerId(Lecturer lecturerId) {
+        this.lecturerId = lecturerId;
     }
 
     @XmlTransient

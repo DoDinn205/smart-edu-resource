@@ -4,10 +4,13 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,6 +29,8 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+
+import com.paq.utils.constant.TypeInteractionEnum;
 
 /**
  *
@@ -71,10 +76,13 @@ public class Interaction implements Serializable {
     private Date updatedAt;
     @Column(name = "position_x")
     private Integer positionX;
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "type")
-    private String type;
+    private TypeInteractionEnum type;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "interactionId")
+    @JsonIgnore
     private Set<InteractionReply> interactionReplySet;
     @JoinColumn(name = "resource_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
@@ -154,12 +162,20 @@ public class Interaction implements Serializable {
         this.positionX = positionX;
     }
 
-    public String getType() {
+    public TypeInteractionEnum getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(TypeInteractionEnum type) {
         this.type = type;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     @XmlTransient

@@ -23,6 +23,8 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.paq.pojo.response.ResResponse;
 
+import jakarta.persistence.NoResultException;
+
 @RestControllerAdvice
 public class GlobalException {
 
@@ -96,6 +98,11 @@ public class GlobalException {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ResResponse<Object>> handleNotFoundException(Exception ex) {
         return buildResponse(HttpStatus.NOT_FOUND, "Not Found", "URL không tồn tại");
+    }
+
+    @ExceptionHandler(NoResultException.class)
+    public ResponseEntity<ResResponse<Object>> handleNoResultException(NoResultException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, "Not Found", "Dữ liệu không tồn tại");
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

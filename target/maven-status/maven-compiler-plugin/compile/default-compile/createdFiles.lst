@@ -1,9 +1,0 @@
-com\paq\configs\ThymeleafConfigs.class
-com\paq\filters\JwtFilter.class
-com\paq\configs\WebAppContextConfigs.class
-com\paq\configs\SpringSecurityConfigs.class
-com\paq\configs\DispatcherServletInit.class
-com\paq\utils\JwtUtils.class
-com\paq\smarteduresource\resources\JakartaEE10Resource.class
-com\paq\configs\HibernateConfigs.class
-com\paq\smarteduresource\JakartaRestConfiguration.class

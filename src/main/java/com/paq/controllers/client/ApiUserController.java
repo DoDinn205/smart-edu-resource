@@ -15,10 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.paq.pojo.User;
+import com.paq.pojo.request.ReqLecturerDTO;
 import com.paq.pojo.request.ReqLoginDTO;
 import com.paq.pojo.request.ReqRegisterDTO;
+import com.paq.pojo.request.ReqStudentRegisterDTO;
+import com.paq.pojo.response.ResLecturerDTO;
 import com.paq.pojo.response.ResLoginDTO;
 import com.paq.pojo.response.ResResponse;
+import com.paq.pojo.response.ResStudentDTO;
 import com.paq.pojo.response.ResUserDTO;
 import com.paq.service.UserService;
 import com.paq.utils.DTOMapper;
@@ -48,6 +52,28 @@ public class ApiUserController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
+    @PostMapping(path = "/register/student", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResResponse<ResStudentDTO>> registerStudent(
+            @Valid @RequestBody ReqStudentRegisterDTO request) {
+        ResResponse<ResStudentDTO> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.CREATED.value());
+        res.setMessage("Đăng ký sinh viên thành công");
+        res.setData(this.userService.registerStudent(request));
+
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
+    }
+
+    @PostMapping(path = "/register/lecturer", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResResponse<ResLecturerDTO>> registerLecturer(
+            @Valid @RequestBody ReqLecturerDTO request) {
+        ResResponse<ResLecturerDTO> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.CREATED.value());
+        res.setMessage("Dang ky giang vien thanh cong, vui long cho admin duyet");
+        res.setData(this.userService.registerLecturer(request));
+
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
+    }
+
     @PostMapping("/login")
     public ResponseEntity<ResResponse<ResLoginDTO>> login(@Valid @RequestBody ReqLoginDTO req) throws Exception {
         if (!this.userService.authenticate(req.getUsername(), req.getPassword())) {
@@ -56,7 +82,8 @@ public class ApiUserController {
 
         User user = this.userService.getUserByUsername(req.getUsername());
         String accessToken = this.jwtUtils.generateToken(user.getUsername());
-        ResLoginDTO resLogin = new ResLoginDTO(accessToken, user.getId(), user.getUsername(), user.getRole());
+        String role = user.getRole() != null ? user.getRole().name() : null;
+        ResLoginDTO resLogin = new ResLoginDTO(accessToken, user.getId(), user.getUsername(), role);
 
         ResResponse<ResLoginDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());

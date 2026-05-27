@@ -4,10 +4,13 @@
  */
 package com.paq.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,6 +28,8 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+
+import com.paq.utils.constant.AttemptStatusEnum;
 
 /**
  *
@@ -57,9 +62,9 @@ public class QuizAttempt implements Serializable {
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "score")
     private Double score;
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private String status;
+    private AttemptStatusEnum status;
     @JoinColumn(name = "quiz_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Quiz quizId;
@@ -67,6 +72,7 @@ public class QuizAttempt implements Serializable {
     @ManyToOne(optional = false)
     private Student studentId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "attemptId")
+    @JsonIgnore
     private Set<StudentAnswer> studentAnswerSet;
 
     public QuizAttempt() {
@@ -108,11 +114,11 @@ public class QuizAttempt implements Serializable {
         this.score = score;
     }
 
-    public String getStatus() {
+    public AttemptStatusEnum getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(AttemptStatusEnum status) {
         this.status = status;
     }
 
@@ -165,5 +171,5 @@ public class QuizAttempt implements Serializable {
     public String toString() {
         return "com.paq.pojo.QuizAttempt[ id=" + id + " ]";
     }
-    
+
 }
