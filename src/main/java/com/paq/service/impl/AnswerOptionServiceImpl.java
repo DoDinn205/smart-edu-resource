@@ -12,7 +12,6 @@ import com.paq.utils.DTOMapper;
 import com.paq.utils.constant.QuestionTypeEnum;
 import com.paq.utils.error.IdInvalidException;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,9 +32,7 @@ public class AnswerOptionServiceImpl implements AnswerOptionService {
         Question question = this.getExistingQuestion(questionId);
         this.permissionService.requireQuizOwnerOrAdmin(question.getQuizId().getId());
 
-        return this.answerRepo.getAnswersByQuestionId(questionId).stream()
-                .map(a -> DTOMapper.toResAnswerOptionDTO(a, true))
-                .collect(Collectors.toList());
+        return this.answerRepo.getAnswersByQuestionId(questionId);
     }
 
     @Override
@@ -75,7 +72,7 @@ public class AnswerOptionServiceImpl implements AnswerOptionService {
     private Question getExistingQuestion(int questionId) {
         Question question = this.questionRepo.getQuestionById(questionId);
         if (question == null) {
-            throw new IdInvalidException("Question khong ton tai");
+            throw new IdInvalidException("Question không tồn tại");
         }
 
         return question;
@@ -84,7 +81,7 @@ public class AnswerOptionServiceImpl implements AnswerOptionService {
     private AnswerOption getExistingAnswer(int id) {
         AnswerOption answer = this.answerRepo.getAnswerById(id);
         if (answer == null) {
-            throw new IdInvalidException("Answer khong ton tai");
+            throw new IdInvalidException("Answer không tồn tại");
         }
 
         return answer;
@@ -105,7 +102,14 @@ public class AnswerOptionServiceImpl implements AnswerOptionService {
             return;
         }
 
-        for (AnswerOption answer : this.answerRepo.getAnswersByQuestionId(question.getId())) {
+        if (question.getAnswerOptionSet() == null) {
+            return;
+        }
+
+        for (AnswerOption answer : question.getAnswerOptionSet()) {
+            if (Boolean.TRUE.equals(answer.getIsDeleted())) {
+                continue;
+            }
             if (currentAnswer.getId() == null || !currentAnswer.getId().equals(answer.getId())) {
                 answer.setIsCorrect(Boolean.FALSE);
                 this.answerRepo.addOrUpdateAnswer(answer);

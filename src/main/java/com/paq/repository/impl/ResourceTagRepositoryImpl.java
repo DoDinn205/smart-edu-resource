@@ -70,7 +70,12 @@ public class ResourceTagRepositoryImpl implements ResourceTagRepository {
     @Override
     public ResourceTag getResourceTagById(int id) {
         Session session = this.factory.getObject().getCurrentSession();
-        return session.get(ResourceTag.class, id);
+        ResourceTag resourceTag = session.get(ResourceTag.class, id);
+        if (resourceTag == null || (resourceTag.getIsDeleted() != null && resourceTag.getIsDeleted() == true)) {
+            return null;
+        }
+
+        return resourceTag;
     }
 
     @Override
@@ -79,7 +84,12 @@ public class ResourceTagRepositoryImpl implements ResourceTagRepository {
             Session session = this.factory.getObject().getCurrentSession();
             Query<ResourceTag> q = session.createNamedQuery("ResourceTag.findByName", ResourceTag.class);
             q.setParameter("name", name);
-            return q.getSingleResult();
+            ResourceTag resourceTag = q.getSingleResult();
+            if (resourceTag.getIsDeleted() != null && resourceTag.getIsDeleted() == true) {
+                return null;
+            }
+
+            return resourceTag;
         } catch (NoResultException ex) {
             return null;
         }

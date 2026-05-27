@@ -10,6 +10,15 @@ public class ResAnswerOptionDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean isCorrect;
 
+    public ResAnswerOptionDTO() {
+    }
+
+    public ResAnswerOptionDTO(Integer id, String content, Boolean isCorrect) {
+        this.id = id;
+        this.content = content;
+        this.isCorrect = isCorrect;
+    }
+
     public Integer getId() {
         return id;
     }

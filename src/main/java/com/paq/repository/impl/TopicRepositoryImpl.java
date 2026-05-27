@@ -70,7 +70,12 @@ public class TopicRepositoryImpl implements TopicRepository {
     @Override
     public Topic getTopicById(int id) {
         Session session = this.factory.getObject().getCurrentSession();
-        return session.get(Topic.class, id);
+        Topic topic = session.get(Topic.class, id);
+        if (topic == null || (topic.getIsDeleted() != null && topic.getIsDeleted() == true)) {
+            return null;
+        }
+
+        return topic;
     }
 
     @Override
@@ -79,7 +84,12 @@ public class TopicRepositoryImpl implements TopicRepository {
             Session session = this.factory.getObject().getCurrentSession();
             Query<Topic> q = session.createNamedQuery("Topic.findByName", Topic.class);
             q.setParameter("name", name);
-            return q.getSingleResult();
+            Topic topic = q.getSingleResult();
+            if (topic.getIsDeleted() != null && topic.getIsDeleted() == true) {
+                return null;
+            }
+
+            return topic;
         } catch (NoResultException ex) {
             return null;
         }

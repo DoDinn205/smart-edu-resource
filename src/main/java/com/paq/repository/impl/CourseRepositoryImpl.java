@@ -1,19 +1,9 @@
 package com.paq.repository.impl;
 
-import com.paq.pojo.Course;
-import com.paq.pojo.Subject;
-import com.paq.repository.CourseRepository;
-import com.paq.utils.constant.LevelEnum;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +12,19 @@ import org.springframework.core.env.Environment;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.paq.pojo.Course;
+import com.paq.pojo.Subject;
+import com.paq.repository.CourseRepository;
+import com.paq.utils.constant.LevelEnum;
+
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 @Repository
 @PropertySource("classpath:configs.properties")
@@ -128,16 +131,14 @@ public class CourseRepositoryImpl implements CourseRepository {
     public Course getCourseByName(String name) {
         try {
             Session session = this.factory.getObject().getCurrentSession();
-            Query<Course> q = session.createQuery(
-                    "SELECT c FROM Course c "
-                    + "LEFT JOIN FETCH c.createdBy "
-                    + "LEFT JOIN FETCH c.lecturerId l "
-                    + "LEFT JOIN FETCH l.userId "
-                    + "WHERE c.name = :name "
-                    + "AND (c.isDeleted = false OR c.isDeleted IS NULL)",
-                    Course.class);
+            Query<Course> q = session.createNamedQuery("Course.findByName", Course.class);
             q.setParameter("name", name);
-            return q.getSingleResult();
+            Course course = q.getSingleResult();
+            if (course.getIsDeleted() != null && course.getIsDeleted() == true) {
+                return null;
+            }
+
+            return course;
         } catch (NoResultException ex) {
             return null;
         }

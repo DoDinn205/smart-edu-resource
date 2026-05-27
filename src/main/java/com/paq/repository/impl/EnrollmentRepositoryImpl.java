@@ -75,10 +75,11 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
             Session session = this.factory.getObject().getCurrentSession();
             Query<Enrollment> q = session.createQuery(
                     "SELECT e FROM Enrollment e "
-                    + "JOIN FETCH e.courseId "
+                    + "JOIN FETCH e.courseId c "
                     + "JOIN FETCH e.studentId s "
                     + "JOIN FETCH s.userId "
-                    + "WHERE e.id = :id",
+                    + "WHERE e.id = :id "
+                    + "AND (c.isDeleted = false OR c.isDeleted IS NULL)",
                     Enrollment.class);
             q.setParameter("id", id);
             return q.getSingleResult();

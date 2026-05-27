@@ -24,9 +24,11 @@ public class PaymentRepositoryImpl implements PaymentRepository {
             Query<Payment> q = session.createQuery(
                     "SELECT p FROM Payment p "
                     + "JOIN FETCH p.enrollmentId e "
+                    + "JOIN FETCH e.courseId c "
                     + "JOIN FETCH e.studentId s "
                     + "JOIN FETCH s.userId "
-                    + "WHERE p.id = :id",
+                    + "WHERE p.id = :id "
+                    + "AND (c.isDeleted = false OR c.isDeleted IS NULL)",
                     Payment.class);
             q.setParameter("id", id);
             return q.getSingleResult();

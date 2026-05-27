@@ -3,6 +3,7 @@ package com.paq.utils;
 import com.paq.pojo.Course;
 import com.paq.pojo.Enrollment;
 import com.paq.pojo.AnswerOption;
+import com.paq.pojo.Lecturer;
 import com.paq.pojo.Question;
 import com.paq.pojo.Quiz;
 import com.paq.pojo.QuizAttempt;
@@ -24,6 +25,8 @@ import com.paq.pojo.response.ResQuestionDTO;
 import com.paq.pojo.response.ResQuizAttemptDTO;
 import com.paq.pojo.response.ResQuizDTO;
 import com.paq.pojo.response.ResResourceDTO;
+import com.paq.pojo.response.ResLecturerDTO;
+import com.paq.pojo.response.ResStudentDTO;
 import com.paq.pojo.response.ResStudentAnswerResultDTO;
 import com.paq.pojo.response.ResSubjectDTO;
 import com.paq.pojo.response.ResUserDTO;
@@ -45,6 +48,50 @@ public class DTOMapper {
         dto.setAvatar(user.getAvatar());
         dto.setPhone(user.getPhone());
         dto.setRole(user.getRole() != null ? user.getRole().name() : null);
+        dto.setIsActive(user.getIsActive());
+        if (user.getStudent() != null) {
+            dto.setStudentId(user.getStudent().getId());
+        }
+        if (user.getLecturer() != null) {
+            dto.setLecturerId(user.getLecturer().getId());
+            dto.setLecturerApproved(user.getLecturer().getIsApprove());
+        }
+
+        return dto;
+    }
+
+    public static ResStudentDTO toResStudentDTO(Student student) {
+        if (student == null) {
+            return null;
+        }
+
+        ResStudentDTO dto = new ResStudentDTO();
+        dto.setId(student.getId());
+        dto.setStudentCode(student.getStudentCode());
+        dto.setDob(student.getDob());
+        dto.setGender(student.getGender());
+        dto.setExperienceLevel(student.getExperienceLevel() != null ? student.getExperienceLevel().name() : null);
+        dto.setEducationLevel(student.getEducationLevel() != null ? student.getEducationLevel().name() : null);
+        dto.setLearningGoal(student.getLearningGoal());
+        dto.setUser(toResUserDTO(student.getUserId()));
+
+        return dto;
+    }
+
+    public static ResLecturerDTO toResLecturerDTO(Lecturer lecturer) {
+        if (lecturer == null) {
+            return null;
+        }
+
+        ResLecturerDTO dto = new ResLecturerDTO();
+        dto.setId(lecturer.getId());
+        dto.setDegree(lecturer.getDegree() != null ? lecturer.getDegree().name() : null);
+        dto.setCertificateUrl(lecturer.getCertificateUrl());
+        dto.setSpecialization(lecturer.getSpecialization());
+        dto.setBio(lecturer.getBio());
+        dto.setIsApprove(lecturer.getIsApprove());
+        dto.setApproveAt(lecturer.getApproveAt());
+        dto.setUser(toResUserDTO(lecturer.getUserId()));
 
         return dto;
     }

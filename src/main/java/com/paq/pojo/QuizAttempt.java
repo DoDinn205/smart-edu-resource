@@ -171,5 +171,5 @@ public class QuizAttempt implements Serializable {
     public String toString() {
         return "com.paq.pojo.QuizAttempt[ id=" + id + " ]";
     }
-    
+
 }

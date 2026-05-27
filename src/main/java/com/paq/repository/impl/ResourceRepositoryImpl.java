@@ -147,13 +147,14 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     public Resource getResourceByTitle(String title) {
         try {
             Session session = this.factory.getObject().getCurrentSession();
-            Query<Resource> q = session.createQuery(
-                    "SELECT r FROM Resource r "
-                    + "WHERE r.title = :title "
-                    + "AND (r.isDeleted = false OR r.isDeleted IS NULL)",
-                    Resource.class);
+            Query<Resource> q = session.createNamedQuery("Resource.findByTitle", Resource.class);
             q.setParameter("title", title);
-            return q.getSingleResult();
+            Resource resource = q.getSingleResult();
+            if (resource.getIsDeleted() != null && resource.getIsDeleted() == true) {
+                return null;
+            }
+
+            return resource;
         } catch (NoResultException ex) {
             return null;
         }

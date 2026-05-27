@@ -1,11 +1,12 @@
 package com.paq.repository;
 
 import com.paq.pojo.AnswerOption;
+import com.paq.pojo.response.ResAnswerOptionDTO;
 import java.util.List;
 
 public interface AnswerOptionRepository {
 
-    List<AnswerOption> getAnswersByQuestionId(int questionId);
+    List<ResAnswerOptionDTO> getAnswersByQuestionId(int questionId);
 
     AnswerOption getAnswerById(int id);
 

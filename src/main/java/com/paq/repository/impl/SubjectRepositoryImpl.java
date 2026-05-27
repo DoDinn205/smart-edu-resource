@@ -72,7 +72,12 @@ public class SubjectRepositoryImpl implements SubjectRepository {
     @Override
     public Subject getSubjectById(int id) {
         Session session = this.factory.getObject().getCurrentSession();
-        return session.get(Subject.class, id);
+        Subject subject = session.get(Subject.class, id);
+        if (subject == null || (subject.getIsDeleted() != null && subject.getIsDeleted() == true)) {
+            return null;
+        }
+
+        return subject;
     }
 
     @Override
@@ -81,7 +86,12 @@ public class SubjectRepositoryImpl implements SubjectRepository {
             Session session = this.factory.getObject().getCurrentSession();
             Query<Subject> q = session.createNamedQuery("Subject.findByName", Subject.class);
             q.setParameter("name", name);
-            return q.getSingleResult();
+            Subject subject = q.getSingleResult();
+            if (subject.getIsDeleted() != null && subject.getIsDeleted() == true) {
+                return null;
+            }
+
+            return subject;
         } catch (NoResultException ex) {
             return null;
         }
@@ -93,7 +103,12 @@ public class SubjectRepositoryImpl implements SubjectRepository {
             Session session = this.factory.getObject().getCurrentSession();
             Query<Subject> q = session.createNamedQuery("Subject.findByCode", Subject.class);
             q.setParameter("code", code);
-            return q.getSingleResult();
+            Subject subject = q.getSingleResult();
+            if (subject.getIsDeleted() != null && subject.getIsDeleted() == true) {
+                return null;
+            }
+
+            return subject;
         } catch (NoResultException ex) {
             return null;
         }

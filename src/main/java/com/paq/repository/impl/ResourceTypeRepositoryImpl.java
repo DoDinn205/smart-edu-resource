@@ -70,7 +70,12 @@ public class ResourceTypeRepositoryImpl implements ResourceTypeRepository {
     @Override
     public ResourceType getResourceTypeById(int id) {
         Session session = this.factory.getObject().getCurrentSession();
-        return session.get(ResourceType.class, id);
+        ResourceType resourceType = session.get(ResourceType.class, id);
+        if (resourceType == null || (resourceType.getIsDeleted() != null && resourceType.getIsDeleted() == true)) {
+            return null;
+        }
+
+        return resourceType;
     }
 
     @Override
@@ -79,7 +84,12 @@ public class ResourceTypeRepositoryImpl implements ResourceTypeRepository {
             Session session = this.factory.getObject().getCurrentSession();
             Query<ResourceType> q = session.createNamedQuery("ResourceType.findByName", ResourceType.class);
             q.setParameter("name", name);
-            return q.getSingleResult();
+            ResourceType resourceType = q.getSingleResult();
+            if (resourceType.getIsDeleted() != null && resourceType.getIsDeleted() == true) {
+                return null;
+            }
+
+            return resourceType;
         } catch (NoResultException ex) {
             return null;
         }

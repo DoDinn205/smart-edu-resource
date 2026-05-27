@@ -1,13 +1,15 @@
 package com.paq.repository.impl;
 
-import com.paq.repository.DashboardRepository;
-import com.paq.utils.constant.PaymentStatusEnum;
-import com.paq.utils.constant.RoleEnum;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.paq.repository.DashboardRepository;
+import com.paq.utils.constant.PaymentStatusEnum;
+import com.paq.utils.constant.RoleEnum;
 
 @Repository
 @Transactional
@@ -34,12 +36,14 @@ public class DashboardRepositoryImpl implements DashboardRepository {
 
     @Override
     public long countStudents() {
-        return this.count("SELECT COUNT(s.id) FROM Student s");
+        return this.count("SELECT COUNT(s.id) FROM Student s JOIN s.userId u "
+                + "WHERE u.isActive = true OR u.isActive IS NULL");
     }
 
     @Override
     public long countLecturers() {
-        return this.count("SELECT COUNT(l.id) FROM Lecturer l");
+        return this.count("SELECT COUNT(l.id) FROM Lecturer l JOIN l.userId u "
+                + "WHERE u.isActive = true OR u.isActive IS NULL");
     }
 
     @Override
@@ -59,34 +63,46 @@ public class DashboardRepositoryImpl implements DashboardRepository {
 
     @Override
     public long countEnrollments() {
-        return this.count("SELECT COUNT(e.id) FROM Enrollment e");
+        return this.count("SELECT COUNT(e.id) FROM Enrollment e JOIN e.courseId c "
+                + "WHERE c.isDeleted = false OR c.isDeleted IS NULL");
     }
 
     @Override
     public long countQuizAttempts() {
-        return this.count("SELECT COUNT(qa.id) FROM QuizAttempt qa");
+        return this.count("SELECT COUNT(qa.id) FROM QuizAttempt qa JOIN qa.quizId q JOIN q.courseId c "
+                + "WHERE (q.isDeleted = false OR q.isDeleted IS NULL) "
+                + "AND (c.isDeleted = false OR c.isDeleted IS NULL)");
     }
 
     @Override
     public double getAverageLearningProgress() {
-        return this.safeDouble(this.aggregateDouble("SELECT AVG(e.overallProgress) FROM Enrollment e"));
+        return this.safeDouble(this.aggregateDouble(
+                "SELECT AVG(e.overallProgress) FROM Enrollment e JOIN e.courseId c "
+                + "WHERE c.isDeleted = false OR c.isDeleted IS NULL"));
     }
 
     @Override
     public long getTotalStudyTime() {
-        return this.safeLong(this.aggregateLong("SELECT SUM(e.totalStudyTime) FROM Enrollment e"));
+        return this.safeLong(this.aggregateLong(
+                "SELECT SUM(e.totalStudyTime) FROM Enrollment e JOIN e.courseId c "
+                + "WHERE c.isDeleted = false OR c.isDeleted IS NULL"));
     }
 
     @Override
     public double getAverageQuizScore() {
-        return this.safeDouble(this.aggregateDouble("SELECT AVG(qa.score) FROM QuizAttempt qa"));
+        return this.safeDouble(this.aggregateDouble(
+                "SELECT AVG(qa.score) FROM QuizAttempt qa JOIN qa.quizId q JOIN q.courseId c "
+                + "WHERE (q.isDeleted = false OR q.isDeleted IS NULL) "
+                + "AND (c.isDeleted = false OR c.isDeleted IS NULL)"));
     }
 
     @Override
     public long getTotalRevenue() {
         Session session = this.factory.getObject().getCurrentSession();
         Long result = session.createQuery(
-                "SELECT SUM(p.amount) FROM Payment p WHERE p.status = :status",
+                "SELECT SUM(p.amount) FROM Payment p JOIN p.enrollmentId e JOIN e.courseId c "
+                + "WHERE p.status = :status "
+                + "AND (c.isDeleted = false OR c.isDeleted IS NULL)",
                 Long.class)
                 .setParameter("status", PaymentStatusEnum.SUCCESS)
                 .getSingleResult();
@@ -97,7 +113,9 @@ public class DashboardRepositoryImpl implements DashboardRepository {
     public long countPaymentsByStatus(PaymentStatusEnum status) {
         Session session = this.factory.getObject().getCurrentSession();
         Long result = session.createQuery(
-                "SELECT COUNT(p.id) FROM Payment p WHERE p.status = :status",
+                "SELECT COUNT(p.id) FROM Payment p JOIN p.enrollmentId e JOIN e.courseId c "
+                + "WHERE p.status = :status "
+                + "AND (c.isDeleted = false OR c.isDeleted IS NULL)",
                 Long.class)
                 .setParameter("status", status)
                 .getSingleResult();
@@ -116,7 +134,9 @@ public class DashboardRepositoryImpl implements DashboardRepository {
     public long countLecturerStudents(int userId) {
         return this.countByUser(
                 "SELECT COUNT(DISTINCT e.studentId.id) FROM Enrollment e "
-                + "JOIN e.courseId c WHERE " + this.lecturerCoursePredicate("c"),
+                + "JOIN e.courseId c JOIN e.studentId s JOIN s.userId u WHERE "
+                + this.lecturerCoursePredicate("c")
+                + " AND (u.isActive = true OR u.isActive IS NULL)",
                 userId);
     }
 
@@ -204,17 +224,21 @@ public class DashboardRepositoryImpl implements DashboardRepository {
 
     private long count(String hql) {
         Session session = this.factory.getObject().getCurrentSession();
-        return this.safeLong(session.createQuery(hql, Long.class).getSingleResult());
+        Query<Long> q = session.createQuery(hql, Long.class);
+        Long result = q.getSingleResult();
+        return this.safeLong(result);
     }
 
     private Double aggregateDouble(String hql) {
         Session session = this.factory.getObject().getCurrentSession();
-        return session.createQuery(hql, Double.class).getSingleResult();
+        Query<Double> q = session.createQuery(hql, Double.class);
+        return q.getSingleResult();
     }
 
     private Long aggregateLong(String hql) {
         Session session = this.factory.getObject().getCurrentSession();
-        return session.createQuery(hql, Long.class).getSingleResult();
+        Query<Long> q = session.createQuery(hql, Long.class);
+        return q.getSingleResult();
     }
 
     private long countByUser(String hql, int userId) {

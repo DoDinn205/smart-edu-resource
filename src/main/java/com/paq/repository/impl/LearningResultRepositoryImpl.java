@@ -1,19 +1,9 @@
 package com.paq.repository.impl;
 
-import com.paq.pojo.Enrollment;
-import com.paq.pojo.QuizAttempt;
-import com.paq.pojo.Student;
-import com.paq.repository.LearningResultRepository;
-import com.paq.utils.constant.AttemptStatusEnum;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +12,19 @@ import org.springframework.core.env.Environment;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.paq.pojo.Enrollment;
+import com.paq.pojo.QuizAttempt;
+import com.paq.pojo.Student;
+import com.paq.repository.LearningResultRepository;
+import com.paq.utils.constant.AttemptStatusEnum;
+
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 @Repository
 @PropertySource("classpath:configs.properties")
@@ -91,14 +94,16 @@ public class LearningResultRepositoryImpl implements LearningResultRepository {
             Query<QuizAttempt> q = session.createQuery(
                     "SELECT DISTINCT qa FROM QuizAttempt qa "
                     + "JOIN FETCH qa.quizId qz "
-                    + "JOIN FETCH qz.courseId "
+                    + "JOIN FETCH qz.courseId c "
                     + "JOIN FETCH qa.studentId s "
                     + "JOIN FETCH s.userId "
                     + "LEFT JOIN FETCH qa.studentAnswerSet sa "
                     + "LEFT JOIN FETCH sa.questionId ques "
-                    + "LEFT JOIN FETCH ques.answerOptionSet "
-                    + "LEFT JOIN FETCH sa.optionId "
-                    + "WHERE qa.id = :id",
+                    + "LEFT JOIN FETCH ques.answerOptionSet ao "
+                    + "LEFT JOIN FETCH sa.optionId selectedOption "
+                    + "WHERE qa.id = :id "
+                    + "AND (qz.isDeleted = false OR qz.isDeleted IS NULL) "
+                    + "AND (c.isDeleted = false OR c.isDeleted IS NULL)",
                     QuizAttempt.class);
             q.setParameter("id", id);
             return q.getSingleResult();

@@ -87,12 +87,13 @@ public class QuizRepositoryImpl implements QuizRepository {
             Session session = this.factory.getObject().getCurrentSession();
             Query<Quiz> q = session.createQuery(
                     "SELECT DISTINCT qz FROM Quiz qz "
-                    + "JOIN FETCH qz.courseId "
+                    + "JOIN FETCH qz.courseId c "
                     + "JOIN FETCH qz.createdBy "
                     + "LEFT JOIN FETCH qz.questionSet qs "
                     + "LEFT JOIN FETCH qs.answerOptionSet "
                     + "WHERE qz.id = :id "
-                    + "AND (qz.isDeleted = false OR qz.isDeleted IS NULL)",
+                    + "AND (qz.isDeleted = false OR qz.isDeleted IS NULL) "
+                    + "AND (c.isDeleted = false OR c.isDeleted IS NULL)",
                     Quiz.class);
             q.setParameter("id", id);
             return q.getSingleResult();

@@ -9,6 +9,10 @@ public class ResUserDTO {
     private String avatar;
     private String phone;
     private String role;
+    private Boolean isActive;
+    private Integer studentId;
+    private Integer lecturerId;
+    private Boolean lecturerApproved;
 
     public Integer getId() {
         return id;
@@ -64,5 +68,37 @@ public class ResUserDTO {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public Integer getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(Integer studentId) {
+        this.studentId = studentId;
+    }
+
+    public Integer getLecturerId() {
+        return lecturerId;
+    }
+
+    public void setLecturerId(Integer lecturerId) {
+        this.lecturerId = lecturerId;
+    }
+
+    public Boolean getLecturerApproved() {
+        return lecturerApproved;
+    }
+
+    public void setLecturerApproved(Boolean lecturerApproved) {
+        this.lecturerApproved = lecturerApproved;
     }
 }
