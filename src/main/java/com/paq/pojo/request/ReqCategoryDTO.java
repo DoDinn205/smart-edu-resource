@@ -5,8 +5,8 @@ import jakarta.validation.constraints.Size;
 
 public class ReqCategoryDTO {
 
-    @NotBlank(message = "Name khong duoc de trong")
-    @Size(max = 100, message = "Name toi da 100 ky tu")
+    @NotBlank(message = "Name không được để trống")
+    @Size(max = 100, message = "Name tối đa 100 ký tự")
     private String name;
 
     public String getName() {

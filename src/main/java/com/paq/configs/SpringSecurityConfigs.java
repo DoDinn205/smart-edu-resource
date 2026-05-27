@@ -4,10 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -19,6 +20,7 @@ import com.cloudinary.utils.ObjectUtils;
 @Configuration
 @EnableWebSecurity
 @EnableTransactionManagement
+@PropertySource(value = "classpath:cloudinary.properties")
 @ComponentScan(
         basePackages = {
             "com.paq.controllers",
@@ -31,7 +33,7 @@ import com.cloudinary.utils.ObjectUtils;
 public class SpringSecurityConfigs {
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private Environment env;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -68,10 +70,19 @@ public class SpringSecurityConfigs {
     @Bean
     public Cloudinary cloudinary() {
         return new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", "dxxwcby8l",
-                "api_key", "792844686918347",
-                "api_secret", "T8ys_Z9zaKSqmKWa4K1RY6DXUJg",
+                "cloud_name", this.getRequiredProperty("cloudinary.cloud_name"),
+                "api_key", this.getRequiredProperty("cloudinary.api_key"),
+                "api_secret", this.getRequiredProperty("cloudinary.api_secret"),
                 "secure", true));
+    }
+
+    private String getRequiredProperty(String key) {
+        String value = this.env.getProperty(key);
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException("Missing required config: " + key);
+        }
+
+        return value;
     }
 
     // @Bean

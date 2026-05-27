@@ -28,6 +28,7 @@ import com.paq.pojo.request.ReqLecturerApprovalDTO;
 import com.paq.pojo.request.ReqLecturerDTO;
 import com.paq.pojo.request.ReqRegisterDTO;
 import com.paq.pojo.request.ReqStudentDTO;
+import com.paq.pojo.request.ReqStudentRegisterDTO;
 import com.paq.pojo.request.ReqUserStatusDTO;
 import com.paq.pojo.response.ResLecturerDTO;
 import com.paq.pojo.response.ResStudentDTO;
@@ -112,6 +113,49 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public ResStudentDTO registerStudent(ReqStudentRegisterDTO request) {
+        this.validateUniqueUser(request.getUsername(), request.getEmail(), null);
+
+        User user = this.buildBaseUser(request.getFullName(), request.getUsername(), request.getEmail(),
+                request.getPhone(), request.getPassword(), RoleEnum.STUDENT);
+        this.userRepo.addUser(user);
+
+        Student student = new Student();
+        student.setUserId(user);
+        student.setStudentCode(request.getStudentCode());
+        student.setDob(request.getDob());
+        student.setGender(request.getGender());
+        student.setExperienceLevel(request.getExperienceLevel());
+        student.setEducationLevel(request.getEducationLevel());
+        student.setLearningGoal(request.getLearningGoal());
+
+        return DTOMapper.toResStudentDTO(this.userRepo.addOrUpdateStudent(student));
+    }
+
+    @Override
+    public ResLecturerDTO registerLecturer(ReqLecturerDTO request) {
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new IllegalArgumentException("Mật khẩu là bắt buộc khi đăng ký giảng viên");
+        }
+        this.validateUniqueUser(request.getUsername(), request.getEmail(), null);
+
+        User user = this.buildBaseUser(request.getFullName(), request.getUsername(), request.getEmail(),
+                request.getPhone(), request.getPassword(), RoleEnum.LECTURER);
+        this.userRepo.addUser(user);
+
+        Lecturer lecturer = new Lecturer();
+        lecturer.setUserId(user);
+        lecturer.setDegree(request.getDegree());
+        lecturer.setCertificateUrl(request.getCertificateUrl());
+        lecturer.setSpecialization(request.getSpecialization());
+        lecturer.setBio(request.getBio());
+        lecturer.setIsApprove(Boolean.FALSE);
+        lecturer.setApproveAt(null);
+
+        return DTOMapper.toResLecturerDTO(this.userRepo.addOrUpdateLecturer(lecturer));
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = this.userRepo.getUserByUsername(username);
         if (user == null) {
@@ -163,7 +207,7 @@ public class UserServiceImpl implements UserService {
     public ResStudentDTO createStudent(ReqStudentDTO request) {
         this.permissionService.requireAdmin();
         if (request.getPassword() == null || request.getPassword().isBlank()) {
-            throw new IllegalArgumentException("Mat khau la bat buoc khi tao sinh vien");
+            throw new IllegalArgumentException("Mật khẩu là bắt buộc khi tạo sinh viên");
         }
 
         this.validateUniqueUser(request.getUsername(), request.getEmail(), null);

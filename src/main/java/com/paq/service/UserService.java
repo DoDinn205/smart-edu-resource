@@ -5,6 +5,7 @@ import com.paq.pojo.request.ReqLecturerApprovalDTO;
 import com.paq.pojo.request.ReqLecturerDTO;
 import com.paq.pojo.request.ReqRegisterDTO;
 import com.paq.pojo.request.ReqStudentDTO;
+import com.paq.pojo.request.ReqStudentRegisterDTO;
 import com.paq.pojo.request.ReqUserStatusDTO;
 import com.paq.pojo.response.ResLecturerDTO;
 import com.paq.pojo.response.ResStudentDTO;
@@ -22,6 +23,10 @@ public interface UserService extends UserDetailsService {
     User getUserByUsername(String username);
 
     User addUser(ReqRegisterDTO req);
+
+    ResStudentDTO registerStudent(ReqStudentRegisterDTO request);
+
+    ResLecturerDTO registerLecturer(ReqLecturerDTO request);
 
     boolean authenticate(String username, String password);
 

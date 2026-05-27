@@ -5,10 +5,10 @@ import jakarta.validation.constraints.NotNull;
 
 public class ReqAnswerOptionDTO {
 
-    @NotBlank(message = "Content khong duoc de trong")
+    @NotBlank(message = "Content không được để trống")
     private String content;
 
-    @NotNull(message = "Is correct khong duoc de trong")
+    @NotNull(message = "Is correct không được để trống")
     private Boolean isCorrect;
 
     public String getContent() {
