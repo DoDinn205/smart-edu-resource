@@ -4,31 +4,23 @@
  */
 package com.paq.controllers.client;
 
-import com.paq.pojo.Course;
-import com.paq.pojo.Enrollment;
+import com.paq.pojo.response.ResCourseDTO;
+import com.paq.pojo.response.ResEnrollmentDTO;
+import com.paq.pojo.response.ResResponse;
 import com.paq.service.StudentCourseService;
 import java.security.Principal;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  *
  * @author Admin
  */
 @RestController
-@RequestMapping("api")
+@RequestMapping("/api")
 @CrossOrigin
 public class ApiStudentCourseController {
 
@@ -36,82 +28,50 @@ public class ApiStudentCourseController {
     private StudentCourseService studentCourseService;
 
     @GetMapping("/student/courses")
-    public ResponseEntity<?> getCourses() {
-        return ResponseEntity.ok(this.studentCourseService.getCourses()
-                .stream()
-                .map(c -> courseToMap(c))
-                .collect(Collectors.toList()));
-
+    public ResponseEntity<ResResponse<List<ResCourseDTO>>> getCourses(){
+        ResResponse<List<ResCourseDTO>>res=new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Get courses successfully");
+        res.setData(this.studentCourseService.getCourses());
+        
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/student/courses/{id}")
-    public ResponseEntity<?> getCourseDetail(@PathVariable(value = "id") int id) {
-        Course c = this.studentCourseService.getCourseById(id);
+    public ResponseEntity<ResResponse<ResCourseDTO>> getCourseDetail(
+            @PathVariable(value = "id") int id) {
+        
+        ResResponse<ResCourseDTO>res=new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Get course detail successfully");
+        res.setData(this.studentCourseService.getCourseById(id));
 
-        if (c == null) {
-            return ResponseEntity.notFound().build();
-        }
 
-        return ResponseEntity.ok(courseToMap(c));
+        return ResponseEntity.ok(res);
     }
 
     @PostMapping("/secure/student/courses/{id}/enroll")
-    public ResponseEntity<?> enrollCourse(
+    public ResponseEntity<ResResponse<ResEnrollmentDTO>> enrollCourse(
             @PathVariable(value = "id") int id,
             Principal principal) {
-        try {
-            Enrollment e = this.studentCourseService.enrollCourse(principal.getName(), id);
-            return ResponseEntity.ok(enrollmentToMap(e));
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
+        
+        ResResponse<ResEnrollmentDTO> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Enroll course successfully");
+        res.setData(this.studentCourseService.enrollCourse(principal.getName(), id));
+
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/secure/student/my-courses")
-    public ResponseEntity<?> getMyCourses(Principal principal) {
-        try {
-            return ResponseEntity.ok(
-                    this.studentCourseService.getMyCourses(principal.getName())
-                            .stream()
-                            .map(e -> enrollmentToMap(e))
-                            .collect(Collectors.toList())
-            );
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
-    }
+    public ResponseEntity<ResResponse<List<ResEnrollmentDTO>>> getMyCourses(
+            Principal principal) {
+        
+        ResResponse<List<ResEnrollmentDTO>> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Get my courses successfully");
+        res.setData(this.studentCourseService.getMyCourses(principal.getName()));
 
-    private Map<String, Object> courseToMap(Course c) {
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-
-        Map<String, Object> m = new HashMap<>();
-        m.put("id", c.getId());
-        m.put("name", c.getName());
-        m.put("description", c.getDescription());
-        m.put("startDate", c.getStartDate() != null ? f.format(c.getStartDate()) : null);
-        m.put("endDate", c.getEndDate() != null ? f.format(c.getEndDate()) : null);
-        m.put("isPaid", c.getIsPaid());
-        m.put("targetLevel", c.getTargetLevel());
-        return m;
-    }
-
-    private Map<String, Object> enrollmentToMap(Enrollment e) {
-        Map<String, Object> m = new HashMap<>();
-        m.put("id", e.getId());
-        m.put("status", e.getStatus());
-        m.put("enrollDate", e.getEnrollDate() != null ? formatDate(e.getEnrollDate()) : null);
-        m.put("overallProgress", e.getOverallProgress());
-        m.put("totalStudyTime", e.getTotalStudyTime());
-
-        if (e.getCourseId() != null) {
-            m.put("course", courseToMap(e.getCourseId()));
-        }
-
-        return m;
-    }
-
-    private String formatDate(Date d) {
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return f.format(d);
+        return ResponseEntity.ok(res);
     }
 }

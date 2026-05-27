@@ -88,6 +88,9 @@ public class Resource implements Serializable {
     private Date updateAt;
     @Column(name = "page_count")
     private Integer pageCount;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
+
     @JoinTable(name = "resource_type_map", joinColumns = {
         @JoinColumn(name = "resource_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "type_id", referencedColumnName = "id")})
@@ -220,6 +223,14 @@ public class Resource implements Serializable {
         this.pageCount = pageCount;
     }
 
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
     @XmlTransient
     public Set<ResourceType> getResourceTypeSet() {
         return resourceTypeSet;
@@ -328,5 +339,5 @@ public class Resource implements Serializable {
     public Object getCreatedDate() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
-    
+
 }

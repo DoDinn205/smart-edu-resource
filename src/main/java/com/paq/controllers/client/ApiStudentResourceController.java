@@ -4,20 +4,15 @@
  */
 package com.paq.controllers.client;
 
-import com.paq.pojo.Resource;
+import com.paq.pojo.response.ResResourceDTO;
+import com.paq.pojo.response.ResResponse;
 import com.paq.service.StudentResourceService;
-import java.text.SimpleDateFormat;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  *
@@ -32,52 +27,39 @@ public class ApiStudentResourceController {
     private StudentResourceService resourceService;
 
     @GetMapping("/resources")
-    public ResponseEntity<?> getResources(
+    public ResponseEntity<ResResponse<List<ResResourceDTO>>> getResources(
             @RequestParam Map<String, String> params) {
 
-        return ResponseEntity.ok(
-                this.resourceService.getResources(params)
-                        .stream()
-                        .map(r -> resourceToMap(r))
-                        .collect(Collectors.toList())
-        );
+        ResResponse<List<ResResourceDTO>> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Get resources successfully");
+        res.setData(this.resourceService.getResources(params));
+
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/resources/{id}")
-    public ResponseEntity<?> getResourceDetail(
+    public ResponseEntity<ResResponse<ResResourceDTO>> getResourceDetail(
             @PathVariable(value = "id") int id) {
 
-        Resource r = this.resourceService.getResourceById(id);
+        ResResponse<ResResourceDTO> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Get resource detail successfully");
+        res.setData(this.resourceService.getResourceById(id));
 
-        if (r == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(resourceToMap(r));
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/resources/{id}/related")
-    public ResponseEntity<?> getRelatedResources(
+    public ResponseEntity<ResResponse<List<ResResourceDTO>>> getRelatedResources(
             @PathVariable(value = "id") int id) {
 
-        return ResponseEntity.ok(
-                this.resourceService.getRelatedResources(id)
-                        .stream()
-                        .map(r -> resourceToMap(r))
-                        .collect(Collectors.toList())
-        );
+        ResResponse<List<ResResourceDTO>> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Get related resources successfully");
+        res.setData(this.resourceService.getRelatedResources(id));
+
+        return ResponseEntity.ok(res);
     }
 
-    private Map<String, Object> resourceToMap(Resource r) {
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-
-        Map<String, Object> m = new HashMap<>();
-        m.put("id", r.getId());
-        m.put("title", r.getTitle());
-        m.put("description", r.getDescription());
-        m.put("level", r.getLevel());
-        
-
-        return m;
-    }
 }

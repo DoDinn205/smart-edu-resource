@@ -61,12 +61,14 @@ public class Quiz implements Serializable {
     private String description;
     @Column(name = "duration_minutes")
     private Integer durationMinutes;
-    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
+    // @Max(value=?)  @Min(value=?)
     @Column(name = "total_score")
     private Double totalScore;
     @Column(name = "created_at")
-    @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
+    @Temporal(TemporalType.TIMESTAMP)
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "quizId")
     private Set<QuizAttempt> quizAttemptSet;
     @JoinColumn(name = "course_id", referencedColumnName = "id")
@@ -138,6 +140,14 @@ public class Quiz implements Serializable {
         this.createdAt = createdAt;
     }
 
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
     @XmlTransient
     public Set<QuizAttempt> getQuizAttemptSet() {
         return quizAttemptSet;
@@ -196,5 +206,5 @@ public class Quiz implements Serializable {
     public String toString() {
         return "com.paq.pojo.Quiz[ id=" + id + " ]";
     }
-    
+
 }

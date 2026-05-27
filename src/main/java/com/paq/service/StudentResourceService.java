@@ -4,7 +4,7 @@
  */
 package com.paq.service;
 
-import com.paq.pojo.Resource;
+import com.paq.pojo.response.ResResourceDTO;
 import java.util.List;
 import java.util.Map;
 
@@ -13,8 +13,8 @@ import java.util.Map;
  * @author Admin
  */
 public interface StudentResourceService {
-    List<Resource> getResources(Map<String, String> params);
-    Resource getResourceById(int id);
-    List<Resource>getRelatedResources(int resourceId);
+    List<ResResourceDTO> getResources(Map<String, String> params);
+    ResResourceDTO getResourceById(int id);
+    List<ResResourceDTO>getRelatedResources(int resourceId);
 
 }

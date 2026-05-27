@@ -4,8 +4,8 @@
  */
 package com.paq.service;
 
-import com.paq.pojo.Course;
-import com.paq.pojo.Enrollment;
+import com.paq.pojo.response.ResCourseDTO;
+import com.paq.pojo.response.ResEnrollmentDTO;
 import java.util.List;
 
 /**
@@ -14,11 +14,11 @@ import java.util.List;
  */
 public interface StudentCourseService {
 
-    List<Course> getCourses();
+    List<ResCourseDTO> getCourses();
 
-    Course getCourseById(int id);
+    ResCourseDTO getCourseById(int id);
 
-    Enrollment enrollCourse(String username, int courseId);
+    ResEnrollmentDTO enrollCourse(String username, int courseId);
 
-    List<Enrollment> getMyCourses(String username);
+    List<ResEnrollmentDTO> getMyCourses(String username);
 }

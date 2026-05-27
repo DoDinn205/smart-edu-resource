@@ -61,6 +61,9 @@ public class Question implements Serializable {
     @Size(max = 50)
     @Column(name = "type")
     private String type;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "questionId")
     private Set<AnswerOption> answerOptionSet;
     @JoinColumn(name = "quiz_id", referencedColumnName = "id")
@@ -138,6 +141,14 @@ public class Question implements Serializable {
         this.quizId = quizId;
     }
 
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
     @XmlTransient
     public Set<StudentAnswer> getStudentAnswerSet() {
         return studentAnswerSet;
@@ -171,5 +182,5 @@ public class Question implements Serializable {
     public String toString() {
         return "com.paq.pojo.Question[ id=" + id + " ]";
     }
-    
+
 }

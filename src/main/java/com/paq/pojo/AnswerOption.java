@@ -52,6 +52,8 @@ public class AnswerOption implements Serializable {
     private String content;
     @Column(name = "is_correct")
     private Boolean isCorrect;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
     @JoinColumn(name = "question_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Question questionId;
@@ -102,6 +104,14 @@ public class AnswerOption implements Serializable {
         this.questionId = questionId;
     }
 
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
     @XmlTransient
     public Set<StudentAnswer> getStudentAnswerSet() {
         return studentAnswerSet;
@@ -134,5 +144,5 @@ public class AnswerOption implements Serializable {
     public String toString() {
         return "com.paq.pojo.AnswerOption[ id=" + id + " ]";
     }
-    
+
 }

@@ -30,9 +30,9 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     public List<Resource> getResources(Map<String, String> params) {
         Session s = this.factory.getObject().getCurrentSession();
 
-        String hql = "FROM Resource r WHERE 1=1";
+        String hql = "FROM Resource r WHERE r.isDeleted = false";
 
-        if (params != null) {
+        if (params != null && params.containsKey("keyword")) {
 
             if (params.containsKey("keyword")) {
                 hql += " AND r.title LIKE :kw";

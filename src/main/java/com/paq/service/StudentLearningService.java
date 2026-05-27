@@ -4,7 +4,7 @@
  */
 package com.paq.service;
 
-import com.paq.pojo.LearningLog;
+import com.paq.pojo.response.ResLearningLogDTO;
 import java.util.List;
 
 /**
@@ -12,7 +12,7 @@ import java.util.List;
  * @author Admin
  */
 public interface StudentLearningService {
-    LearningLog startLearning(String username,int resourceId);
-    LearningLog completeLearning(String username,int resourceId);
-    List<LearningLog> getHistory(String username);
+    ResLearningLogDTO startLearning(String username,int resourceId);
+    ResLearningLogDTO completeLearning(String username,int resourceId);
+    List<ResLearningLogDTO> getHistory(String username);
 }
