@@ -3,7 +3,13 @@ package com.paq.utils;
 import com.paq.pojo.Course;
 import com.paq.pojo.Enrollment;
 import com.paq.pojo.AnswerOption;
+import com.paq.pojo.ChatParticipant;
+import com.paq.pojo.ChatRoom;
+import com.paq.pojo.ForumCategory;
+import com.paq.pojo.ForumPost;
+import com.paq.pojo.ForumThread;
 import com.paq.pojo.Lecturer;
+import com.paq.pojo.Payment;
 import com.paq.pojo.Question;
 import com.paq.pojo.Quiz;
 import com.paq.pojo.QuizAttempt;
@@ -20,7 +26,13 @@ import com.paq.pojo.response.ResCategoryDTO;
 import com.paq.pojo.response.ResCourseDTO;
 import com.paq.pojo.response.ResEnrollmentDTO;
 import com.paq.pojo.response.ResAnswerOptionDTO;
+import com.paq.pojo.response.ResChatParticipantDTO;
+import com.paq.pojo.response.ResChatRoomDTO;
+import com.paq.pojo.response.ResForumCategoryDTO;
+import com.paq.pojo.response.ResForumPostDTO;
+import com.paq.pojo.response.ResForumThreadDTO;
 import com.paq.pojo.response.ResLearningProgressDTO;
+import com.paq.pojo.response.ResPaymentDTO;
 import com.paq.pojo.response.ResQuestionDTO;
 import com.paq.pojo.response.ResQuizAttemptDTO;
 import com.paq.pojo.response.ResQuizDTO;
@@ -147,6 +159,87 @@ public class DTOMapper {
         return dto;
     }
 
+    public static ResForumCategoryDTO toResForumCategoryDTO(ForumCategory category) {
+        if (category == null) {
+            return null;
+        }
+
+        ResForumCategoryDTO dto = new ResForumCategoryDTO();
+        dto.setId(category.getId());
+        dto.setName(category.getName());
+        dto.setDescription(category.getDescription());
+
+        return dto;
+    }
+
+    public static ResForumThreadDTO toResForumThreadDTO(ForumThread thread) {
+        if (thread == null) {
+            return null;
+        }
+
+        ResForumThreadDTO dto = new ResForumThreadDTO();
+        dto.setId(thread.getId());
+        dto.setTitle(thread.getTitle());
+        dto.setContent(thread.getContent());
+        dto.setIsLock(thread.getIsLock());
+        dto.setCreatedAt(thread.getCreatedAt());
+        dto.setUpdateAt(thread.getUpdateAt());
+        dto.setCategory(toResForumCategoryDTO(thread.getCategoryId()));
+        dto.setCreatedBy(toResUserDTO(thread.getCreatedBy()));
+
+        return dto;
+    }
+
+    public static ResForumPostDTO toResForumPostDTO(ForumPost post) {
+        if (post == null) {
+            return null;
+        }
+
+        ResForumPostDTO dto = new ResForumPostDTO();
+        dto.setId(post.getId());
+        dto.setContent(post.getContent());
+        dto.setCreatedAt(post.getCreatedAt());
+        dto.setUpdatedAt(post.getUpdatedAt());
+        dto.setThreadId(post.getThreadId() != null ? post.getThreadId().getId() : null);
+        dto.setUser(toResUserDTO(post.getUserId()));
+
+        return dto;
+    }
+
+    public static ResChatRoomDTO toResChatRoomDTO(ChatRoom room) {
+        if (room == null) {
+            return null;
+        }
+
+        ResChatRoomDTO dto = new ResChatRoomDTO();
+        dto.setId(room.getId());
+        dto.setType(room.getType() != null ? room.getType().name() : null);
+        dto.setName(room.getName());
+        dto.setCreatedAt(room.getCreatedAt());
+        dto.setCreatedBy(toResUserDTO(room.getCreatedBy()));
+        if (room.getCourseId() != null) {
+            dto.setCourseId(room.getCourseId().getId());
+            dto.setCourseName(room.getCourseId().getName());
+        }
+
+        return dto;
+    }
+
+    public static ResChatParticipantDTO toResChatParticipantDTO(ChatParticipant participant) {
+        if (participant == null) {
+            return null;
+        }
+
+        ResChatParticipantDTO dto = new ResChatParticipantDTO();
+        dto.setId(participant.getId());
+        dto.setJoinedAt(participant.getJoinedAt());
+        dto.setIsMuted(participant.getIsMuted());
+        dto.setRoomId(participant.getRoomId() != null ? participant.getRoomId().getId() : null);
+        dto.setUser(toResUserDTO(participant.getUserId()));
+
+        return dto;
+    }
+
     public static ResCourseDTO toResCourseDTO(Course course) {
         if (course == null) {
             return null;
@@ -268,6 +361,41 @@ public class DTOMapper {
             dto.setStudentId(student.getId());
             dto.setStudentCode(student.getStudentCode());
             dto.setUser(toResUserDTO(student.getUserId()));
+        }
+
+        return dto;
+    }
+
+    public static ResPaymentDTO toResPaymentDTO(Payment payment) {
+        if (payment == null) {
+            return null;
+        }
+
+        ResPaymentDTO dto = new ResPaymentDTO();
+        dto.setId(payment.getId());
+        dto.setAmount(payment.getAmount());
+        dto.setPaymentMethod(payment.getPaymentMethod() != null ? payment.getPaymentMethod().name() : null);
+        dto.setStatus(payment.getStatus() != null ? payment.getStatus().name() : null);
+        dto.setTransactionCode(payment.getTransactionCode());
+        dto.setPaidAt(payment.getPaidAt());
+        dto.setCreatedAt(payment.getCreatedAt());
+
+        Enrollment enrollment = payment.getEnrollmentId();
+        if (enrollment != null) {
+            dto.setEnrollmentId(enrollment.getId());
+
+            Course course = enrollment.getCourseId();
+            if (course != null) {
+                dto.setCourseId(course.getId());
+                dto.setCourseName(course.getName());
+            }
+
+            Student student = enrollment.getStudentId();
+            if (student != null) {
+                dto.setStudentId(student.getId());
+                dto.setStudentCode(student.getStudentCode());
+                dto.setUser(toResUserDTO(student.getUserId()));
+            }
         }
 
         return dto;

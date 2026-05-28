@@ -23,4 +23,10 @@ public interface PermissionService {
     void requirePaymentOwnerOrAdmin(Integer paymentId);
 
     void requireQuizOwnerOrAdmin(Integer quizId);
+
+    void requireChatRoomManager(Integer roomId);
+
+    void requireChatRoomAccess(Integer roomId);
+
+    boolean canManageChatRooms(User user);
 }

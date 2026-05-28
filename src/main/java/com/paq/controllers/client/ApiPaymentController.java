@@ -1,0 +1,74 @@
+package com.paq.controllers.client;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.paq.pojo.response.ResPaymentDTO;
+import com.paq.pojo.response.ResPaymentStatsDTO;
+import com.paq.pojo.response.ResResponse;
+import com.paq.service.PaymentService;
+import com.paq.utils.constant.PaymentStatusEnum;
+
+import jakarta.validation.constraints.NotNull;
+
+@RestController
+@RequestMapping("/api")
+public class ApiPaymentController {
+
+    @Autowired
+    private PaymentService paymentService;
+
+    @GetMapping("/secure/payments")
+    public ResponseEntity<ResResponse<List<ResPaymentDTO>>> getPayments(
+            @RequestParam Map<String, String> params) {
+        ResResponse<List<ResPaymentDTO>> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Lấy danh sách giao dịch thành công");
+        res.setData(this.paymentService.getPayments(params));
+
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/secure/payments/stats")
+    public ResponseEntity<ResResponse<ResPaymentStatsDTO>> getPaymentStats(
+            @RequestParam Map<String, String> params) {
+        ResResponse<ResPaymentStatsDTO> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Lấy thống kê thanh toán thành công");
+        res.setData(this.paymentService.getPaymentStats(params));
+
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/secure/payments/{id}")
+    public ResponseEntity<ResResponse<ResPaymentDTO>> getPaymentById(@PathVariable int id) {
+        ResResponse<ResPaymentDTO> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Lấy chi tiết giao dịch thành công");
+        res.setData(this.paymentService.getPaymentById(id));
+
+        return ResponseEntity.ok(res);
+    }
+
+    @PutMapping("/secure/payments/{id}/status")
+    public ResponseEntity<ResResponse<ResPaymentDTO>> updatePaymentStatus(
+            @PathVariable int id,
+            @NotNull(message = "Status khong duoc de trong") @RequestParam PaymentStatusEnum status) {
+        ResResponse<ResPaymentDTO> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Cập nhật trạng thái giao dịch thành công");
+        res.setData(this.paymentService.updatePaymentStatus(id, status));
+
+        return ResponseEntity.ok(res);
+    }
+}

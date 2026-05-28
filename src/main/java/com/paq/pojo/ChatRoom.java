@@ -4,7 +4,13 @@
  */
 package com.paq.pojo;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.paq.utils.constant.ChatRoomTypeEnum;
+
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -25,11 +31,6 @@ import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Set;
-
-import com.paq.utils.constant.ChatRoomTypeEnum;
 
 /**
  *
