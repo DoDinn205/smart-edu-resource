@@ -54,7 +54,7 @@ public class AnswerOption implements Serializable {
     @Column(name = "is_correct")
     private Boolean isCorrect;
     @Column(name = "is_deleted")
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
     @JoinColumn(name = "question_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Question questionId;
@@ -146,5 +146,5 @@ public class AnswerOption implements Serializable {
     public String toString() {
         return "com.paq.pojo.AnswerOption[ id=" + id + " ]";
     }
-    
+
 }
