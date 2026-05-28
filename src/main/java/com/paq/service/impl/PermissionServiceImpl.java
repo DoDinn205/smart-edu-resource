@@ -6,11 +6,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.paq.pojo.ChatRoom;
 import com.paq.pojo.Course;
 import com.paq.pojo.Payment;
 import com.paq.pojo.Quiz;
 import com.paq.pojo.Resource;
 import com.paq.pojo.User;
+import com.paq.repository.ChatParticipantRepository;
+import com.paq.repository.ChatRoomRepository;
 import com.paq.repository.CourseRepository;
 import com.paq.repository.EnrollmentRepository;
 import com.paq.repository.PaymentRepository;
@@ -43,6 +46,12 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Autowired
     private QuizRepository quizRepo;
+
+    @Autowired
+    private ChatRoomRepository chatRoomRepo;
+
+    @Autowired
+    private ChatParticipantRepository chatParticipantRepo;
 
     @Override
     public void requireAdmin() {
@@ -150,6 +159,37 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
+    public void requireChatRoomManager(Integer roomId) {
+        User user = this.getCurrentUser();
+        ChatRoom room = this.chatRoomRepo.getRoomById(roomId);
+        if (room == null) {
+            throw new IdInvalidException("Chat room không tồn tại");
+        }
+
+        if (this.isChatRoomManager(user, room)) {
+            return;
+        }
+
+        throw new PermissionException("Bạn không có quyền quản lý phòng chat này");
+    }
+
+    @Override
+    public void requireChatRoomAccess(Integer roomId) {
+        User user = this.getCurrentUser();
+        ChatRoom room = this.chatRoomRepo.getRoomById(roomId);
+        if (room == null) {
+            throw new IdInvalidException("Chat room không tồn tại");
+        }
+
+        if (this.isChatRoomManager(user, room)
+                || this.chatParticipantRepo.getParticipantByRoomIdAndUserId(roomId, user.getId()) != null) {
+            return;
+        }
+
+        throw new PermissionException("Bạn không có quyền xem phòng chat này");
+    }
+
+    @Override
     public User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getName() == null) {
@@ -185,6 +225,14 @@ public class PermissionServiceImpl implements PermissionService {
                 && course.getLecturerId() != null
                 && course.getLecturerId().getUserId() != null
                 && this.isOwner(user, course.getLecturerId().getUserId());
+    }
+
+    private boolean isChatRoomManager(User user, ChatRoom room) {
+        if (this.isAdmin(user) || this.isOwner(user, room.getCreatedBy())) {
+            return true;
+        }
+
+        return room.getCourseId() != null && this.isLecturer(user) && this.isCourseLecturer(room.getCourseId(), user);
     }
 
 }

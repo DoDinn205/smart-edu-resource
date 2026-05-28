@@ -3,6 +3,8 @@ package com.paq.utils;
 import com.paq.pojo.Course;
 import com.paq.pojo.Enrollment;
 import com.paq.pojo.AnswerOption;
+import com.paq.pojo.ChatParticipant;
+import com.paq.pojo.ChatRoom;
 import com.paq.pojo.ForumCategory;
 import com.paq.pojo.ForumPost;
 import com.paq.pojo.ForumThread;
@@ -24,6 +26,8 @@ import com.paq.pojo.response.ResCategoryDTO;
 import com.paq.pojo.response.ResCourseDTO;
 import com.paq.pojo.response.ResEnrollmentDTO;
 import com.paq.pojo.response.ResAnswerOptionDTO;
+import com.paq.pojo.response.ResChatParticipantDTO;
+import com.paq.pojo.response.ResChatRoomDTO;
 import com.paq.pojo.response.ResForumCategoryDTO;
 import com.paq.pojo.response.ResForumPostDTO;
 import com.paq.pojo.response.ResForumThreadDTO;
@@ -198,6 +202,40 @@ public class DTOMapper {
         dto.setUpdatedAt(post.getUpdatedAt());
         dto.setThreadId(post.getThreadId() != null ? post.getThreadId().getId() : null);
         dto.setUser(toResUserDTO(post.getUserId()));
+
+        return dto;
+    }
+
+    public static ResChatRoomDTO toResChatRoomDTO(ChatRoom room) {
+        if (room == null) {
+            return null;
+        }
+
+        ResChatRoomDTO dto = new ResChatRoomDTO();
+        dto.setId(room.getId());
+        dto.setType(room.getType() != null ? room.getType().name() : null);
+        dto.setName(room.getName());
+        dto.setCreatedAt(room.getCreatedAt());
+        dto.setCreatedBy(toResUserDTO(room.getCreatedBy()));
+        if (room.getCourseId() != null) {
+            dto.setCourseId(room.getCourseId().getId());
+            dto.setCourseName(room.getCourseId().getName());
+        }
+
+        return dto;
+    }
+
+    public static ResChatParticipantDTO toResChatParticipantDTO(ChatParticipant participant) {
+        if (participant == null) {
+            return null;
+        }
+
+        ResChatParticipantDTO dto = new ResChatParticipantDTO();
+        dto.setId(participant.getId());
+        dto.setJoinedAt(participant.getJoinedAt());
+        dto.setIsMuted(participant.getIsMuted());
+        dto.setRoomId(participant.getRoomId() != null ? participant.getRoomId().getId() : null);
+        dto.setUser(toResUserDTO(participant.getUserId()));
 
         return dto;
     }
