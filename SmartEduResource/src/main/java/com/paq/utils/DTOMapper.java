@@ -8,6 +8,8 @@ import com.paq.pojo.ChatRoom;
 import com.paq.pojo.ForumCategory;
 import com.paq.pojo.ForumPost;
 import com.paq.pojo.ForumThread;
+import com.paq.pojo.Interaction;
+import com.paq.pojo.InteractionReply;
 import com.paq.pojo.Lecturer;
 import com.paq.pojo.Payment;
 import com.paq.pojo.Question;
@@ -31,6 +33,8 @@ import com.paq.pojo.response.ResChatRoomDTO;
 import com.paq.pojo.response.ResForumCategoryDTO;
 import com.paq.pojo.response.ResForumPostDTO;
 import com.paq.pojo.response.ResForumThreadDTO;
+import com.paq.pojo.response.ResInteractionDTO;
+import com.paq.pojo.response.ResInteractionReplyDTO;
 import com.paq.pojo.response.ResLearningProgressDTO;
 import com.paq.pojo.response.ResPaymentDTO;
 import com.paq.pojo.response.ResQuestionDTO;
@@ -42,6 +46,7 @@ import com.paq.pojo.response.ResStudentDTO;
 import com.paq.pojo.response.ResStudentAnswerResultDTO;
 import com.paq.pojo.response.ResSubjectDTO;
 import com.paq.pojo.response.ResUserDTO;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -567,6 +572,68 @@ public class DTOMapper {
             dto.setStudentId(student.getId());
             dto.setStudentCode(student.getStudentCode());
             dto.setStudentUser(toResUserDTO(student.getUserId()));
+        }
+
+        return dto;
+    }
+    private static final SimpleDateFormat DATETIME_FORMAT
+            = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    public static ResInteractionDTO toInteractionDTO(Interaction interaction) {
+        if (interaction == null) {
+            return null;
+        }
+
+        ResInteractionDTO dto = new ResInteractionDTO();
+
+        dto.setId(interaction.getId());
+        dto.setNote(interaction.getNote());
+        dto.setSelectedText(interaction.getSelectedText());
+        dto.setType(interaction.getType() != null ? interaction.getType().name() : null);
+        dto.setPageNumber(interaction.getPageNumber());
+        dto.setTimeOffsetSeconds(interaction.getTimeOffsetSeconds());
+        dto.setPositionX(interaction.getPositionX());
+
+        if (interaction.getCreatedAt() != null) {
+            dto.setCreatedAt(DATETIME_FORMAT.format(interaction.getCreatedAt()));
+        }
+
+        if (interaction.getUpdatedAt() != null) {
+            dto.setUpdatedAt(DATETIME_FORMAT.format(interaction.getUpdatedAt()));
+        }
+
+        if (interaction.getResourceId() != null) {
+            dto.setResourceId(interaction.getResourceId().getId());
+            dto.setResourceTitle(interaction.getResourceId().getTitle());
+        }
+
+        if (interaction.getUserId() != null) {
+            dto.setUserId(interaction.getUserId().getId());
+            dto.setUsername(interaction.getUserId().getUsername());
+            dto.setFullName(interaction.getUserId().getFullName());
+        }
+
+        return dto;
+    }
+
+    public static ResInteractionReplyDTO toInteractionReplyDTO(InteractionReply reply) {
+        if (reply == null) {
+            return null;
+        }
+
+        ResInteractionReplyDTO dto = new ResInteractionReplyDTO();
+
+        dto.setId(reply.getId());
+        dto.setContent(reply.getContent());
+
+        if (reply.getInteractionId() != null) {
+            dto.setInteractionId(reply.getInteractionId().getId());
+        }
+
+        if (reply.getUserId() != null) {
+            dto.setUserId(reply.getUserId().getId());
+            dto.setUsername(reply.getUserId().getUsername());
+            dto.setFullName(reply.getUserId().getFullName());
         }
 
         return dto;
