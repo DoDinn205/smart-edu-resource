@@ -21,6 +21,7 @@ import com.paq.repository.QuizRepository;
 import com.paq.repository.ResourceRepository;
 import com.paq.repository.UserRepository;
 import com.paq.service.PermissionService;
+import com.paq.utils.constant.ChatRoomTypeEnum;
 import com.paq.utils.constant.RoleEnum;
 import com.paq.utils.error.IdInvalidException;
 import com.paq.utils.error.PermissionException;
@@ -182,11 +183,19 @@ public class PermissionServiceImpl implements PermissionService {
         }
 
         if (this.isChatRoomManager(user, room)
-                || this.chatParticipantRepo.getParticipantByRoomIdAndUserId(roomId, user.getId()) != null) {
+                || this.chatParticipantRepo.getParticipantByRoomIdAndUserId(roomId, user.getId()) != null
+                || (room.getType() == ChatRoomTypeEnum.CLASS
+                && room.getCourseId() != null
+                && this.enrollmentRepo.existsByCourseIdAndUserId(room.getCourseId().getId(), user.getId()))) {
             return;
         }
 
         throw new PermissionException("Bạn không có quyền xem phòng chat này");
+    }
+
+    @Override
+    public boolean canManageChatRooms(User user) {
+        return this.isAdmin(user) || this.isLecturer(user);
     }
 
     @Override

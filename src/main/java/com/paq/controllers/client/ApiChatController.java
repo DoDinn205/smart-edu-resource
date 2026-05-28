@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.paq.pojo.request.ReqChatParticipantDTO;
 import com.paq.pojo.request.ReqChatRoomDTO;
+import com.paq.pojo.request.ReqPrivateChatRoomDTO;
 import com.paq.pojo.response.ResChatParticipantDTO;
 import com.paq.pojo.response.ResChatRoomDTO;
 import com.paq.pojo.response.ResResponse;
@@ -62,6 +63,16 @@ public class ApiChatController {
         res.setStatusCode(HttpStatus.CREATED.value());
         res.setMessage("Tạo phòng chat thành công");
         res.setData(this.roomService.createRoom(request));
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/secure/chat-rooms/private")
+    public ResponseEntity<ResResponse<ResChatRoomDTO>> createPrivateRoomWithLecturer(
+            @Valid @RequestBody ReqPrivateChatRoomDTO request) {
+        ResResponse<ResChatRoomDTO> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.CREATED.value());
+        res.setMessage("Tao phong chat rieng voi giang vien thanh cong");
+        res.setData(this.roomService.createPrivateRoomWithLecturer(request));
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 

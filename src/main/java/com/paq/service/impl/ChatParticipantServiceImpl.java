@@ -15,10 +15,12 @@ import com.paq.pojo.request.ReqChatParticipantDTO;
 import com.paq.pojo.response.ResChatParticipantDTO;
 import com.paq.repository.ChatParticipantRepository;
 import com.paq.repository.ChatRoomRepository;
+import com.paq.repository.EnrollmentRepository;
 import com.paq.repository.UserRepository;
 import com.paq.service.ChatParticipantService;
 import com.paq.service.PermissionService;
 import com.paq.utils.DTOMapper;
+import com.paq.utils.constant.ChatRoomTypeEnum;
 import com.paq.utils.error.IdInvalidException;
 
 @Service
@@ -32,6 +34,9 @@ public class ChatParticipantServiceImpl implements ChatParticipantService {
 
     @Autowired
     private UserRepository userRepo;
+
+    @Autowired
+    private EnrollmentRepository enrollmentRepo;
 
     @Autowired
     private PermissionService permissionService;
@@ -52,11 +57,18 @@ public class ChatParticipantServiceImpl implements ChatParticipantService {
 
     @Override
     public ResChatParticipantDTO addParticipant(int roomId, ReqChatParticipantDTO request) {
-        this.permissionService.requireChatRoomManager(roomId);
-
         ChatRoom room = this.roomRepo.getRoomById(roomId);
         if (room == null) {
             throw new IdInvalidException("Chat room không tồn tại");
+        }
+
+        User currentUser = this.permissionService.getCurrentUser();
+        boolean selfJoinByEnrollment = request.getUserId().equals(currentUser.getId())
+                && room.getType() == ChatRoomTypeEnum.CLASS
+                && room.getCourseId() != null
+                && this.enrollmentRepo.existsByCourseIdAndUserId(room.getCourseId().getId(), currentUser.getId());
+        if (!selfJoinByEnrollment) {
+            this.permissionService.requireChatRoomManager(roomId);
         }
 
         User user = this.userRepo.getUserById(request.getUserId());

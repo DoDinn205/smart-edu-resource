@@ -27,4 +27,6 @@ public interface PermissionService {
     void requireChatRoomManager(Integer roomId);
 
     void requireChatRoomAccess(Integer roomId);
+
+    boolean canManageChatRooms(User user);
 }

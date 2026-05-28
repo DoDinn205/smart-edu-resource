@@ -9,16 +9,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.paq.pojo.ChatRoom;
+import com.paq.pojo.ChatParticipant;
 import com.paq.pojo.Course;
 import com.paq.pojo.User;
+import com.paq.pojo.Lecturer;
 import com.paq.pojo.request.ReqChatRoomDTO;
+import com.paq.pojo.request.ReqPrivateChatRoomDTO;
 import com.paq.pojo.response.ResChatRoomDTO;
+import com.paq.repository.ChatParticipantRepository;
 import com.paq.repository.ChatRoomRepository;
 import com.paq.repository.CourseRepository;
+import com.paq.repository.EnrollmentRepository;
 import com.paq.service.ChatRoomService;
 import com.paq.service.PermissionService;
 import com.paq.utils.DTOMapper;
+import com.paq.utils.constant.ChatRoomTypeEnum;
 import com.paq.utils.error.IdInvalidException;
+import com.paq.utils.error.PermissionException;
 
 @Service
 public class ChatRoomServiceImpl implements ChatRoomService {
@@ -30,12 +37,25 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private CourseRepository courseRepo;
 
     @Autowired
+    private ChatParticipantRepository participantRepo;
+
+    @Autowired
+    private EnrollmentRepository enrollmentRepo;
+
+    @Autowired
     private PermissionService permissionService;
 
     @Override
     public List<ResChatRoomDTO> getRooms(Map<String, String> params) {
-        this.permissionService.requireLecturerOrAdmin();
-        return this.roomRepo.getRooms(params).stream()
+        User user = this.permissionService.getCurrentUser();
+        List<ChatRoom> rooms;
+        if (this.permissionService.canManageChatRooms(user)) {
+            rooms = this.roomRepo.getRooms(params);
+        } else {
+            rooms = this.roomRepo.getRoomsAvailableToUser(params, user.getId());
+        }
+
+        return rooms.stream()
                 .map(DTOMapper::toResChatRoomDTO)
                 .collect(Collectors.toList());
     }
@@ -69,7 +89,44 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         room.setCreatedBy(user);
         room.setCreatedAt(new Date());
 
-        return DTOMapper.toResChatRoomDTO(this.roomRepo.addOrUpdateRoom(room));
+        ChatRoom savedRoom = this.roomRepo.addOrUpdateRoom(room);
+        this.addCourseLecturerParticipant(savedRoom);
+
+        return DTOMapper.toResChatRoomDTO(savedRoom);
+    }
+
+    @Override
+    public ResChatRoomDTO createPrivateRoomWithLecturer(ReqPrivateChatRoomDTO request) {
+        this.permissionService.requireStudent();
+        User studentUser = this.permissionService.getCurrentUser();
+        Course course = this.resolveCourse(request.getCourseId());
+
+        if (!this.enrollmentRepo.existsByCourseIdAndUserId(course.getId(), studentUser.getId())) {
+            throw new PermissionException("Ban chua ghi danh khoa hoc nay");
+        }
+
+        User lecturerUser = this.getCourseLecturerUser(course);
+        if (lecturerUser == null || !lecturerUser.getId().equals(request.getLecturerUserId())) {
+            throw new IdInvalidException("Lecturer khong phu trach khoa hoc nay");
+        }
+
+        ChatRoom existedRoom = this.roomRepo.getPrivateRoomByCourseAndUsers(
+                course.getId(), studentUser.getId(), lecturerUser.getId());
+        if (existedRoom != null) {
+            return DTOMapper.toResChatRoomDTO(existedRoom);
+        }
+
+        ChatRoom room = new ChatRoom();
+        room.setType(ChatRoomTypeEnum.PRIVATE);
+        room.setCourseId(course);
+        room.setCreatedBy(studentUser);
+        room.setCreatedAt(new Date());
+
+        ChatRoom savedRoom = this.roomRepo.addOrUpdateRoom(room);
+        this.addParticipantIfAbsent(savedRoom, studentUser);
+        this.addParticipantIfAbsent(savedRoom, lecturerUser);
+
+        return DTOMapper.toResChatRoomDTO(savedRoom);
     }
 
     @Override
@@ -116,5 +173,38 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
 
         return course;
+    }
+
+    private void addCourseLecturerParticipant(ChatRoom room) {
+        if (room == null || room.getCourseId() == null) {
+            return;
+        }
+
+        User lecturerUser = this.getCourseLecturerUser(room.getCourseId());
+        if (lecturerUser != null) {
+            this.addParticipantIfAbsent(room, lecturerUser);
+        }
+    }
+
+    private User getCourseLecturerUser(Course course) {
+        Lecturer lecturer = course != null ? course.getLecturerId() : null;
+        return lecturer != null ? lecturer.getUserId() : null;
+    }
+
+    private void addParticipantIfAbsent(ChatRoom room, User user) {
+        if (room == null || room.getId() == null || user == null || user.getId() == null) {
+            return;
+        }
+
+        if (this.participantRepo.getParticipantByRoomIdAndUserId(room.getId(), user.getId()) != null) {
+            return;
+        }
+
+        ChatParticipant participant = new ChatParticipant();
+        participant.setRoomId(room);
+        participant.setUserId(user);
+        participant.setJoinedAt(new Date());
+        participant.setIsMuted(Boolean.FALSE);
+        this.participantRepo.addParticipant(participant);
     }
 }
