@@ -15,6 +15,7 @@ import com.paq.repository.EnrollmentRepository;
 import com.paq.service.StudentCourseService;
 import com.paq.service.UserService;
 import com.paq.utils.DTOMapper;
+import com.paq.utils.constant.EnrollmentStatusEnum;
 import com.paq.utils.error.IdInvalidException;
 import com.paq.utils.error.PermissionException;
 import java.util.Date;
@@ -41,9 +42,9 @@ public class StudentCourseServicerImpl implements StudentCourseService {
 
     @Override
     public List<ResCourseDTO> getCourses() {
-        return this.courseRepo.getCourses()
+        return this.courseRepo.getCourses(null)
                 .stream()
-                .map(c -> DTOMapper.toCourseDTO(c))
+                .map(c -> DTOMapper.toResCourseDTO(c))
                 .collect(Collectors.toList());
     }
 
@@ -54,7 +55,7 @@ public class StudentCourseServicerImpl implements StudentCourseService {
             throw new IdInvalidException("Course không tồn tại");
         }
 
-        return DTOMapper.toCourseDTO(c);
+        return DTOMapper.toResCourseDTO(c);
     }
 
     @Override
@@ -82,11 +83,11 @@ public class StudentCourseServicerImpl implements StudentCourseService {
         e.setEnrollDate(new Date());
         e.setOverallProgress(0.0);
         e.setTotalStudyTime(0);
-        e.setStatus("ACTIVE");
+        e.setStatus(EnrollmentStatusEnum.SUCCESS);
 
         Enrollment saved = this.enrollmentRepo.addEnrollment(e);
 
-        return DTOMapper.toEnrollmentDTO(saved);
+        return DTOMapper.toResEnrollmentDTO(saved);
     }
 
     @Override
@@ -99,7 +100,7 @@ public class StudentCourseServicerImpl implements StudentCourseService {
 
         return this.enrollmentRepo.getEnrollmentsByStudentId(user.getStudent().getId())
                 .stream()
-                .map(e -> DTOMapper.toEnrollmentDTO(e))
+                .map(e -> DTOMapper.toResEnrollmentDTO(e))
                 .collect(Collectors.toList());
     }
 

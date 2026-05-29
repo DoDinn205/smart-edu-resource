@@ -88,7 +88,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         enrollment.setCourseId(course);
         enrollment.setStudentId(student);
         enrollment.setEnrollDate(new Date());
-        enrollment.setStatus(EnrollmentStatusEnum.ACTIVE);
+        enrollment.setStatus(EnrollmentStatusEnum.SUCCESS);
         enrollment.setOverallProgress(0.0);
         enrollment.setTotalStudyTime(0);
 
