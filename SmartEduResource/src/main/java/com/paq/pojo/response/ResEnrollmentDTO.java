@@ -1,5 +1,15 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package com.paq.pojo.response;
 
+/**
+ *
+ * @author Admin
+ */
+
+    
 import java.util.Date;
 
 public class ResEnrollmentDTO {
@@ -14,6 +24,7 @@ public class ResEnrollmentDTO {
     private Integer studentId;
     private String studentCode;
     private ResUserDTO user;
+    private ResCourseDTO course;
 
     public Integer getId() {
         return id;
@@ -23,6 +34,15 @@ public class ResEnrollmentDTO {
         this.id = id;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+   
     public Date getEnrollDate() {
         return enrollDate;
     }
@@ -38,15 +58,6 @@ public class ResEnrollmentDTO {
     public void setOverallProgress(Double overallProgress) {
         this.overallProgress = overallProgress;
     }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public Integer getTotalStudyTime() {
         return totalStudyTime;
     }
@@ -55,6 +66,14 @@ public class ResEnrollmentDTO {
         this.totalStudyTime = totalStudyTime;
     }
 
+    public ResCourseDTO getCourse() {
+        return course;
+    }
+
+    public void setCourse(ResCourseDTO course) {
+        this.course = course;
+    }
+    
     public Integer getCourseId() {
         return courseId;
     }

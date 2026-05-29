@@ -67,7 +67,7 @@ public class Question implements Serializable {
     @Column(name = "type")
     private QuestionTypeEnum type;
     @Column(name = "is_deleted")
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "questionId")
     @JsonIgnore
     private Set<AnswerOption> answerOptionSet;
@@ -188,5 +188,5 @@ public class Question implements Serializable {
     public String toString() {
         return "com.paq.pojo.Question[ id=" + id + " ]";
     }
-    
+
 }
