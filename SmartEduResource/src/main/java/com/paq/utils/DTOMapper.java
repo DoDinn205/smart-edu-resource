@@ -39,6 +39,7 @@ import com.paq.pojo.response.ResForumPostDTO;
 import com.paq.pojo.response.ResForumThreadDTO;
 import com.paq.pojo.response.ResInteractionDTO;
 import com.paq.pojo.response.ResInteractionReplyDTO;
+import com.paq.pojo.response.ResLearningLogDTO;
 import com.paq.pojo.response.ResLearningProgressDTO;
 import com.paq.pojo.response.ResPaymentDTO;
 import com.paq.pojo.response.ResQuestionDTO;
@@ -629,6 +630,11 @@ public class DTOMapper {
 
         if (dto.getItemType() == null) {
             dto.setItemType("DOCUMENT");
+        }
+
+        return dto;
+    }
+
     private static final SimpleDateFormat DATETIME_FORMAT
             = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -719,6 +725,8 @@ public class DTOMapper {
         }
 
         return chapters;
+    }
+
     public static ResInteractionReplyDTO toInteractionReplyDTO(InteractionReply reply) {
         if (reply == null) {
             return null;
@@ -737,6 +745,34 @@ public class DTOMapper {
             dto.setUserId(reply.getUserId().getId());
             dto.setUsername(reply.getUserId().getUsername());
             dto.setFullName(reply.getUserId().getFullName());
+        }
+
+        return dto;
+    }
+
+    public static ResLearningLogDTO toLearningLogDTO(com.paq.pojo.LearningLog log) {
+        if (log == null) {
+            return null;
+        }
+
+        ResLearningLogDTO dto = new ResLearningLogDTO();
+        dto.setId(log.getId());
+        dto.setCompletionStatus(log.getCompletionStatus());
+
+        if (log.getStartTime() != null) {
+            dto.setStartTime(DATETIME_FORMAT.format(log.getStartTime()));
+        }
+        if (log.getEndTime() != null) {
+            dto.setEndTime(DATETIME_FORMAT.format(log.getEndTime()));
+        }
+
+        if (log.getResourceId() != null) {
+            dto.setResourceId(log.getResourceId().getId());
+            dto.setResourceTitle(log.getResourceId().getTitle());
+        }
+
+        if (log.getEnrollmentId() != null) {
+            dto.setEnrollmentId(log.getEnrollmentId().getId());
         }
 
         return dto;

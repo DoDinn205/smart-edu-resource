@@ -85,7 +85,7 @@ public class QuizServiceImpl implements QuizService {
         Quiz quiz = this.getExistingQuiz(id);
         Course course = this.courseRepo.getCourseById(request.getCourseId());
         if (course == null) {
-            throw new IdInvalidException("Course khong ton tai");
+            throw new IdInvalidException("Course không tồn tại");
         }
 
         quiz.setCourseId(course);
@@ -103,7 +103,7 @@ public class QuizServiceImpl implements QuizService {
     private Quiz getExistingQuiz(int id) {
         Quiz quiz = this.quizRepo.getQuizById(id);
         if (quiz == null) {
-            throw new IdInvalidException("Quiz khong ton tai");
+            throw new IdInvalidException("Quiz không tồn tại");
         }
 
         return quiz;
@@ -112,12 +112,12 @@ public class QuizServiceImpl implements QuizService {
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getName() == null) {
-            throw new PermissionException("Ban chua dang nhap");
+            throw new PermissionException("Bạn chưa đăng nhập");
         }
 
         User user = this.userRepo.getUserByUsername(auth.getName());
         if (user == null || Boolean.FALSE.equals(user.getIsActive())) {
-            throw new PermissionException("Tai khoan khong hop le");
+            throw new PermissionException("Tài khoản không hợp lệ");
         }
 
         return user;

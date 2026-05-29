@@ -30,7 +30,7 @@ public class StudentResourceServiceImpl implements StudentResourceService {
     public List<ResResourceDTO> getResources(Map<String, String> params) {
         return this.resourceRepo.getResources(params)
                 .stream()
-                .map(r -> DTOMapper.toResourceDTO(r))
+                .map(r -> DTOMapper.toResResourceDTO(r))
                 .collect(Collectors.toList());
     }
 
@@ -42,14 +42,14 @@ public class StudentResourceServiceImpl implements StudentResourceService {
             throw new IdInvalidException("Resource khong ton tai");
         }
 
-        return DTOMapper.toResourceDTO(r);
+        return DTOMapper.toResResourceDTO(r);
     }
 
     @Override
     public List<ResResourceDTO> getRelatedResources(int resourceId) {
         return this.resourceRepo.getRelatedResources(resourceId)
                 .stream()
-                .map(r -> DTOMapper.toResourceDTO(r))
+                .map(r -> DTOMapper.toResResourceDTO(r))
                 .collect(Collectors.toList());
     }
 
