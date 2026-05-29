@@ -10,6 +10,7 @@ public class ResEnrollmentDTO {
     private String status;
     private Integer totalStudyTime;
     private Integer courseId;
+    private String courseName;
     private Integer studentId;
     private String studentCode;
     private ResUserDTO user;
@@ -60,6 +61,14 @@ public class ResEnrollmentDTO {
 
     public void setCourseId(Integer courseId) {
         this.courseId = courseId;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
     }
 
     public Integer getStudentId() {
