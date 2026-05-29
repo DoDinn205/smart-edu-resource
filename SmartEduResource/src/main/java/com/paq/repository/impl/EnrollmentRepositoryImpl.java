@@ -121,4 +121,41 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
         q.setParameter("userId", userId);
         return q.getSingleResult() > 0;
     }
+
+    @Override
+    public List<Enrollment> getMyEnrollments(int studentId) {
+        Session session = this.factory.getObject().getCurrentSession();
+        Query<Enrollment> q = session.createQuery(
+                "SELECT e FROM Enrollment e "
+                + "JOIN FETCH e.courseId c "
+                + "JOIN FETCH e.studentId s "
+                + "JOIN FETCH s.userId "
+                + "LEFT JOIN FETCH c.lecturerId l "
+                + "LEFT JOIN FETCH l.userId "
+                + "WHERE s.id = :studentId "
+                + "AND (e.status = com.paq.utils.constant.EnrollmentStatusEnum.ACTIVE "
+                + "  OR e.status = com.paq.utils.constant.EnrollmentStatusEnum.SUCCESS) "
+                + "AND (c.isDeleted = false OR c.isDeleted IS NULL) "
+                + "ORDER BY e.enrollDate DESC",
+                Enrollment.class);
+        q.setParameter("studentId", studentId);
+        return q.getResultList();
+    }
+
+    @Override
+    public Enrollment findByCourseAndStudent(int courseId, int studentId) {
+        try {
+            Session session = this.factory.getObject().getCurrentSession();
+            Query<Enrollment> q = session.createQuery(
+                    "SELECT e FROM Enrollment e "
+                    + "WHERE e.courseId.id = :courseId "
+                    + "AND e.studentId.id = :studentId",
+                    Enrollment.class);
+            q.setParameter("courseId", courseId);
+            q.setParameter("studentId", studentId);
+            return q.getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+        }
+    }
 }

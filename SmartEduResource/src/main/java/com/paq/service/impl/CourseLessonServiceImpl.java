@@ -1,0 +1,163 @@
+package com.paq.service.impl;
+
+import com.paq.pojo.Course;
+import com.paq.pojo.CourseLesson;
+import com.paq.pojo.Quiz;
+import com.paq.pojo.Resource;
+import com.paq.pojo.Student;
+import com.paq.pojo.User;
+import com.paq.pojo.request.ReqCourseLessonDTO;
+import com.paq.pojo.response.ResCourseLearnDTO;
+import com.paq.pojo.response.ResCourseLessonDTO;
+import com.paq.repository.CourseLessonRepository;
+import com.paq.repository.CourseRepository;
+import com.paq.repository.UserRepository;
+import com.paq.service.CourseLessonService;
+import com.paq.utils.DTOMapper;
+import com.paq.utils.constant.RoleEnum;
+import com.paq.utils.error.IdInvalidException;
+import com.paq.utils.error.PermissionException;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+public class CourseLessonServiceImpl implements CourseLessonService {
+
+    @Autowired
+    private CourseLessonRepository lessonRepo;
+
+    @Autowired
+    private CourseRepository courseRepo;
+
+    @Autowired
+    private UserRepository userRepo;
+
+    @Override
+    public ResCourseLearnDTO getLearnPage(int courseId, String username) {
+        Course course = this.courseRepo.getCourseById(courseId);
+        if (course == null) {
+            throw new IdInvalidException("Course không tồn tại");
+        }
+
+        String enrollmentStatus = null;
+
+        if (Boolean.TRUE.equals(course.getIsPaid())) {
+            User user = this.userRepo.getUserByUsername(username);
+            if (user == null || Boolean.FALSE.equals(user.getIsActive())) {
+                throw new PermissionException("Tài khoản không hợp lệ");
+            }
+
+            Student student = this.userRepo.getStudentByUserId(user.getId());
+            if (student == null) {
+                throw new PermissionException("Bạn chưa đăng ký khóa học này");
+            }
+
+            boolean hasEnrollment = this.lessonRepo.hasActiveEnrollment(courseId, student.getId());
+            boolean hasPayment = this.lessonRepo.hasSuccessfulPayment(courseId, student.getId());
+
+            if (!hasEnrollment && !hasPayment) {
+                throw new PermissionException("Bạn chưa đăng ký hoặc chưa thanh toán khóa học này");
+            }
+
+            enrollmentStatus = hasEnrollment ? "ACTIVE" : "PAYMENT_SUCCESS";
+        }
+
+        List<CourseLesson> lessons = this.lessonRepo.getLessonsByCourseId(courseId);
+        return DTOMapper.toResCourseLearnDTO(course, lessons, true, enrollmentStatus);
+    }
+
+    @Override
+    public List<ResCourseLessonDTO> getLessonsByCourseId(int courseId) {
+        return this.lessonRepo.getLessonsByCourseId(courseId)
+                .stream()
+                .map(DTOMapper::toResCourseLessonDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ResCourseLessonDTO getLessonById(int id) {
+        CourseLesson lesson = this.lessonRepo.getLessonById(id);
+        if (lesson == null) {
+            throw new IdInvalidException("Bài học không tồn tại");
+        }
+        return DTOMapper.toResCourseLessonDTO(lesson);
+    }
+
+    @Override
+    public ResCourseLessonDTO createLesson(ReqCourseLessonDTO request) {
+        this.requireLecturerOrAdmin();
+
+        Course course = this.courseRepo.getCourseById(request.getCourseId());
+        if (course == null) {
+            throw new IdInvalidException("Course không tồn tại");
+        }
+
+        CourseLesson lesson = new CourseLesson();
+        lesson.setIsDeleted(false);
+        this.copyFields(lesson, request, course);
+        this.lessonRepo.addLesson(lesson);
+        return DTOMapper.toResCourseLessonDTO(lesson);
+    }
+
+    @Override
+    public ResCourseLessonDTO updateLesson(int id, ReqCourseLessonDTO request) {
+        this.requireLecturerOrAdmin();
+
+        CourseLesson lesson = this.lessonRepo.getLessonById(id);
+        if (lesson == null) {
+            throw new IdInvalidException("Bài học không tồn tại");
+        }
+
+        Course course = this.courseRepo.getCourseById(request.getCourseId());
+        if (course == null) {
+            throw new IdInvalidException("Course không tồn tại");
+        }
+
+        this.copyFields(lesson, request, course);
+        this.lessonRepo.updateLesson(lesson);
+        return DTOMapper.toResCourseLessonDTO(lesson);
+    }
+
+    @Override
+    public void deleteLesson(int id) {
+        this.requireLecturerOrAdmin();
+        CourseLesson lesson = this.lessonRepo.getLessonById(id);
+        if (lesson == null) {
+            throw new IdInvalidException("Bài học không tồn tại");
+        }
+        this.lessonRepo.deleteLesson(id);
+    }
+
+    private void copyFields(CourseLesson lesson, ReqCourseLessonDTO request, Course course) {
+        lesson.setTitle(request.getTitle());
+        lesson.setChapterNum(request.getChapterNum());
+        lesson.setLessonNum(request.getLessonNum());
+        lesson.setIsFree(Boolean.TRUE.equals(request.getIsFree()));
+        lesson.setCourseId(course);
+        lesson.setResourceId(request.getResourceId() != null ? new Resource(request.getResourceId()) : null);
+        lesson.setQuizId(request.getQuizId() != null ? new Quiz(request.getQuizId()) : null);
+    }
+
+    private void requireLecturerOrAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            throw new PermissionException("Bạn chưa đăng nhập");
+        }
+        User user = this.userRepo.getUserByUsername(auth.getName());
+        if (user == null || Boolean.FALSE.equals(user.getIsActive())) {
+            throw new PermissionException("Tài khoản không hợp lệ");
+        }
+        RoleEnum role = user.getRole();
+        if (role != RoleEnum.ADMIN && role != RoleEnum.LECTURER) {
+            throw new PermissionException("Chỉ giảng viên hoặc admin mới có quyền thực hiện thao tác này");
+        }
+    }
+}

@@ -8,6 +8,10 @@ public interface EnrollmentRepository {
 
     List<Enrollment> getEnrollmentsByCourseId(int courseId, Map<String, String> params);
 
+    List<Enrollment> getMyEnrollments(int studentId);
+
+    Enrollment findByCourseAndStudent(int courseId, int studentId);
+
     Enrollment getEnrollmentById(int id);
 
     Enrollment addOrUpdateEnrollment(Enrollment enrollment);

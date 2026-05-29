@@ -1,6 +1,7 @@
 package com.paq.utils;
 
 import com.paq.pojo.Course;
+import com.paq.pojo.CourseLesson;
 import com.paq.pojo.Enrollment;
 import com.paq.pojo.AnswerOption;
 import com.paq.pojo.ChatParticipant;
@@ -25,7 +26,10 @@ import com.paq.pojo.Subject;
 import com.paq.pojo.Topic;
 import com.paq.pojo.User;
 import com.paq.pojo.response.ResCategoryDTO;
+import com.paq.pojo.response.ResCourseChapterDTO;
 import com.paq.pojo.response.ResCourseDTO;
+import com.paq.pojo.response.ResCourseLearnDTO;
+import com.paq.pojo.response.ResCourseLessonDTO;
 import com.paq.pojo.response.ResEnrollmentDTO;
 import com.paq.pojo.response.ResAnswerOptionDTO;
 import com.paq.pojo.response.ResChatParticipantDTO;
@@ -46,8 +50,11 @@ import com.paq.pojo.response.ResStudentDTO;
 import com.paq.pojo.response.ResStudentAnswerResultDTO;
 import com.paq.pojo.response.ResSubjectDTO;
 import com.paq.pojo.response.ResUserDTO;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DTOMapper {
@@ -359,7 +366,11 @@ public class DTOMapper {
         dto.setOverallProgress(enrollment.getOverallProgress());
         dto.setStatus(enrollment.getStatus() != null ? enrollment.getStatus().name() : null);
         dto.setTotalStudyTime(enrollment.getTotalStudyTime());
-        dto.setCourseId(enrollment.getCourseId() != null ? enrollment.getCourseId().getId() : null);
+
+        if (enrollment.getCourseId() != null) {
+            dto.setCourseId(enrollment.getCourseId().getId());
+            dto.setCourseName(enrollment.getCourseId().getName());
+        }
 
         Student student = enrollment.getStudentId();
         if (student != null) {
@@ -576,6 +587,48 @@ public class DTOMapper {
 
         return dto;
     }
+
+    // ── CourseLesson ────────────────────────────────────────────────────────────
+
+    public static ResCourseLessonDTO toResCourseLessonDTO(CourseLesson cl) {
+        if (cl == null) {
+            return null;
+        }
+
+        ResCourseLessonDTO dto = new ResCourseLessonDTO();
+        dto.setId(cl.getId());
+        dto.setTitle(cl.getTitle());
+        dto.setChapterNum(cl.getChapterNum());
+        dto.setLessonNum(cl.getLessonNum());
+        dto.setIsFree(cl.getIsFree());
+
+        Resource res = cl.getResourceId();
+        if (res != null) {
+            dto.setResourceId(res.getId());
+            dto.setResourceTitle(res.getTitle());
+            dto.setFileUrl(res.getFileUrl());
+            dto.setThumbnailUrl(res.getThumbnailUrl());
+            dto.setPageCount(res.getPageCount());
+            if (res.getFormat() != null) {
+                String fmt = res.getFormat().name();
+                dto.setFormat(fmt);
+                dto.setItemType("MP4".equalsIgnoreCase(fmt) ? "VIDEO" : "DOCUMENT");
+            }
+        }
+
+        Quiz quiz = cl.getQuizId();
+        if (quiz != null) {
+            dto.setQuizId(quiz.getId());
+            dto.setQuizTitle(quiz.getTitle());
+            dto.setDurationMinutes(quiz.getDurationMinutes());
+            if (quiz.getQuestionSet() != null) {
+                dto.setQuestionCount(quiz.getQuestionSet().size());
+            }
+            dto.setItemType("QUIZ");
+        }
+
+        if (dto.getItemType() == null) {
+            dto.setItemType("DOCUMENT");
     private static final SimpleDateFormat DATETIME_FORMAT
             = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -616,6 +669,56 @@ public class DTOMapper {
         return dto;
     }
 
+    public static ResCourseLearnDTO toResCourseLearnDTO(Course course, List<CourseLesson> lessons,
+            boolean hasAccess, String enrollmentStatus) {
+        if (course == null) {
+            return null;
+        }
+
+        ResCourseLearnDTO dto = new ResCourseLearnDTO();
+        dto.setCourseId(course.getId());
+        dto.setCourseName(course.getName());
+        dto.setDescription(course.getDescription());
+        dto.setTargetLevel(course.getTargetLevel() != null ? course.getTargetLevel().name() : null);
+        dto.setIsPaid(course.getIsPaid());
+        dto.setHasAccess(hasAccess);
+        dto.setEnrollmentStatus(enrollmentStatus);
+
+        if (course.getLecturerId() != null) {
+            User lecturerUser = course.getLecturerId().getUserId();
+            if (lecturerUser != null) {
+                dto.setLecturerName(lecturerUser.getFullName());
+            }
+            dto.setLecturerTitle(course.getLecturerId().getSpecialization());
+        }
+
+        List<ResCourseChapterDTO> chapters = toResCourseChapterList(lessons);
+        dto.setChapters(chapters);
+        dto.setTotalChapters(chapters.size());
+        dto.setTotalLessons(lessons != null ? lessons.size() : 0);
+
+        return dto;
+    }
+
+    private static List<ResCourseChapterDTO> toResCourseChapterList(List<CourseLesson> lessons) {
+        Map<Integer, List<ResCourseLessonDTO>> map = new LinkedHashMap<>();
+        if (lessons != null) {
+            for (CourseLesson cl : lessons) {
+                map.computeIfAbsent(cl.getChapterNum(), k -> new ArrayList<>())
+                   .add(toResCourseLessonDTO(cl));
+            }
+        }
+
+        List<ResCourseChapterDTO> chapters = new ArrayList<>();
+        for (Map.Entry<Integer, List<ResCourseLessonDTO>> entry : map.entrySet()) {
+            chapters.add(new ResCourseChapterDTO(
+                    entry.getKey(),
+                    "Chương " + entry.getKey(),
+                    entry.getValue()
+            ));
+        }
+
+        return chapters;
     public static ResInteractionReplyDTO toInteractionReplyDTO(InteractionReply reply) {
         if (reply == null) {
             return null;

@@ -9,5 +9,9 @@ public interface EnrollmentService {
 
     List<ResEnrollmentDTO> getEnrollmentsByCourseId(int courseId, Map<String, String> params);
 
+    List<ResEnrollmentDTO> getMyEnrollments(String username);
+
+    ResEnrollmentDTO enrollSelf(int courseId, String username);
+
     ResEnrollmentDTO updateEnrollmentStatus(int id, ReqEnrollmentStatusDTO request);
 }
