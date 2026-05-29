@@ -1,7 +1,17 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package com.paq.pojo.response;
 
-import java.util.Date;
 import java.util.List;
+
+/**
+ *
+ * @author Admin
+ */
+
+import java.util.Date;
 
 public class ResQuizDTO {
 
@@ -12,6 +22,7 @@ public class ResQuizDTO {
     private Double totalScore;
     private Date createdAt;
     private Integer courseId;
+    private String courseName;
     private ResUserDTO createdBy;
     private List<ResQuestionDTO> questions;
 
@@ -55,6 +66,7 @@ public class ResQuizDTO {
         this.totalScore = totalScore;
     }
 
+
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -71,6 +83,13 @@ public class ResQuizDTO {
         this.courseId = courseId;
     }
 
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
+    }
     public ResUserDTO getCreatedBy() {
         return createdBy;
     }

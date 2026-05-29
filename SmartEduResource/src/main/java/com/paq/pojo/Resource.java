@@ -96,7 +96,8 @@ public class Resource implements Serializable {
     @Column(name = "page_count")
     private Integer pageCount;
     @Column(name = "is_deleted")
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
+
     @JoinTable(name = "resource_type_map", joinColumns = {
         @JoinColumn(name = "resource_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "type_id", referencedColumnName = "id")})
@@ -345,5 +346,9 @@ public class Resource implements Serializable {
     public String toString() {
         return "com.paq.pojo.Resource[ id=" + id + " ]";
     }
-    
+
+    public Object getCreatedDate() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
 }
