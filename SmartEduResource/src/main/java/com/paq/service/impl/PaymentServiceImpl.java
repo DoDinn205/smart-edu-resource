@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.paq.pojo.Payment;
 import com.paq.pojo.response.ResPaymentDTO;
 import com.paq.pojo.response.ResPaymentStatsDTO;
+import com.paq.pojo.response.ResRevenueByMonthDTO;
 import com.paq.repository.PaymentRepository;
 import com.paq.service.PaymentService;
 import com.paq.service.PermissionService;
@@ -80,6 +81,20 @@ public class PaymentServiceImpl implements PaymentService {
             methodCounts.put(entry.getKey().name(), entry.getValue());
         }
         dto.setMethodCounts(methodCounts);
+
+        List<Object[]> monthlyData = this.paymentRepo.getRevenueByMonth(params);
+        List<ResRevenueByMonthDTO> revenueByMonth = new java.util.ArrayList<>();
+        for (Object[] row : monthlyData) {
+            revenueByMonth.add(new ResRevenueByMonthDTO(
+                    (Integer) row[0],
+                    (Integer) row[1],
+                    row[2] != null ? ((Number) row[2]).longValue() : 0L,
+                    row[3] != null ? ((Number) row[3]).longValue() : 0L
+            ));
+        }
+        dto.setRevenueByMonth(revenueByMonth);
+
+        dto.setUserRoleCounts(this.paymentRepo.countPaymentsByUserRole(params));
 
         return dto;
     }

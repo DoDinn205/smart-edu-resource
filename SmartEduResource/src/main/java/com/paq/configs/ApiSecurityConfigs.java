@@ -2,6 +2,7 @@ package com.paq.configs;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -14,14 +15,15 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.paq.filters.JwtFilter;
+import com.paq.repository.UserRepository;
 
-/**
- *
- * @author huu-thanhduong
- */
+
 @Configuration
 @Order(1)
 public class ApiSecurityConfigs {
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Bean
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
@@ -31,9 +33,12 @@ public class ApiSecurityConfigs {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/secure/**").authenticated()
-                .anyRequest().permitAll()
-                ).addFilterBefore(new JwtFilter(), UsernamePasswordAuthenticationFilter.class);
+                        .requestMatchers("/api/secure/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/secure/lecturer/**").hasAnyRole("LECTURER", "ADMIN")
+                        .requestMatchers("/api/secure/student/**").hasAnyRole("STUDENT", "ADMIN")
+                        .requestMatchers("/api/secure/**").authenticated()
+                        .anyRequest().permitAll()
+                ).addFilterBefore(new JwtFilter(this.userRepository), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

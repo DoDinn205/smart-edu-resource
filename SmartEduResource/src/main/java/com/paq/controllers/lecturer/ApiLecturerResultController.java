@@ -1,4 +1,4 @@
-package com.paq.controllers.client;
+package com.paq.controllers.lecturer;
 
 import java.util.List;
 import java.util.Map;
@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,8 +20,8 @@ import com.paq.pojo.response.ResResponse;
 import com.paq.service.LearningResultService;
 
 @RestController
-@RequestMapping("/api/secure")
-public class ApiLearningResultController {
+@RequestMapping("/api/secure/lecturer")
+public class ApiLecturerResultController {
 
     @Autowired
     private LearningResultService learningResultService;
@@ -77,6 +79,18 @@ public class ApiLearningResultController {
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Lấy tiến độ học tập thành công");
         res.setData(this.learningResultService.getLearningProgressByCourseId(courseId, params));
+
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/progress/{enrollmentId}/feedback")
+    public ResponseEntity<ResResponse<ResLearningProgressDTO>> updateLecturerFeedback(
+            @PathVariable int enrollmentId,
+            @RequestBody Map<String, String> body) {
+        ResResponse<ResLearningProgressDTO> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Cập nhật đánh giá thành công");
+        res.setData(this.learningResultService.updateLecturerFeedback(enrollmentId, body.get("feedback")));
 
         return ResponseEntity.ok(res);
     }

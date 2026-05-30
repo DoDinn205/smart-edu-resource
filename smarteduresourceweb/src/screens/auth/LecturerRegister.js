@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Alert, Button, Container, Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
+
+import Apis, { endpoints } from "../../configs/Apis";
 import MySpinner from "../../components/common/MySpinner";
 
 const LecturerRegister = () => {
@@ -10,26 +12,82 @@ const LecturerRegister = () => {
     const [success, setSuccess] = useState("");
     const nav = useNavigate();
 
-    const fields = [
-        { field: "fullName", label: "Họ và tên", type: "text", required: true },
-        { field: "username", label: "Tên đăng nhập", type: "text", required: true },
-        { field: "email", label: "Email", type: "email", required: true },
-        { field: "password", label: "Mật khẩu", type: "password", required: true },
-        { field: "confirmPassword", label: "Xác nhận mật khẩu", type: "password", required: true },
-        { field: "phone", label: "Số điện thoại", type: "text", required: false },
-        { field: "specialization", label: "Chuyên môn", type: "text", required: false },
-    ];
+    const fields = [{
+        field: "fullName",
+        label: "Họ và tên",
+        type: "text",
+        required: true
+    }, {
+        field: "username",
+        label: "Tên đăng nhập",
+        type: "text",
+        required: true
+    }, {
+        field: "email",
+        label: "Email",
+        type: "email",
+        required: true
+    }, {
+        field: "password",
+        label: "Mật khẩu",
+        type: "password",
+        required: true
+    }, {
+        field: "confirmPassword",
+        label: "Xác nhận mật khẩu",
+        type: "password",
+        required: true
+    }, {
+        field: "phone",
+        label: "Số điện thoại",
+        type: "text",
+        required: false
+    }, {
+        field: "specialization",
+        label: "Chuyên môn",
+        type: "text",
+        required: false
+    }];
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErr(""); setSuccess("");
-        if (formData.password !== formData.confirmPassword) { setErr("Mật khẩu xác nhận không khớp."); return; }
+
+        if (formData.password !== formData.confirmPassword) {
+            setErr("Mật khẩu xác nhận không khớp.");
+            return;
+        }
+        
         setLoading(true);
         try {
-            await new Promise(r => setTimeout(r, 800));
+            const payload = {
+                fullName: formData.fullName,
+                username: formData.username,
+                email: formData.email,
+                password: formData.password,
+                phone: formData.phone || null,
+                specialization: formData.specialization || null,
+                degree: formData.degree || null,
+                bio: formData.bio || null,
+            };
+            await Apis.post(endpoints['lecturer-register'], payload);
             setSuccess("Đăng ký thành công! Vui lòng chờ admin duyệt tài khoản.");
             setTimeout(() => nav('/login'), 3000);
-        } catch (ex) { console.error(ex); setErr("Có lỗi xảy ra."); } finally { setLoading(false); }
+        } catch (ex) {
+            console.error(ex);
+            const status = ex.response?.status;
+            const raw = ex.response?.data?.message;
+            if (status === 400 || status === 409) {
+                const msg = Array.isArray(raw)
+                    ? raw.join(" | ")
+                    : (raw || "Dữ liệu không hợp lệ.");
+                setErr(msg);
+            } else {
+                setErr("Có lỗi xảy ra, vui lòng thử lại.");
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

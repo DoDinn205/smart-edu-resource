@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
         this.permissionService.requireAdmin();
         User user = this.userRepo.getUserById(id);
         if (user == null) {
-            throw new IdInvalidException("User khong ton tai");
+            throw new IdInvalidException("User không tồn tại");
         }
 
         return DTOMapper.toResUserDTO(user);
@@ -367,19 +367,19 @@ public class UserServiceImpl implements UserService {
     private void validateUniqueUser(String username, String email, Integer currentUserId) {
         User usernameOwner = this.userRepo.getUserByUsername(username);
         if (usernameOwner != null && !usernameOwner.getId().equals(currentUserId)) {
-            throw new IllegalArgumentException("Username da ton tai");
+            throw new IllegalArgumentException("Username đã tồn tại");
         }
 
         User emailOwner = this.userRepo.getUserByEmail(email);
         if (emailOwner != null && !emailOwner.getId().equals(currentUserId)) {
-            throw new IllegalArgumentException("Email da ton tai");
+            throw new IllegalArgumentException("Email đã tồn tại");
         }
     }
 
     private User getExistingUser(int id) {
         User user = this.userRepo.getUserById(id);
         if (user == null) {
-            throw new IdInvalidException("User khong ton tai");
+            throw new IdInvalidException("User không tồn tại");
         }
 
         return user;
@@ -388,7 +388,7 @@ public class UserServiceImpl implements UserService {
     private Student getExistingStudent(int id) {
         Student student = this.userRepo.getStudentById(id);
         if (student == null) {
-            throw new IdInvalidException("Student khong ton tai");
+            throw new IdInvalidException("Student không tồn tại");
         }
 
         return student;
@@ -397,7 +397,7 @@ public class UserServiceImpl implements UserService {
     private Lecturer getExistingLecturer(int id) {
         Lecturer lecturer = this.userRepo.getLecturerById(id);
         if (lecturer == null) {
-            throw new IdInvalidException("Lecturer khong ton tai");
+            throw new IdInvalidException("Lecturer không tồn tại");
         }
 
         return lecturer;
