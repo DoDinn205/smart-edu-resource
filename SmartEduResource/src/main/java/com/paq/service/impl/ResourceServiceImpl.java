@@ -2,6 +2,7 @@ package com.paq.service.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,34 @@ public class ResourceServiceImpl implements ResourceService {
         return this.resourceRepo.getResources(params).stream()
                 .map(DTOMapper::toResResourceDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ResResourceDTO> getLecturerResources(Map<String, String> params) {
+        this.permissionService.requireLecturerOrAdmin();
+        User user = this.getCurrentUser();
+
+        if (params == null) {
+            params = new HashMap<>();
+        }
+        params.put("uploaderId", String.valueOf(user.getId()));
+
+        return this.resourceRepo.getResources(params).stream()
+                .map(DTOMapper::toResResourceDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Long countLecturerResources(Map<String, String> params) {
+        this.permissionService.requireLecturerOrAdmin();
+        User user = this.getCurrentUser();
+
+        if (params == null) {
+            params = new HashMap<>();
+        }
+        params.put("uploaderId", String.valueOf(user.getId()));
+
+        return this.resourceRepo.countResources(params);
     }
 
     @Override

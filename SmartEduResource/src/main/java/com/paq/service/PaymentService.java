@@ -10,6 +10,8 @@ public interface PaymentService {
 
     List<ResPaymentDTO> getPayments(Map<String, String> params);
 
+    long countPayments(Map<String, String> params);
+
     ResPaymentDTO getPaymentById(int id);
 
     ResPaymentDTO updatePaymentStatus(int id, PaymentStatusEnum status);

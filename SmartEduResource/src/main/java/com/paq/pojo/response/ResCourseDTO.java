@@ -10,7 +10,6 @@ package com.paq.pojo.response;
  */
 
 import java.util.Date;
-import java.util.List;
 
 public class ResCourseDTO {
 
@@ -20,12 +19,14 @@ public class ResCourseDTO {
     private Date startDate;
     private Date endDate;
     private Boolean isPaid;
+    private Long price;
     private Boolean isDeleted;
     private String targetLevel;
     private ResUserDTO createdBy;
     private Integer lecturerId;
     private ResUserDTO lecturerUser;
-    private List<ResSubjectDTO> subjects;
+    private Integer subjectId;
+    private ResSubjectDTO subject;
     private Integer enrollmentCount;
 
     public Integer getId() {
@@ -76,6 +77,14 @@ public class ResCourseDTO {
         this.isPaid = isPaid;
     }
 
+    public Long getPrice() {
+        return price;
+    }
+
+    public void setPrice(Long price) {
+        this.price = price;
+    }
+
     public Boolean getIsDeleted() {
         return isDeleted;
     }
@@ -116,12 +125,20 @@ public class ResCourseDTO {
         this.lecturerUser = lecturerUser;
     }
 
-    public List<ResSubjectDTO> getSubjects() {
-        return subjects;
+    public Integer getSubjectId() {
+        return subjectId;
     }
 
-    public void setSubjects(List<ResSubjectDTO> subjects) {
-        this.subjects = subjects;
+    public void setSubjectId(Integer subjectId) {
+        this.subjectId = subjectId;
+    }
+
+    public ResSubjectDTO getSubject() {
+        return subject;
+    }
+
+    public void setSubject(ResSubjectDTO subject) {
+        this.subject = subject;
     }
 
     public Integer getEnrollmentCount() {

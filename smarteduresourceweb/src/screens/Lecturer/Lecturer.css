@@ -90,3 +90,40 @@
 .lecturer-panel .table tbody tr:hover {
     background: #f8fafc;
 }
+
+/* ===== ACCORDION OVERRIDES ===== */
+.lecturer-accordion .accordion-item {
+    border: 1px solid #e8ecf1 !important;
+    border-radius: 12px !important;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.lecturer-accordion .accordion-button {
+    background: #fafbfc;
+    font-size: 0.92rem;
+    color: #1e293b;
+    padding: 0.85rem 1.2rem;
+    box-shadow: none !important;
+}
+
+.lecturer-accordion .accordion-button:not(.collapsed) {
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+.lecturer-accordion .table {
+    margin-bottom: 0;
+    font-size: 0.85rem;
+}
+
+.lecturer-accordion .table tbody td {
+    padding: 0.65rem 1rem;
+    vertical-align: middle;
+    color: #334155;
+    border-bottom: 1px solid #f0f1f5;
+}
+
+.lecturer-accordion .table tbody tr:hover {
+    background: #f8fafc;
+}

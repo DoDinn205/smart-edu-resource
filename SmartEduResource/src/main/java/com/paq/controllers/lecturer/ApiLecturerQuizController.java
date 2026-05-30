@@ -1,8 +1,11 @@
 package com.paq.controllers.lecturer;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,12 +15,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.paq.pojo.request.ReqAnswerOptionDTO;
 import com.paq.pojo.request.ReqQuestionDTO;
 import com.paq.pojo.request.ReqQuizDTO;
 import com.paq.pojo.response.ResAnswerOptionDTO;
+import com.paq.pojo.response.ResPageDTO;
 import com.paq.pojo.response.ResQuestionDTO;
 import com.paq.pojo.response.ResQuizDTO;
 import com.paq.pojo.response.ResResponse;
@@ -39,6 +44,27 @@ public class ApiLecturerQuizController {
 
     @Autowired
     private AnswerOptionService answerOptionService;
+
+    @Autowired
+    private Environment env;
+
+    @GetMapping("/quizzes")
+    public ResponseEntity<ResResponse<ResPageDTO<ResQuizDTO>>> getLecturerQuizzes(@RequestParam Map<String, String> params) {
+        int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 1;
+        int pageSize = this.env.getProperty("quizzes.page_size", Integer.class);
+
+        Map<String, String> countParams = new HashMap<>(params);
+        Long totalItems = this.quizService.countLecturerQuizzes(countParams);
+
+        ResPageDTO<ResQuizDTO> pageDTO = com.paq.utils.DTOMapper.toResPageDTO(this.quizService.getLecturerQuizzes(params), totalItems, page, pageSize);
+
+        ResResponse<ResPageDTO<ResQuizDTO>> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Lấy danh sách bài tập thành công");
+        res.setData(pageDTO);
+
+        return ResponseEntity.ok(res);
+    }
 
     @GetMapping("/quizzes/{id}/manage")
     public ResponseEntity<ResResponse<ResQuizDTO>> getQuizForManagement(@PathVariable int id) {

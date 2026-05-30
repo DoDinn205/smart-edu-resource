@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Badge, Button, Col, Form, Modal, Row, Table } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { Alert, Badge, Button, Col, Form, Modal, Row, Table, Pagination, InputGroup } from "react-bootstrap";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { MyUserContext } from "../../../configs/Context";
 import Apis, { authApis, endpoints } from "../../../configs/Apis";
@@ -20,6 +20,12 @@ const LecturerCourse = () => {
     const [enrollments, setEnrollments] = useState([]);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const nav = useNavigate();
+    const [q] = useSearchParams();
+    const kwParam = q.get("kw") || "";
+    const [searchKw, setSearchKw] = useState(kwParam);
+    const pageParam = Number.parseInt(q.get("page"), 10);
+    const currentPage = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
         if (!user || (user.role !== "LECTURER" && user.role !== "ADMIN")) {
@@ -27,14 +33,23 @@ const LecturerCourse = () => {
         }
         loadCourses();
         loadSubjects();
-    }, [user, nav]);
+    }, [user, nav, kwParam, currentPage]);
+
+    useEffect(() => {
+        setSearchKw(kwParam);
+    }, [kwParam]);
 
     const loadCourses = async () => {
         try {
             setLoading(true);
             setErr("");
-            let res = await authApis().get(endpoints['lecturer-courses']);
-            setCourses(res.data.data || []);
+            let url = endpoints['lecturer-courses'] + `?page=${currentPage}`;
+            if (kwParam) {
+                url += `&keyword=${kwParam}`;
+            }
+            let res = await authApis().get(url);
+            setCourses(res.data.data?.items || []);
+            setTotalPages(res.data.data?.totalPages || 1);
         } catch (ex) {
             console.error(ex);
             setErr("Không thể tải danh sách khóa học.");
@@ -109,15 +124,46 @@ const LecturerCourse = () => {
         }
     };
 
+    const handleSearch = (e) => {
+        e.preventDefault();
+        const params = new URLSearchParams();
+        if (searchKw.trim()) params.set("kw", searchKw.trim());
+        nav(`?${params.toString()}`);
+    };
+
+    const handlePageChange = (page) => {
+        const params = new URLSearchParams();
+        if (kwParam) params.set("kw", kwParam);
+        if (page > 1) params.set("page", page);
+        nav(`?${params.toString()}`);
+    };
+
     if (loading) return <MySpinner />;
+
+    console.log(subjects);
 
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="mb-0">Quản lý Khóa học</h4>
-                <Button variant="primary" size="sm" onClick={handleOpenCreate}>
-                    <i className="bi bi-plus-lg me-1"></i> Tạo khóa học
-                </Button>
+                <div className="d-flex align-items-center w-50">
+                    <Form onSubmit={handleSearch} className="w-100 me-3">
+                        <InputGroup>
+                            <Form.Control
+                                type="text"
+                                placeholder="Tìm kiếm khóa học..."
+                                value={searchKw}
+                                onChange={(e) => setSearchKw(e.target.value)}
+                            />
+                            <Button variant="outline-secondary" type="submit">
+                                <i className="bi bi-search"></i>
+                            </Button>
+                        </InputGroup>
+                    </Form>
+                    <Button variant="primary" size="sm" onClick={handleOpenCreate} style={{ backgroundColor: '#6366f1', borderColor: '#6366f1', whiteSpace: 'nowrap' }}>
+                        <i className="bi bi-plus-lg me-1"></i> Tạo khóa học
+                    </Button>
+                </div>
             </div>
 
             {err && <Alert variant="danger">{err}</Alert>}
@@ -130,7 +176,6 @@ const LecturerCourse = () => {
                             <th>Tên khóa học</th>
                             <th>Môn học</th>
                             <th>Giá</th>
-                            <th>Trạng thái</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
@@ -139,12 +184,15 @@ const LecturerCourse = () => {
                             <tr key={c.id}>
                                 <td>{c.id}</td>
                                 <td>{c.name}</td>
-                                <td>{c.subjectName || "—"}</td>
-                                <td>{c.price ? `${c.price.toLocaleString('vi-VN')} đ` : "Miễn phí"}</td>
+                                <td>{c.subject?.name || "—"}</td>
                                 <td>
-                                    <Badge bg={c.status === "PUBLISHED" ? "success" : "secondary"}>
-                                        {c.status || "DRAFT"}
-                                    </Badge>
+                                    {c.isPaid ? (
+                                        <span className="text-secondary fw-bold">
+                                            {c.price ? `${c.price.toLocaleString('vi-VN')} đ` : "Có phí"}
+                                        </span>
+                                    ) : (
+                                        <span className="text-secondary fw-bold">Miễn phí</span>
+                                    )}
                                 </td>
                                 <td>
                                     <Button variant="outline-info" size="sm" className="me-1"
@@ -171,6 +219,18 @@ const LecturerCourse = () => {
                         )}
                     </tbody>
                 </Table>
+
+                {totalPages > 1 && (
+                    <div className="d-flex justify-content-center mt-4">
+                        <Pagination>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
+                                <Pagination.Item key={num} active={num === currentPage} onClick={() => handlePageChange(num)}>
+                                    {num}
+                                </Pagination.Item>
+                            ))}
+                        </Pagination>
+                    </div>
+                )}
             </div>
 
             <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">

@@ -1,6 +1,7 @@
 package com.paq.service.impl;
 
 import com.paq.pojo.Course;
+import com.paq.pojo.Lecturer;
 import com.paq.pojo.Quiz;
 import com.paq.pojo.User;
 import com.paq.pojo.request.ReqQuizDTO;
@@ -14,6 +15,7 @@ import com.paq.utils.DTOMapper;
 import com.paq.utils.error.IdInvalidException;
 import com.paq.utils.error.PermissionException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,7 +24,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
+@Transactional
 public class QuizServiceImpl implements QuizService {
 
     @Autowired
@@ -45,6 +50,35 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
+    public List<ResQuizDTO> getLecturerQuizzes(Map<String, String> params) {
+        this.permissionService.requireLecturerOrAdmin();
+        if (params == null || !params.containsKey("courseId")) {
+            throw new IllegalArgumentException("Vui lòng cung cấp courseId");
+        }
+        this.permissionService.requireCourseLecturerOrAdmin(Integer.parseInt(params.get("courseId")));
+        
+        return this.quizRepo.getQuizzes(params).stream()
+                .map(q -> DTOMapper.toResQuizDTO(q, true, false))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Long countLecturerQuizzes(Map<String, String> params) {
+        User currentUser = this.getCurrentUser();
+        Lecturer lecturer = this.userRepo.getLecturerByUserId(currentUser.getId());
+        if (lecturer == null) {
+            throw new IdInvalidException("Tài khoản giảng viên chưa có hồ sơ giảng viên");
+        }
+
+        if (params == null) {
+            params = new HashMap<>();
+        }
+        params.put("lecturerId", String.valueOf(lecturer.getId()));
+
+        return this.quizRepo.countQuizzes(params);
+    }
+
+    @Override
     public ResQuizDTO getQuizById(int id) {
         Quiz quiz = this.getExistingQuiz(id);
         return DTOMapper.toResQuizDTO(quiz, false);
@@ -63,7 +97,7 @@ public class QuizServiceImpl implements QuizService {
 
         Course course = this.courseRepo.getCourseById(request.getCourseId());
         if (course == null) {
-            throw new IdInvalidException("Course khong ton tai");
+            throw new IdInvalidException("Course không tồn tại");
         }
 
         Quiz quiz = new Quiz();

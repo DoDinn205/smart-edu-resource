@@ -29,8 +29,8 @@ const CourseCard = ({ course }) => {
                     </Badge>
                 </div>
                 <div className="desc">{c.description}</div>
-                {c.subjects[0] && (
-                    <div className="crs-subject-tag">{c.subjects[0].name}</div>
+                {c.subject && (
+                    <div className="crs-subject-tag">{c.subject.name}</div>
                 )}
                 <div className="crs-meta">
                     <span className="crs-meta-item">

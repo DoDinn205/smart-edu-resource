@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { MyUserContext } from "../../configs/Context";
 import MySpinner from "../../components/common/MySpinner";
-import { COURSE_LEARN_DATA } from "../../configs/MockData";
+import { authApis, endpoints } from "../../configs/Apis";
 
 // Mock group chat messages for the course group
 const MOCK_GROUP_MSGS = [
@@ -40,21 +40,15 @@ const CourseLearn = () => {
             return;
         }
         loadLearnPage();
-    }, [id]);
+    }, [id, user]);
 
-    const loadLearnPage = () => {
+    const loadLearnPage = async () => {
         setLoading(true);
         setErr("");
 
-        // TODO: thay bằng authApis().get(endpoints['course-learn'](id)) khi backend sẵn sàng
-        setTimeout(() => {
-            const data = COURSE_LEARN_DATA[parseInt(id)];
-            if (!data) {
-                setErr("Không tìm thấy nội dung khóa học. Vui lòng thử lại.");
-                setLoading(false);
-                return;
-            }
-
+        try {
+            const response = await authApis().get(endpoints['course-learn'](id));
+            const data = response.data.data;
             setLearnData(data);
 
             // Auto-expand first chapter and select first lesson
@@ -65,8 +59,11 @@ const CourseLearn = () => {
                     setActiveLesson(firstChapter.lessons[0]);
                 }
             }
+        } catch (ex) {
+            setErr(ex.response?.data?.message || "Không tìm thấy nội dung khóa học. Vui lòng thử lại.");
+        } finally {
             setLoading(false);
-        }, 350);
+        }
     };
 
     const toggleChapter = (chapterNum) => {
@@ -89,10 +86,13 @@ const CourseLearn = () => {
     };
 
     const getLessonIcon = (lesson) => {
-        if (lesson.itemType === "VIDEO") return "▶";
-        if (lesson.itemType === "QUIZ") return "✎";
-        return "📄";
+        if (isLessonLocked(lesson)) return <i className="bi bi-lock-fill" />;
+        if (lesson.itemType === "VIDEO") return <i className="bi bi-play-circle-fill" />;
+        if (lesson.itemType === "QUIZ") return <i className="bi bi-pencil-square" />;
+        return <i className="bi bi-file-earmark-text-fill" />;
     };
+
+    const isLessonLocked = (lesson) => !lesson.isFree && !learnData?.hasAccess;
 
     const getLessonTypeBadge = (lesson) => {
         if (lesson.itemType === "VIDEO") return <Badge bg="danger" className="cl-type-badge">Video</Badge>;
@@ -106,6 +106,15 @@ const CourseLearn = () => {
                 <div className="cl-viewer-empty">
                     <div className="cl-viewer-empty-icon">▶</div>
                     <div>Chọn một bài học để bắt đầu</div>
+                </div>
+            );
+        }
+
+        if (isLessonLocked(activeLesson)) {
+            return (
+                <div className="cl-viewer-empty">
+                    <div className="cl-viewer-empty-icon"><i className="bi bi-lock-fill" /></div>
+                    <div>Nội dung này yêu cầu đăng ký và thanh toán thành công.</div>
                 </div>
             );
         }
@@ -221,6 +230,9 @@ const CourseLearn = () => {
                                             >
                                                 <span className="cl-lesson-icon">{getLessonIcon(lesson)}</span>
                                                 <span className="cl-lesson-name">{lesson.title}</span>
+                                                {isLessonLocked(lesson) && (
+                                                    <span className="badge bg-danger">Đã khóa</span>
+                                                )}
                                                 {lesson.isFree && (
                                                     <span className="cl-free-tag">Miễn phí</span>
                                                 )}

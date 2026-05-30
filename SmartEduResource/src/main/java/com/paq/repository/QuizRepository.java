@@ -22,6 +22,8 @@ public interface QuizRepository {
 
     List<Quiz> getQuizzes(Map<String, String> params);
 
+    Long countQuizzes(Map<String, String> params);
+
     Quiz getQuizById(int id);
 
     Quiz addOrUpdateQuiz(Quiz quiz);

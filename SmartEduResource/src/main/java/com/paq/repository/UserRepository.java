@@ -10,6 +10,8 @@ public interface UserRepository {
 
     List<User> getUsers(Map<String, String> params);
 
+    Long countUsers(Map<String, String> params);
+
     User getUserById(int id);
 
     User getUserByPhone(String phone);
@@ -20,6 +22,8 @@ public interface UserRepository {
 
     List<Student> getStudents(Map<String, String> params);
 
+    Long countStudents(Map<String, String> params);
+
     Student getStudentById(int id);
 
     Student getStudentByUserId(int userId);
@@ -27,6 +31,8 @@ public interface UserRepository {
     Student addOrUpdateStudent(Student student);
 
     List<Lecturer> getLecturers(Map<String, String> params);
+
+    Long countLecturers(Map<String, String> params);
 
     Lecturer getLecturerById(int id);
 

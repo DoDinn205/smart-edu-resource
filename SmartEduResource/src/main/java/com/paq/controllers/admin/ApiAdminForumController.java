@@ -1,9 +1,14 @@
 package com.paq.controllers.admin;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,10 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.paq.pojo.request.ReqForumCategoryDTO;
 import com.paq.pojo.response.ResForumCategoryDTO;
 import com.paq.pojo.response.ResForumThreadDTO;
+import com.paq.pojo.response.ResPageDTO;
 import com.paq.pojo.response.ResResponse;
 import com.paq.service.ForumCategoryService;
 import com.paq.service.ForumThreadService;
 import com.paq.service.ForumPostService;
+import com.paq.utils.DTOMapper;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -35,6 +42,23 @@ public class ApiAdminForumController {
 
     @Autowired
     private ForumPostService postService;
+
+    @Autowired
+    private Environment env;
+
+    @GetMapping("/forum-categories")
+    public ResponseEntity<ResResponse<ResPageDTO<ResForumCategoryDTO>>> getCategories(
+            @RequestParam Map<String, String> params) {
+        int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 1;
+        int pageSize = this.env.getProperty("forum_categories.page_size", Integer.class, 10);
+        long totalItems = this.categoryService.countCategories(new HashMap<>(params));
+
+        ResResponse<ResPageDTO<ResForumCategoryDTO>> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Lay danh sach danh muc dien dan thanh cong");
+        res.setData(DTOMapper.toResPageDTO(this.categoryService.getCategories(params), totalItems, page, pageSize));
+        return ResponseEntity.ok(res);
+    }
 
     @PostMapping("/forum-categories")
     public ResponseEntity<ResResponse<ResForumCategoryDTO>> createCategory(

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Badge, Button, Table } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { Alert, Badge, Button, Form, Table , InputGroup, Pagination} from "react-bootstrap";
+import { useNavigate , useSearchParams} from "react-router-dom";
 
 import { MyUserContext } from "../../../configs/Context";
 import { authApis, endpoints } from "../../../configs/Apis";
@@ -13,18 +13,34 @@ const AdminPayment = () => {
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState("");
     const nav = useNavigate();
+    const [q] = useSearchParams();
+    const kwParam = q.get("kw") || "";
+    const [searchKw, setSearchKw] = useState(kwParam);
+    const pageParam = Number.parseInt(q.get("page"), 10);
+    const currentPage = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
         if (!user || user.role !== "ADMIN") { nav('/login'); return; }
         loadPayments();
-    }, [user, nav]);
+    }, [user, nav, kwParam, currentPage]);
+
+    useEffect(() => {
+        setSearchKw(kwParam);
+    }, [kwParam]);
 
     const loadPayments = async () => {
         try {
             setLoading(true);
             setErr("");
-            let res = await authApis().get(endpoints['admin-payments']);
-            setPayments(res.data.data || []);
+            let url = endpoints['admin-payments'] + `?page=${currentPage}`;
+            if (kwParam) {
+                url += `&keyword=${kwParam}`;
+            }
+            let res = await authApis().get(url);
+            const pageData = res.data.data;
+            setPayments(pageData?.items || []);
+            setTotalPages(pageData?.totalPages || 1);
         } catch (ex) {
             console.error(ex);
             setErr("Không thể tải danh sách giao dịch.");
@@ -51,11 +67,40 @@ const AdminPayment = () => {
         return "secondary";
     };
 
+    const handleSearch = (e) => {
+        e.preventDefault();
+        const params = new URLSearchParams();
+        if (searchKw.trim()) params.set("kw", searchKw.trim());
+        nav(`?${params.toString()}`);
+    };
+
+    const handlePageChange = (page) => {
+        const params = new URLSearchParams();
+        if (kwParam) params.set("kw", kwParam);
+        if (page > 1) params.set("page", page);
+        nav(`?${params.toString()}`);
+    };
+
     if (loading) return <MySpinner />;
 
     return (
         <>
-            <h4 className="mb-4">Quản lý Giao dịch</h4>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h4 className="mb-0">Quản lý Giao dịch</h4>
+                <Form onSubmit={handleSearch} className="w-50">
+                    <InputGroup>
+                        <Form.Control
+                            type="text"
+                            placeholder="Tìm kiếm..."
+                            value={searchKw}
+                            onChange={(e) => setSearchKw(e.target.value)}
+                        />
+                        <Button variant="outline-secondary" type="submit">
+                            <i className="bi bi-search"></i>
+                        </Button>
+                    </InputGroup>
+                </Form>
+            </div>
 
             {err && <Alert variant="danger">{err}</Alert>}
 
@@ -104,6 +149,18 @@ const AdminPayment = () => {
                         )}
                     </tbody>
                 </Table>
+
+                {totalPages > 1 && (
+                    <div className="d-flex justify-content-center mt-4">
+                        <Pagination>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
+                                <Pagination.Item key={num} active={num === currentPage} onClick={() => handlePageChange(num)}>
+                                    {num}
+                                </Pagination.Item>
+                            ))}
+                        </Pagination>
+                    </div>
+                )}
             </div>
         </>
     );

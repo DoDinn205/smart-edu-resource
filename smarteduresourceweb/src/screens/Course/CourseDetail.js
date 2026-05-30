@@ -84,7 +84,7 @@ const CourseDetail = () => {
     if (!course) return null;
 
     const displayedSections = showAllSections ? course.sections : course.sections?.slice(0, 3);
-    const relatedCourses = COURSES.filter(c => c.id !== course.id && c.subjects.some(s => course.subjects.some(cs => cs.id === s.id))).slice(0, 3);
+    const relatedCourses = COURSES.filter(c => c.id !== course.id && c.subject?.id === course.subject?.id).slice(0, 3);
 
     const ctaLabel = isEnrolled ? "Vào học ngay →"
         : enrolling ? "Đang xử lý..."
@@ -104,7 +104,7 @@ const CourseDetail = () => {
                                 <span>›</span>
                                 <Link to="/courses">Khóa học</Link>
                                 <span>›</span>
-                                <span>{course.subjects[0]?.name}</span>
+                                <span>{course.subject?.name}</span>
                             </nav>
 
                             {/* Badges */}
@@ -112,9 +112,9 @@ const CourseDetail = () => {
                                 <Badge className="cd-level-badge" bg={levelVariant(course.targetLevel)}>
                                     {formatLevel(course.targetLevel)}
                                 </Badge>
-                                {course.subjects.map(s => (
-                                    <span key={s.id} className="cd-subject-pill">{s.name}</span>
-                                ))}
+                                {course.subject && (
+                                    <span className="cd-subject-pill">{course.subject.name}</span>
+                                )}
                             </div>
 
                             {/* Title */}

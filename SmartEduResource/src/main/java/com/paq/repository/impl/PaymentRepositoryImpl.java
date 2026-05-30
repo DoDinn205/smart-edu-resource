@@ -67,6 +67,16 @@ public class PaymentRepositoryImpl implements PaymentRepository {
                 predicates.add(b.equal(user.get("id"), Integer.parseInt(userId)));
             }
 
+            String keyword = params.get("keyword");
+            if (keyword != null && !keyword.isBlank()) {
+                String like = String.format("%%%s%%", keyword.trim().toLowerCase());
+                predicates.add(b.or(
+                        b.like(b.lower(root.get("transactionCode")), like),
+                        b.like(b.lower(course.get("name")), like),
+                        b.like(b.lower(user.get("fullName")), like),
+                        b.like(b.lower(user.get("email")), like)));
+            }
+
             Date fromDate = this.parseDate(params.get("fromDate"));
             if (fromDate != null) {
                 predicates.add(b.greaterThanOrEqualTo(root.get("createdAt"), fromDate));
@@ -269,6 +279,16 @@ public class PaymentRepositoryImpl implements PaymentRepository {
         String userId = params.get("userId");
         if (userId != null && !userId.isEmpty()) {
             predicates.add(b.equal(user.get("id"), Integer.parseInt(userId)));
+        }
+
+        String keyword = params.get("keyword");
+        if (keyword != null && !keyword.isBlank()) {
+            String like = String.format("%%%s%%", keyword.trim().toLowerCase());
+            predicates.add(b.or(
+                    b.like(b.lower(root.get("transactionCode")), like),
+                    b.like(b.lower(course.get("name")), like),
+                    b.like(b.lower(user.get("fullName")), like),
+                    b.like(b.lower(user.get("email")), like)));
         }
 
         Date fromDate = this.parseDate(params.get("fromDate"));

@@ -93,4 +93,19 @@ public class CourseLessonRepositoryImpl implements CourseLessonRepository {
         q.setParameter("studentId", studentId);
         return q.getSingleResult() > 0;
     }
+
+    @Override
+    public boolean hasSuccessfulEnrollment(int courseId, Integer studentId) {
+        if (studentId == null) return false;
+        Session session = this.factory.getObject().getCurrentSession();
+        Query<Long> q = session.createQuery(
+                "SELECT COUNT(e) FROM Enrollment e "
+                + "WHERE e.courseId.id = :courseId "
+                + "AND e.studentId.id = :studentId "
+                + "AND e.status = com.paq.utils.constant.EnrollmentStatusEnum.SUCCESS",
+                Long.class);
+        q.setParameter("courseId", courseId);
+        q.setParameter("studentId", studentId);
+        return q.getSingleResult() > 0;
+    }
 }

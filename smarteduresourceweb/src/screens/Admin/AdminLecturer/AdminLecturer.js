@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Badge, Button, Form, Modal, Table } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { Alert, Badge, Button, Form, Modal, Table , InputGroup, Pagination} from "react-bootstrap";
+import { useNavigate , useSearchParams} from "react-router-dom";
 
 import { MyUserContext } from "../../../configs/Context";
 import { authApis, endpoints } from "../../../configs/Apis";
@@ -16,18 +16,32 @@ const AdminLecturer = () => {
     const [editingLecturer, setEditingLecturer] = useState(null);
     const [formData, setFormData] = useState({});
     const nav = useNavigate();
+    const [q] = useSearchParams();
+    const kwParam = q.get("kw") || "";
+    const [searchKw, setSearchKw] = useState(kwParam);
+    const pageParam = Number.parseInt(q.get("page"), 10);
+    const currentPage = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
         if (!user || user.role !== "ADMIN") { nav('/login'); return; }
         loadLecturers();
-    }, [user, nav]);
+    }, [user, nav, kwParam, currentPage]);
+
+    useEffect(() => {
+        setSearchKw(kwParam);
+    }, [kwParam]);
 
     const loadLecturers = async () => {
         try {
             setLoading(true);
             setErr("");
-            let res = await authApis().get(endpoints['admin-lecturers']);
-            setLecturers(res.data.data || []);
+            let url = endpoints['admin-lecturers'] + `?page=${currentPage}`;
+            if (kwParam) url += `&kw=${kwParam}`;
+            let res = await authApis().get(url);
+            const pageData = res.data.data;
+            setLecturers(pageData?.items || []);
+            setTotalPages(pageData?.totalPages || 1);
         } catch (ex) {
             console.error(ex);
             setErr("Không thể tải danh sách giảng viên.");
@@ -99,15 +113,44 @@ const AdminLecturer = () => {
         { field: "department", label: "Khoa/Bộ môn", type: "text" },
     ];
 
+    const handleSearch = (e) => {
+        e.preventDefault();
+        const params = new URLSearchParams();
+        if (searchKw.trim()) params.set("kw", searchKw.trim());
+        nav(`?${params.toString()}`);
+    };
+
+    const handlePageChange = (page) => {
+        const params = new URLSearchParams();
+        if (kwParam) params.set("kw", kwParam);
+        if (page > 1) params.set("page", page);
+        nav(`?${params.toString()}`);
+    };
+
     if (loading) return <MySpinner />;
 
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="mb-0">Quản lý Giảng viên</h4>
-                <Button variant="primary" size="sm" onClick={handleOpenCreate}>
+                <div className="d-flex align-items-center w-50">
+                    <Form onSubmit={handleSearch} className="w-100 me-3">
+                        <InputGroup>
+                            <Form.Control
+                                type="text"
+                                placeholder="Tìm kiếm..."
+                                value={searchKw}
+                                onChange={(e) => setSearchKw(e.target.value)}
+                            />
+                            <Button variant="outline-secondary" type="submit">
+                                <i className="bi bi-search"></i>
+                            </Button>
+                        </InputGroup>
+                    </Form>
+                    <Button style={{ backgroundColor: "#6366f1", borderColor: "#6366f1", whiteSpace: "nowrap" }} variant="primary" size="sm" onClick={handleOpenCreate}>
                     <i className="bi bi-plus-lg me-1"></i> Thêm giảng viên
                 </Button>
+                </div>
             </div>
 
             {err && <Alert variant="danger">{err}</Alert>}
@@ -166,6 +209,18 @@ const AdminLecturer = () => {
                         )}
                     </tbody>
                 </Table>
+
+                {totalPages > 1 && (
+                    <div className="d-flex justify-content-center mt-4">
+                        <Pagination>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
+                                <Pagination.Item key={num} active={num === currentPage} onClick={() => handlePageChange(num)}>
+                                    {num}
+                                </Pagination.Item>
+                            ))}
+                        </Pagination>
+                    </div>
+                )}
             </div>
 
             <Modal show={showModal} onHide={() => setShowModal(false)}>

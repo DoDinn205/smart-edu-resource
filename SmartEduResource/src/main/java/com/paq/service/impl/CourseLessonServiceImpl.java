@@ -47,31 +47,24 @@ public class CourseLessonServiceImpl implements CourseLessonService {
             throw new IdInvalidException("Course không tồn tại");
         }
 
-        String enrollmentStatus = null;
-
-        if (Boolean.TRUE.equals(course.getIsPaid())) {
-            User user = this.userRepo.getUserByUsername(username);
-            if (user == null || Boolean.FALSE.equals(user.getIsActive())) {
-                throw new PermissionException("Tài khoản không hợp lệ");
-            }
-
-            Student student = this.userRepo.getStudentByUserId(user.getId());
-            if (student == null) {
-                throw new PermissionException("Bạn chưa đăng ký khóa học này");
-            }
-
-            boolean hasEnrollment = this.lessonRepo.hasActiveEnrollment(courseId, student.getId());
-            boolean hasPayment = this.lessonRepo.hasSuccessfulPayment(courseId, student.getId());
-
-            if (!hasEnrollment && !hasPayment) {
-                throw new PermissionException("Bạn chưa đăng ký hoặc chưa thanh toán khóa học này");
-            }
-
-            enrollmentStatus = hasEnrollment ? "ACTIVE" : "PAYMENT_SUCCESS";
+        User user = this.userRepo.getUserByUsername(username);
+        if (user == null || Boolean.FALSE.equals(user.getIsActive())) {
+            throw new PermissionException("Tài khoản không hợp lệ");
         }
 
+        Student student = this.userRepo.getStudentByUserId(user.getId());
+        if (student == null) {
+            throw new PermissionException("Không tìm thấy hồ sơ sinh viên");
+        }
+
+        boolean hasEnrollment = this.lessonRepo.hasSuccessfulEnrollment(courseId, student.getId());
+        boolean hasPayment = !Boolean.TRUE.equals(course.getIsPaid())
+                || this.lessonRepo.hasSuccessfulPayment(courseId, student.getId());
+        boolean hasFullAccess = hasEnrollment && hasPayment;
+        String enrollmentStatus = hasEnrollment ? "SUCCESS" : null;
+
         List<CourseLesson> lessons = this.lessonRepo.getLessonsByCourseId(courseId);
-        return DTOMapper.toResCourseLearnDTO(course, lessons, true, enrollmentStatus);
+        return DTOMapper.toResCourseLearnDTO(course, lessons, hasFullAccess, enrollmentStatus);
     }
 
     @Override
@@ -100,6 +93,8 @@ public class CourseLessonServiceImpl implements CourseLessonService {
             throw new IdInvalidException("Course không tồn tại");
         }
 
+        this.validateLessonPosition(request.getCourseId(), request.getChapterNum(), request.getLessonNum(), null);
+
         CourseLesson lesson = new CourseLesson();
         lesson.setIsDeleted(false);
         this.copyFields(lesson, request, course);
@@ -120,6 +115,8 @@ public class CourseLessonServiceImpl implements CourseLessonService {
         if (course == null) {
             throw new IdInvalidException("Course không tồn tại");
         }
+
+        this.validateLessonPosition(request.getCourseId(), request.getChapterNum(), request.getLessonNum(), id);
 
         this.copyFields(lesson, request, course);
         this.lessonRepo.updateLesson(lesson);
@@ -144,6 +141,21 @@ public class CourseLessonServiceImpl implements CourseLessonService {
         lesson.setCourseId(course);
         lesson.setResourceId(request.getResourceId() != null ? new Resource(request.getResourceId()) : null);
         lesson.setQuizId(request.getQuizId() != null ? new Quiz(request.getQuizId()) : null);
+    }
+
+    private void validateLessonPosition(int courseId, Integer chapterNum, Integer lessonNum, Integer excludeLessonId) {
+        if (chapterNum == null || chapterNum <= 0 || lessonNum == null || lessonNum <= 0) {
+            throw new IllegalArgumentException("Chương và bài số phải là số nguyên lớn hơn 0");
+        }
+        List<CourseLesson> existingLessons = this.lessonRepo.getLessonsByCourseId(courseId);
+        for (CourseLesson l : existingLessons) {
+            if (l.getChapterNum() != null && l.getLessonNum() != null
+                    && l.getChapterNum().equals(chapterNum) && l.getLessonNum().equals(lessonNum)) {
+                if (excludeLessonId == null || !l.getId().equals(excludeLessonId)) {
+                    throw new IllegalArgumentException(String.format("Vị trí bài học %d.%d đã tồn tại! Vui lòng chọn số bài khác.", chapterNum, lessonNum));
+                }
+            }
+        }
     }
 
     private void requireLecturerOrAdmin() {

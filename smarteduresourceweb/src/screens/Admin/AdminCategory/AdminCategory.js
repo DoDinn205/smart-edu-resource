@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Form, Modal, Nav, Table } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { Alert, Button, Form, Modal, Nav, Table} from "react-bootstrap";
+import { useNavigate , useSearchParams} from "react-router-dom";
 
 import { MyUserContext } from "../../../configs/Context";
 import { authApis, endpoints } from "../../../configs/Apis";
@@ -9,7 +9,6 @@ import "../Admin.css";
 
 const AdminCategory = () => {
     const [user] = useContext(MyUserContext);
-    const [activeTab, setActiveTab] = useState("subjects");
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState("");
@@ -17,31 +16,36 @@ const AdminCategory = () => {
     const [editingItem, setEditingItem] = useState(null);
     const [formData, setFormData] = useState({});
     const nav = useNavigate();
-
+    const [q] = useSearchParams();
+    const activeTab = q.get("tab") || "subjects";
     const tabs = [
         { 
             key: "subjects", 
             label: "Môn học", 
-            ndpoint: "admin-subjects", 
+            listEndpoint: "subjects",
+            endpoint: "admin-subjects",
             detailEndpoint: "admin-subject-detail" 
         },{
             key: "topics", 
             label: "Chủ đề", 
+            listEndpoint: "topics",
             endpoint: "admin-topics", 
             detailEndpoint: "admin-topic-detail" 
         },{
             key: "resource-tags", 
             label: "Thẻ tài nguyên", 
+            listEndpoint: "resource-tags",
             endpoint: "admin-resource-tags", 
             detailEndpoint: "admin-resource-tag-detail" 
         },{
             key: "resource-types", 
             label: "Loại tài liệu", 
+            listEndpoint: "resource-types",
             endpoint: "admin-resource-types", 
             detailEndpoint: "admin-resource-type-detail" 
         },];
 
-    const currentTab = tabs.find(t => t.key === activeTab);
+    const currentTab = tabs.find(t => t.key === activeTab) || tabs[0];
 
     useEffect(() => {
         if (!user || user.role !== "ADMIN") { nav('/login'); return; }
@@ -52,7 +56,7 @@ const AdminCategory = () => {
         try {
             setLoading(true);
             setErr("");
-            let res = await authApis().get(endpoints[currentTab.endpoint]);
+            let res = await authApis().get(endpoints[currentTab.listEndpoint]);
             setItems(res.data.data || []);
         } catch (ex) {
             console.error(ex);
@@ -102,6 +106,12 @@ const AdminCategory = () => {
         }
     };
 
+    const handleTabChange = (tab) => {
+        const params = new URLSearchParams();
+        if (tab !== "subjects") params.set("tab", tab);
+        nav(`?${params.toString()}`);
+    };
+
     return (
         <>
             <h4 className="mb-4">Quản lý Danh mục</h4>
@@ -111,7 +121,7 @@ const AdminCategory = () => {
             <Nav variant="tabs" className="mb-3">
                 {tabs.map(t => (
                     <Nav.Item key={t.key}>
-                        <Nav.Link active={activeTab === t.key} onClick={() => setActiveTab(t.key)}>
+                        <Nav.Link active={activeTab === t.key} onClick={() => handleTabChange(t.key)}>
                             {t.label}
                         </Nav.Link>
                     </Nav.Item>
@@ -158,6 +168,7 @@ const AdminCategory = () => {
                             )}
                         </tbody>
                     </Table>
+
                 </div>
             )}
 
