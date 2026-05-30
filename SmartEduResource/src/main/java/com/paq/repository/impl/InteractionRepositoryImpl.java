@@ -33,12 +33,13 @@ public class InteractionRepositoryImpl implements InteractionRepository {
         Session s = this.factory.getObject().getCurrentSession();
         Query<Interaction> q = s.createQuery(
                 "FROM Interaction i "
-                + "WHERE i.resourceId.id=:resourceId"
-                + "AND i.isDeleted=false"
-                + "ORDER BY i.createAt DESC",
+                + "WHERE i.resourceId.id = :resourceId "
+                + "ORDER BY i.createdAt DESC",
                 Interaction.class
         );
+
         q.setParameter("resourceId", resourceId);
+
         return q.getResultList();
     }
 

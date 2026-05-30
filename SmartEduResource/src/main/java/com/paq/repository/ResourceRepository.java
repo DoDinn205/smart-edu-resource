@@ -19,5 +19,8 @@ public interface ResourceRepository {
 
     List<ResourceRelation> getRelationsBySourceId(int sourceId);
 
+    List<Resource> getRelatedResources(int resourceId);
+
     void replaceRelations(Resource source, List<Resource> relatedResources);
+
 }

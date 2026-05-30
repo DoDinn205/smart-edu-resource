@@ -19,6 +19,7 @@ import com.paq.utils.constant.EnrollmentStatusEnum;
 import com.paq.utils.error.IdInvalidException;
 import com.paq.utils.error.PermissionException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,7 @@ public class StudentCourseServiceImpl implements StudentCourseService {
 
     @Override
     public List<ResCourseDTO> getCourses() {
-        return this.courseRepo.getCourses()
+        return this.courseRepo.getCourses(new HashMap<>())
                 .stream()
                 .map(c -> DTOMapper.toCourseDTO(c))
                 .collect(Collectors.toList());
@@ -103,5 +104,6 @@ public class StudentCourseServiceImpl implements StudentCourseService {
                 .map(e -> DTOMapper.toEnrollmentDTO(e))
                 .collect(Collectors.toList());
     }
+    
 
 }

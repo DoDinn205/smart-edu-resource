@@ -15,4 +15,12 @@ public interface EnrollmentRepository {
     boolean existsByCourseId(int courseId);
 
     boolean existsByCourseIdAndUserId(int courseId, int userId);
+
+    boolean existsByStudentAndCourse(int studentId, int courseId);
+
+    Enrollment addEnrollment(Enrollment enrollment);
+
+    List<Enrollment> getEnrollmentsByStudentId(int studentId);
+
+    List<Enrollment> getEnrollmentsByUsername(String username);
 }

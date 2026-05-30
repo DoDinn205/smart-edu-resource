@@ -209,4 +209,24 @@ public class ResourceRepositoryImpl implements ResourceRepository {
             session.persist(relation);
         }
     }
+
+    @Override
+    public List<Resource> getRelatedResources(int resourceId) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        Resource resource = s.get(Resource.class, resourceId);
+
+        if (resource == null) {
+            return new ArrayList<>();
+        }
+
+        Query<Resource> q = s.createQuery(
+                "FROM Resource r WHERE r.id <> :id",
+                Resource.class
+        );
+
+        q.setParameter("id", resourceId);
+
+        return q.setMaxResults(5).getResultList();
+    }
 }

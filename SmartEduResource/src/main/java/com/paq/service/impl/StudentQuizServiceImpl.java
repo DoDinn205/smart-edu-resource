@@ -20,10 +20,12 @@ import com.paq.pojo.response.ResQuizResultDTO;
 import com.paq.repository.QuizRepository;
 import com.paq.service.StudentQuizService;
 import com.paq.service.UserService;
+import com.paq.utils.constant.AttemptStatusEnum;
 import com.paq.utils.error.IdInvalidException;
 import com.paq.utils.error.PermissionException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +48,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
 
     @Override
     public List<ResQuizDTO> getQuizzes() {
-        return this.quizRepo.getQuizzes()
+        return this.quizRepo.getQuizzes(new HashMap<>())
                 .stream()
                 .map(q -> this.toQuizDTO(q, false))
                 .collect(Collectors.toList());
@@ -84,7 +86,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
         attempt.setStudentId(student);
         attempt.setStartedAt(new Date());
         attempt.setSubmittedAt(new Date());
-        attempt.setStatus("SUBMITTED");
+        attempt.setStatus(AttemptStatusEnum.SUBMITTED);
 
         double totalScore = 0;
         int correctCount = 0;
@@ -166,8 +168,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
         dto.setTotalScore(q.getTotalScore());
 
         dto.setCreatedAt(
-                q.getCreatedAt() != null
-                ? datetimeFormat.format(q.getCreatedAt()) : null
+                q.getCreatedAt()
         );
 
         if (q.getCourseId() != null) {
@@ -193,7 +194,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
         dto.setId(q.getId());
         dto.setContent(q.getContent());
         dto.setScore(q.getScore());
-        dto.setType(q.getType());
+        dto.setType(q.getType() != null ? q.getType().name() : null);
 
         List<ResAnswerOptionDTO> options = this.quizRepo.getOptionsByQuestionId(q.getId())
                 .stream()
@@ -229,7 +230,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
         }
 
         dto.setScore(attempt.getScore());
-        dto.setStatus(attempt.getStatus());
+        dto.setStatus(attempt.getStatus()!= null ? attempt.getStatus().name() : null);
 
         dto.setSubmittedAt(
                 attempt.getSubmittedAt() != null

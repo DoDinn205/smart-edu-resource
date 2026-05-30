@@ -121,4 +121,54 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
         q.setParameter("userId", userId);
         return q.getSingleResult() > 0;
     }
+
+    @Override
+    public boolean existsByStudentAndCourse(int studentId, int courseId) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        Query<Long> q = s.createQuery(
+                "SELECT COUNT(e) FROM Enrollment e "
+                + "WHERE e.studentId.id = :studentId "
+                + "AND e.courseId.id = :courseId",
+                Long.class
+        );
+
+        q.setParameter("studentId", studentId);
+        q.setParameter("courseId", courseId);
+
+        return q.getSingleResult() > 0;
+    }
+
+    @Override
+    public Enrollment addEnrollment(Enrollment enrollment) {
+        Session s = this.factory.getObject().getCurrentSession();
+        s.persist(enrollment);
+        return enrollment;
+    }
+
+    @Override
+    public List<Enrollment> getEnrollmentsByStudentId(int studentId) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        Query<Enrollment> q = s.createQuery(
+                "FROM Enrollment e WHERE e.studentId.id = :studentId",
+                Enrollment.class
+        );
+
+        q.setParameter("studentId", studentId);
+        return q.getResultList();
+    }
+
+    @Override
+    public List<Enrollment> getEnrollmentsByUsername(String username) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        Query<Enrollment> q = s.createQuery(
+                "FROM Enrollment e WHERE e.studentId.userId.username = :username",
+                Enrollment.class
+        );
+
+        q.setParameter("username", username);
+        return q.getResultList();
+    }
 }

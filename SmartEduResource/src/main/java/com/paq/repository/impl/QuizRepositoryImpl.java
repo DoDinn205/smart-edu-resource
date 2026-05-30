@@ -1,6 +1,10 @@
 package com.paq.repository.impl;
 
+import com.paq.pojo.AnswerOption;
+import com.paq.pojo.Question;
 import com.paq.pojo.Quiz;
+import com.paq.pojo.QuizAttempt;
+import com.paq.pojo.StudentAnswer;
 import com.paq.repository.QuizRepository;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -119,5 +123,64 @@ public class QuizRepositoryImpl implements QuizRepository {
         Quiz quiz = session.get(Quiz.class, id);
         quiz.setIsDeleted(Boolean.TRUE);
         session.merge(quiz);
+    }
+
+    @Override
+    public List<Question> getQuestionsByQuizId(int quizId) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        Query<Question> q = s.createQuery(
+                "FROM Question q WHERE q.quizId.id = :quizId AND (q.isDeleted = false OR q.isDeleted IS NULL)",
+                Question.class
+        );
+
+        q.setParameter("quizId", quizId);
+        return q.getResultList();
+    }
+
+    @Override
+    public List<AnswerOption> getOptionsByQuestionId(int questionId) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        Query<AnswerOption> q = s.createQuery(
+                "FROM AnswerOption a WHERE a.questionId.id = :questionId AND (a.isDeleted = false OR a.isDeleted IS NULL)",
+                AnswerOption.class
+        );
+
+        q.setParameter("questionId", questionId);
+        return q.getResultList();
+    }
+
+    @Override
+    public AnswerOption getAnswerOptionById(int id) {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.get(AnswerOption.class, id);
+    }
+
+    @Override
+    public QuizAttempt addQuizAttempt(QuizAttempt attempt) {
+        Session s = this.factory.getObject().getCurrentSession();
+        s.persist(attempt);
+        return attempt;
+    }
+
+    @Override
+    public StudentAnswer addStudentAnswer(StudentAnswer answer) {
+        Session s = this.factory.getObject().getCurrentSession();
+        s.persist(answer);
+        return answer;
+    }
+
+    @Override
+    public List<QuizAttempt> getAttemptsByUsername(String username) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        Query<QuizAttempt> q = s.createQuery(
+                "FROM QuizAttempt a WHERE a.studentId.userId.username = :username",
+                QuizAttempt.class
+        );
+
+        q.setParameter("username", username);
+        return q.getResultList();
     }
 }

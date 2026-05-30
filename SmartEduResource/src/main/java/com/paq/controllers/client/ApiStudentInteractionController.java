@@ -53,6 +53,14 @@ public class ApiStudentInteractionController {
             @RequestBody ReqInteractionDTO request,
             Principal principal) {
 
+        if (principal == null) {
+            ResResponse<ResInteractionDTO> res = new ResResponse<>();
+            res.setStatusCode(HttpStatus.UNAUTHORIZED.value());
+            res.setMessage("Vui lòng đăng nhập");
+            res.setData(null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
+        }
+
         ResResponse<ResInteractionDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Create interaction successfully");
@@ -86,7 +94,7 @@ public class ApiStudentInteractionController {
     @DeleteMapping("/secure/student/interactions/{interactionId}")
     public ResponseEntity<ResResponse<ResInteractionDTO>> deleteInteraction(
             @PathVariable("interactionId") int interactionId,
-        Principal principal) {
+            Principal principal) {
 
         ResResponse<ResInteractionDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
