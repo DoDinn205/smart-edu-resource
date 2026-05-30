@@ -2,11 +2,13 @@ package com.paq.utils;
 
 import com.paq.pojo.Course;
 import com.paq.pojo.Enrollment;
+import com.paq.pojo.Interaction;
 import com.paq.pojo.LearningLog;
 import com.paq.pojo.Resource;
 import com.paq.pojo.User;
 import com.paq.pojo.response.ResCourseDTO;
 import com.paq.pojo.response.ResEnrollmentDTO;
+import com.paq.pojo.response.ResInteractionDTO;
 import com.paq.pojo.response.ResLearningLogDTO;
 import com.paq.pojo.response.ResResourceDTO;
 import com.paq.pojo.response.ResUserDTO;
@@ -135,5 +137,42 @@ public class DTOMapper {
 
         return dto;
     }
+
+    public static ResInteractionDTO toInteractionDTO(Interaction i) {
+
+        ResInteractionDTO dto = new ResInteractionDTO();
+
+        dto.setId(i.getId());
+        dto.setNote(i.getNote());
+        dto.setSelectedText(i.getSelectedText());
+        dto.setType(i.getType());
+
+        if (i.getCreatedAt() != null) {
+            dto.setCreatedAt(DATETIME.format(i.getCreatedAt()));
+        }
+
+        if (i.getUpdatedAt() != null) {
+            dto.setUpdatedAt(DATETIME.format(i.getUpdatedAt()));
+        }
+
+        dto.setPageNumber(i.getPageNumber());
+        dto.setTimeOffsetSeconds(i.getTimeOffsetSeconds());
+        dto.setPositionX(i.getPositionX());
+
+        if (i.getResourceId() != null) {
+            dto.setResourceId(i.getResourceId().getId());
+            dto.setResourceTitle(i.getResourceId().getTitle());
+        }
+
+        if (i.getUserId() != null) {
+            dto.setUserId(i.getUserId().getId());
+            dto.setUsername(i.getUserId().getUsername());
+            dto.setFullName(i.getUserId().getFullName());
+        }
+
+        return dto;
+    }
+
+    
 
 }
