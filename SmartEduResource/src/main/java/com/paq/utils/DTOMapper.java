@@ -586,6 +586,8 @@ public class DTOMapper {
             dto.setStudentUser(toResUserDTO(student.getUserId()));
         }
 
+        dto.setLecturerFeedback(enrollment.getLecturerFeedback());
+
         return dto;
     }
 

@@ -16,4 +16,6 @@ public interface LearningResultService {
     List<ResQuizAttemptDTO> getQuizAttemptsByQuizId(int quizId, Map<String, String> params);
 
     List<ResLearningProgressDTO> getLearningProgressByCourseId(int courseId, Map<String, String> params);
+
+    ResLearningProgressDTO updateLecturerFeedback(int enrollmentId, String feedback);
 }

@@ -3,6 +3,7 @@ import { Alert, Button, Container, Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import cookies from "react-cookies";
 
+import Apis, { authApis, endpoints } from "../../configs/Apis";
 import { MyUserContext } from "../../configs/Context";
 import MySpinner from "../../components/common/MySpinner";
 
@@ -18,25 +19,30 @@ const Login = () => {
         setErr("");
         setLoading(true);
         try {
-            const mockUsers = [
-                { accessToken: "mock-token-student", userId: 1, username: "student1", role: "STUDENT", fullName: "Nguyễn Văn Minh", email: "student@test.com", avatar: null },
-                { accessToken: "mock-token-lecturer", userId: 2, username: "lecturer1", role: "LECTURER", fullName: "TS. Nguyễn Văn An", email: "lecturer@test.com", avatar: null },
-                { accessToken: "mock-token-admin", userId: 3, username: "admin1", role: "ADMIN", fullName: "Quản trị viên", email: "admin@test.com", avatar: null },
-            ];
-            await new Promise(r => setTimeout(r, 600));
-            const found = mockUsers.find(u => u.username === formData.username);
-            if (!found || formData.password !== "123456") {
-                setErr("Tên đăng nhập hoặc mật khẩu không chính xác.");
+            const res = await Apis.post(endpoints['login'], {
+                username: formData.username,
+                password: formData.password,
+            });
+            const token = res.data.data?.accessToken;
+            if (!token) {
+                setErr("Đăng nhập thất bại, vui lòng thử lại.");
                 return;
             }
-            cookies.save('token', found.accessToken);
-            const userData = { id: found.userId, username: found.username, fullName: found.fullName, email: found.email, role: found.role, avatar: found.avatar };
+            cookies.save('token', token);
+
+            const profileRes = await authApis().get(endpoints['profile']);
+            const userData = profileRes.data.data;
+
             cookies.save('user', userData);
             dispatch({ "type": "LOGIN", "payload": userData });
             nav('/');
         } catch (ex) {
             console.error(ex);
-            setErr("Có lỗi xảy ra, vui lòng thử lại.");
+            if (ex.response?.status === 401 || ex.response?.status === 403) {
+                setErr("Tên đăng nhập hoặc mật khẩu không chính xác.");
+            } else {
+                setErr("Có lỗi xảy ra, vui lòng thử lại.");
+            }
         } finally {
             setLoading(false);
         }
@@ -64,9 +70,6 @@ const Login = () => {
                     <div className="text-center mt-3">
                         <p className="mb-1"><Link to="/forgot-password" className="auth-link">Quên mật khẩu?</Link></p>
                         <p className="mb-0">Chưa có tài khoản? <Link to="/register/student" className="auth-link">Đăng ký</Link></p>
-                    </div>
-                    <div className="mock-hint">
-                        <strong>Tài khoản demo:</strong> student1 / lecturer1 / admin1 &mdash; mật khẩu: 123456
                     </div>
                 </div>
             </div>

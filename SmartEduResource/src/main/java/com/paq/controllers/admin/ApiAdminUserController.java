@@ -29,13 +29,13 @@ import com.paq.service.UserService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/secure/admin")
 public class ApiAdminUserController {
 
     @Autowired
     private UserService userService;
 
-    @GetMapping("/secure/admin/users")
+    @GetMapping("/users")
     public ResponseEntity<ResResponse<List<ResUserDTO>>> getUsers(@RequestParam Map<String, String> params) {
         ResResponse<List<ResUserDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -45,7 +45,7 @@ public class ApiAdminUserController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/secure/admin/users/{id}")
+    @GetMapping("/users/{id}")
     public ResponseEntity<ResResponse<ResUserDTO>> getUserById(@PathVariable int id) {
         ResResponse<ResUserDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -55,7 +55,7 @@ public class ApiAdminUserController {
         return ResponseEntity.ok(res);
     }
 
-    @PutMapping("/secure/admin/users/{id}/status")
+    @PutMapping("/users/{id}/status")
     public ResponseEntity<ResResponse<ResUserDTO>> updateUserStatus(@PathVariable int id,
             @Valid @RequestBody ReqUserStatusDTO request) {
         ResResponse<ResUserDTO> res = new ResResponse<>();
@@ -66,7 +66,7 @@ public class ApiAdminUserController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/secure/admin/students")
+    @GetMapping("/students")
     public ResponseEntity<ResResponse<List<ResStudentDTO>>> getStudents(@RequestParam Map<String, String> params) {
         ResResponse<List<ResStudentDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -76,7 +76,7 @@ public class ApiAdminUserController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/secure/admin/students/{id}")
+    @GetMapping("/students/{id}")
     public ResponseEntity<ResResponse<ResStudentDTO>> getStudentById(@PathVariable int id) {
         ResResponse<ResStudentDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -86,7 +86,7 @@ public class ApiAdminUserController {
         return ResponseEntity.ok(res);
     }
 
-    @PostMapping("/secure/admin/students")
+    @PostMapping("/students")
     public ResponseEntity<ResResponse<ResStudentDTO>> createStudent(@Valid @RequestBody ReqStudentDTO request) {
         ResResponse<ResStudentDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.CREATED.value());
@@ -96,7 +96,7 @@ public class ApiAdminUserController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
-    @PutMapping("/secure/admin/students/{id}")
+    @PutMapping("/students/{id}")
     public ResponseEntity<ResResponse<ResStudentDTO>> updateStudent(@PathVariable int id,
             @Valid @RequestBody ReqStudentDTO request) {
         ResResponse<ResStudentDTO> res = new ResResponse<>();
@@ -107,7 +107,7 @@ public class ApiAdminUserController {
         return ResponseEntity.ok(res);
     }
 
-    @DeleteMapping("/secure/admin/students/{id}")
+    @DeleteMapping("/students/{id}")
     public ResponseEntity<ResResponse<Object>> deleteStudent(@PathVariable int id) {
         this.userService.deleteStudent(id);
 
@@ -118,7 +118,7 @@ public class ApiAdminUserController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/secure/admin/lecturers")
+    @GetMapping("/lecturers")
     public ResponseEntity<ResResponse<List<ResLecturerDTO>>> getLecturers(@RequestParam Map<String, String> params) {
         ResResponse<List<ResLecturerDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -128,7 +128,7 @@ public class ApiAdminUserController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/secure/admin/lecturers/{id}")
+    @GetMapping("/lecturers/{id}")
     public ResponseEntity<ResResponse<ResLecturerDTO>> getLecturerById(@PathVariable int id) {
         ResResponse<ResLecturerDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -138,7 +138,7 @@ public class ApiAdminUserController {
         return ResponseEntity.ok(res);
     }
 
-    @PostMapping("/secure/admin/lecturers")
+    @PostMapping("/lecturers")
     public ResponseEntity<ResResponse<ResLecturerDTO>> createLecturer(@Valid @RequestBody ReqLecturerDTO request) {
         ResResponse<ResLecturerDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.CREATED.value());
@@ -148,7 +148,7 @@ public class ApiAdminUserController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
-    @PutMapping("/secure/admin/lecturers/{id}")
+    @PutMapping("/lecturers/{id}")
     public ResponseEntity<ResResponse<ResLecturerDTO>> updateLecturer(@PathVariable int id,
             @Valid @RequestBody ReqLecturerDTO request) {
         ResResponse<ResLecturerDTO> res = new ResResponse<>();
@@ -159,7 +159,7 @@ public class ApiAdminUserController {
         return ResponseEntity.ok(res);
     }
 
-    @PutMapping("/secure/admin/lecturers/{id}/approval")
+    @PutMapping("/lecturers/{id}/approval")
     public ResponseEntity<ResResponse<ResLecturerDTO>> updateLecturerApproval(@PathVariable int id,
             @Valid @RequestBody ReqLecturerApprovalDTO request) {
         ResResponse<ResLecturerDTO> res = new ResResponse<>();
@@ -170,7 +170,7 @@ public class ApiAdminUserController {
         return ResponseEntity.ok(res);
     }
 
-    @DeleteMapping("/secure/admin/lecturers/{id}")
+    @DeleteMapping("/lecturers/{id}")
     public ResponseEntity<ResResponse<Object>> deleteLecturer(@PathVariable int id) {
         this.userService.deleteLecturer(id);
 

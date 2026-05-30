@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Alert, Button, Container, Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
+
+import Apis, { endpoints } from "../../configs/Apis";
 import MySpinner from "../../components/common/MySpinner";
 
 const StudentRegister = () => {
@@ -10,26 +12,84 @@ const StudentRegister = () => {
     const [success, setSuccess] = useState("");
     const nav = useNavigate();
 
-    const fields = [
-        { field: "fullName", label: "Họ và tên", type: "text", required: true },
-        { field: "username", label: "Tên đăng nhập", type: "text", required: true },
-        { field: "email", label: "Email", type: "email", required: true },
-        { field: "password", label: "Mật khẩu", type: "password", required: true },
-        { field: "confirmPassword", label: "Xác nhận mật khẩu", type: "password", required: true },
-        { field: "phone", label: "Số điện thoại", type: "text", required: false },
-        { field: "studentCode", label: "Mã sinh viên", type: "text", required: false },
-    ];
+    const fields = [{
+        field: "fullName",
+        label: "Họ và tên",
+        type: "text",
+        required: true
+    }, {
+        field: "username",
+        label: "Tên đăng nhập",
+        type: "text",
+        required: true
+    }, {
+        field: "email",
+        label: "Email",
+        type: "email",
+        required: true
+    }, {
+        field: "password",
+        label: "Mật khẩu",
+        type: "password",
+        required: true
+    }, {
+        field: "confirmPassword",
+        label: "Xác nhận mật khẩu",
+        type: "password",
+        required: true
+    }, {
+        field: "phone",
+        label: "Số điện thoại",
+        type: "text",
+        required: false
+    }, {
+        field: "studentCode",
+        label: "Mã sinh viên",
+        type: "text",
+        required: false
+    }];
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErr(""); setSuccess("");
-        if (formData.password !== formData.confirmPassword) { setErr("Mật khẩu xác nhận không khớp."); return; }
+
+        if (formData.password !== formData.confirmPassword) {
+            setErr("Mật khẩu xác nhận không khớp.");
+            return;
+        }
+
         setLoading(true);
         try {
-            await new Promise(r => setTimeout(r, 800));
+            const payload = {
+                fullName: formData.fullName,
+                username: formData.username,
+                email: formData.email,
+                password: formData.password,
+                phone: formData.phone || null,
+                studentCode: formData.studentCode || null,
+                dob: formData.dob || null,
+                gender: (formData.gender !== '' && formData.gender !== undefined) ? Number(formData.gender) : null,
+                educationLevel: formData.educationLevel || null,
+                learningGoal: formData.learningGoal || null,
+            };
+            await Apis.post(endpoints['student-register'], payload);
             setSuccess("Đăng ký thành công! Đang chuyển đến trang đăng nhập...");
             setTimeout(() => nav('/login'), 2000);
-        } catch (ex) { console.error(ex); setErr("Có lỗi xảy ra."); } finally { setLoading(false); }
+        } catch (ex) {
+            console.error(ex);
+            const status = ex.response?.status;
+            const raw = ex.response?.data?.message;
+            if (status === 400 || status === 409) {
+                const msg = Array.isArray(raw)
+                    ? raw.join(" | ")
+                    : (raw || "Dữ liệu không hợp lệ.");
+                setErr(msg);
+            } else {
+                setErr("Có lỗi xảy ra, vui lòng thử lại.");
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -63,10 +123,11 @@ const StudentRegister = () => {
                             <Form.Label>Trình độ học vấn</Form.Label>
                             <Form.Select value={formData.educationLevel || ''} onChange={e => setFormData({ ...formData, educationLevel: e.target.value })}>
                                 <option value="">Chọn trình độ</option>
-                                <option value="HIGH_SCHOOL">THPT</option>
-                                <option value="COLLEGE">Cao đẳng</option>
-                                <option value="UNIVERSITY">Đại học</option>
-                                <option value="MASTER">Thạc sĩ</option>
+                                <option value="FRESHMAN">Năm 1</option>
+                                <option value="SOPHOMORE">Năm 2</option>
+                                <option value="JUNIOR">Năm 3</option>
+                                <option value="SENIOR">Năm 4</option>
+                                <option value="ALUMNI">Đã tốt nghiệp</option>
                             </Form.Select>
                         </Form.Group>
                         <Form.Group className="mb-3">

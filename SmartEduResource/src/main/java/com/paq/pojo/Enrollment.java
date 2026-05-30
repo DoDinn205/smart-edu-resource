@@ -64,6 +64,8 @@ public class Enrollment implements Serializable {
     private EnrollmentStatusEnum status;
     @Column(name = "total_study_time")
     private Integer totalStudyTime;
+    @Column(name = "lecturer_feedback", length = 1000)
+    private String lecturerFeedback;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "enrollmentId")
     @JsonIgnore
     private Set<LearningLog> learningLogSet;
@@ -122,6 +124,14 @@ public class Enrollment implements Serializable {
 
     public void setTotalStudyTime(Integer totalStudyTime) {
         this.totalStudyTime = totalStudyTime;
+    }
+
+    public String getLecturerFeedback() {
+        return lecturerFeedback;
+    }
+
+    public void setLecturerFeedback(String lecturerFeedback) {
+        this.lecturerFeedback = lecturerFeedback;
     }
 
     @XmlTransient

@@ -54,6 +54,12 @@ const Header = () => {
                                         <NavDropdown.Item as={Link} to="/payments">Lịch sử thanh toán</NavDropdown.Item>
                                     </>
                                 )}
+                                {user.role === "LECTURER" && (
+                                    <NavDropdown.Item as={Link} to="/lecturer/dashboard">Quản lý Giảng viên</NavDropdown.Item>
+                                )}
+                                {user.role === "ADMIN" && (
+                                    <NavDropdown.Item as={Link} to="/admin/dashboard">Trang quản trị</NavDropdown.Item>
+                                )}
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item onClick={handleLogout}>Đăng xuất</NavDropdown.Item>
                             </NavDropdown>

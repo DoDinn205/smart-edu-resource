@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import cookies from "react-cookies";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import './App.css';
 
 import { MyUserContext } from "./configs/Context";
@@ -15,8 +16,6 @@ import Home from "./screens/Home/Home";
 import Login from "./screens/auth/Login";
 import StudentRegister from "./screens/auth/StudentRegister";
 import LecturerRegister from "./screens/auth/LecturerRegister";
-import ForgotPassword from "./screens/auth/ForgotPassword";
-import ResetPassword from "./screens/auth/ResetPassword";
 import ResourceBrowse from "./screens/Resource/ResourceBrowse";
 import ResourceDetail from "./screens/Resource/ResourceDetail";
 import CourseBrowse from "./screens/Course/CourseBrowse";
@@ -34,9 +33,50 @@ import ForumThread from "./screens/Forum/ForumThread";
 import Chat from "./screens/Chat/Chat";
 import PaymentHistory from "./screens/Payment/PaymentHistory";
 
+import AdminLayout from "./components/Layouts/AdminLayout";
+import AdminDashboard from "./screens/Admin/AdminDashboard/AdminDashboard";
+import AdminUser from "./screens/Admin/AdminUser/AdminUser";
+import AdminLecturer from "./screens/Admin/AdminLecturer/AdminLecturer";
+import AdminCategory from "./screens/Admin/AdminCategory/AdminCategory";
+import AdminPayment from "./screens/Admin/AdminPayment/AdminPayment";
+import AdminForum from "./screens/Admin/AdminForum/AdminForum";
+import AdminReport from "./screens/Admin/AdminReport/AdminReport";
+
+import LecturerLayout from "./components/Layouts/LecturerLayout";
+import LecturerDashboard from "./screens/Lecturer/LecturerDashboard/LecturerDashboard";
+import LecturerCourse from "./screens/Lecturer/LecturerCourse/LecturerCourse";
+import LecturerLesson from "./screens/Lecturer/LecturerCourse/LecturerLesson";
+import LecturerResource from "./screens/Lecturer/LecturerResource/LecturerResource";
+import LecturerQuiz from "./screens/Lecturer/LecturerQuiz/LecturerQuiz";
+import LecturerChat from "./screens/Lecturer/LecturerChat/LecturerChat";
+import LecturerResult from "./screens/Lecturer/LecturerResult/LecturerResult";
+
 const AppLayout = () => {
     const { pathname } = useLocation();
     const isFullscreen = /^\/courses\/\d+\/learn$/.test(pathname);
+    const isDashboard = pathname.startsWith('/admin') || pathname.startsWith('/lecturer');
+
+    if (isDashboard) {
+        return (
+            <Routes>
+                <Route path="/admin/dashboard" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+                <Route path="/admin/students" element={<AdminLayout><AdminUser /></AdminLayout>} />
+                <Route path="/admin/lecturers" element={<AdminLayout><AdminLecturer /></AdminLayout>} />
+                <Route path="/admin/categories" element={<AdminLayout><AdminCategory /></AdminLayout>} />
+                <Route path="/admin/payments" element={<AdminLayout><AdminPayment /></AdminLayout>} />
+                <Route path="/admin/forum" element={<AdminLayout><AdminForum /></AdminLayout>} />
+                <Route path="/admin/reports" element={<AdminLayout><AdminReport /></AdminLayout>} />
+
+                <Route path="/lecturer/dashboard" element={<LecturerLayout><LecturerDashboard /></LecturerLayout>} />
+                <Route path="/lecturer/courses" element={<LecturerLayout><LecturerCourse /></LecturerLayout>} />
+                <Route path="/lecturer/courses/:id/lessons" element={<LecturerLayout><LecturerLesson /></LecturerLayout>} />
+                <Route path="/lecturer/resources" element={<LecturerLayout><LecturerResource /></LecturerLayout>} />
+                <Route path="/lecturer/quizzes" element={<LecturerLayout><LecturerQuiz /></LecturerLayout>} />
+                <Route path="/lecturer/chat" element={<LecturerLayout><LecturerChat /></LecturerLayout>} />
+                <Route path="/lecturer/results" element={<LecturerLayout><LecturerResult /></LecturerLayout>} />
+            </Routes>
+        );
+    }
 
     return (
         <div className={isFullscreen ? "" : "d-flex flex-column min-vh-100"}>
@@ -47,8 +87,6 @@ const AppLayout = () => {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register/student" element={<StudentRegister />} />
                     <Route path="/register/lecturer" element={<LecturerRegister />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/resources" element={<ResourceBrowse />} />
                     <Route path="/resources/:id" element={<ResourceDetail />} />
                     <Route path="/courses" element={<CourseBrowse />} />

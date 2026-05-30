@@ -18,6 +18,7 @@ import com.paq.pojo.User;
 import com.paq.pojo.response.ResLearningProgressDTO;
 import com.paq.pojo.response.ResQuizAttemptDTO;
 import com.paq.repository.CourseRepository;
+import com.paq.repository.EnrollmentRepository;
 import com.paq.repository.LearningResultRepository;
 import com.paq.repository.QuizRepository;
 import com.paq.repository.UserRepository;
@@ -42,6 +43,9 @@ public class LearningResultServiceImpl implements LearningResultService {
 
     @Autowired
     private UserRepository userRepo;
+
+    @Autowired
+    private EnrollmentRepository enrollmentRepo;
 
     @Autowired
     private PermissionService permissionService;
@@ -104,6 +108,21 @@ public class LearningResultServiceImpl implements LearningResultService {
         return this.learningResultRepo.getLearningProgressByCourseId(courseId, safeParams).stream()
                 .map(e -> this.toProgressDTO(e, courseId))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public ResLearningProgressDTO updateLecturerFeedback(int enrollmentId, String feedback) {
+        Enrollment enrollment = this.enrollmentRepo.getEnrollmentById(enrollmentId);
+        if (enrollment == null) {
+            throw new IdInvalidException("Không tìm thấy kết quả học tập");
+        }
+
+        this.permissionService.requireCourseLecturerOrAdmin(enrollment.getCourseId().getId());
+
+        enrollment.setLecturerFeedback(feedback);
+        Enrollment savedEnrollment = this.enrollmentRepo.addOrUpdateEnrollment(enrollment);
+        
+        return this.toProgressDTO(savedEnrollment, savedEnrollment.getCourseId().getId());
     }
 
     private ResLearningProgressDTO toProgressDTO(Enrollment enrollment, int courseId) {

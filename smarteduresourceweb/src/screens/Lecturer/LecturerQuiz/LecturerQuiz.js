@@ -1,0 +1,294 @@
+import { useContext, useEffect, useState } from "react";
+import { Alert, Badge, Button, Form, Modal, Table } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+
+import { MyUserContext } from "../../../configs/Context";
+import { authApis, endpoints } from "../../../configs/Apis";
+import MySpinner from "../../../components/common/MySpinner";
+import "../Lecturer.css";
+
+const LecturerQuiz = () => {
+    const [user] = useContext(MyUserContext);
+    const [quizzes, setQuizzes] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [err, setErr] = useState("");
+    const [showModal, setShowModal] = useState(false);
+    const [editingQuiz, setEditingQuiz] = useState(null);
+    const [formData, setFormData] = useState({});
+    const [showQuestions, setShowQuestions] = useState(false);
+    const [selectedQuiz, setSelectedQuiz] = useState(null);
+    const [questions, setQuestions] = useState([]);
+    const [showQModal, setShowQModal] = useState(false);
+    const [editingQ, setEditingQ] = useState(null);
+    const [qFormData, setQFormData] = useState({});
+    const nav = useNavigate();
+
+    useEffect(() => {
+        if (!user || (user.role !== "LECTURER" && user.role !== "ADMIN")) {
+            nav('/login'); return;
+        }
+        loadQuizzes();
+    }, [user, nav]);
+
+    const loadQuizzes = async () => {
+        try {
+            setLoading(true);
+            setErr("");
+            let res = await authApis().get(endpoints['lecturer-quizzes']);
+            setQuizzes(res.data.data || []);
+        } catch (ex) {
+            console.error(ex);
+            setErr("Không thể tải danh sách quiz.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleOpenCreate = () => {
+        setEditingQuiz(null);
+        setFormData({});
+        setShowModal(true);
+    };
+
+    const handleOpenEdit = (q) => {
+        setEditingQuiz(q);
+        setFormData({
+            title: q.title || "",
+            description: q.description || "",
+            duration: q.duration || 30,
+            courseId: q.courseId || "",
+        });
+        setShowModal(true);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            setErr("");
+            if (editingQuiz) {
+                await authApis().put(endpoints['lecturer-quiz-detail'](editingQuiz.id), formData);
+            } else {
+                await authApis().post(endpoints['lecturer-quizzes'], formData);
+            }
+            setShowModal(false);
+            loadQuizzes();
+        } catch (ex) {
+            console.error(ex);
+            setErr("Có lỗi xảy ra khi lưu quiz.");
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Bạn có chắc chắn muốn xóa quiz này?")) return;
+        try {
+            await authApis().delete(endpoints['lecturer-quiz-detail'](id));
+            loadQuizzes();
+        } catch (ex) {
+            console.error(ex);
+            setErr("Không thể xóa quiz.");
+        }
+    };
+
+    const handleViewQuestions = async (quiz) => {
+        try {
+            setSelectedQuiz(quiz);
+            let res = await authApis().get(endpoints['quiz-questions'](quiz.id));
+            setQuestions(res.data.data || []);
+            setShowQuestions(true);
+        } catch (ex) {
+            console.error(ex);
+            setErr("Không thể tải câu hỏi.");
+        }
+    };
+
+    const handleCreateQuestion = () => {
+        setEditingQ(null);
+        setQFormData({ quizId: selectedQuiz.id });
+        setShowQModal(true);
+    };
+
+    const handleEditQuestion = (q) => {
+        setEditingQ(q);
+        setQFormData({
+            content: q.content || "",
+            quizId: selectedQuiz.id,
+        });
+        setShowQModal(true);
+    };
+
+    const handleSubmitQuestion = async (e) => {
+        e.preventDefault();
+        try {
+            if (editingQ) {
+                await authApis().put(endpoints['lecturer-question-detail'](editingQ.id), qFormData);
+            } else {
+                await authApis().post(endpoints['lecturer-questions'], qFormData);
+            }
+            setShowQModal(false);
+            handleViewQuestions(selectedQuiz);
+        } catch (ex) {
+            console.error(ex);
+            setErr("Có lỗi xảy ra khi lưu câu hỏi.");
+        }
+    };
+
+    const handleDeleteQuestion = async (qId) => {
+        if (!window.confirm("Xóa câu hỏi này?")) return;
+        try {
+            await authApis().delete(endpoints['lecturer-question-detail'](qId));
+            handleViewQuestions(selectedQuiz);
+        } catch (ex) {
+            console.error(ex);
+            setErr("Không thể xóa câu hỏi.");
+        }
+    };
+
+    if (loading) return <MySpinner />;
+
+    return (
+        <>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h4 className="mb-0">Ngân hàng Quiz</h4>
+                <Button variant="primary" size="sm" onClick={handleOpenCreate}>
+                    <i className="bi bi-plus-lg me-1"></i> Tạo quiz
+                </Button>
+            </div>
+
+            {err && <Alert variant="danger">{err}</Alert>}
+
+            <div className="lecturer-panel">
+                <Table hover responsive className="mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên quiz</th>
+                            <th>Thời gian</th>
+                            <th>Số câu hỏi</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {quizzes.map(q => (
+                            <tr key={q.id}>
+                                <td>{q.id}</td>
+                                <td>{q.title}</td>
+                                <td>{q.duration} phút</td>
+                                <td><Badge bg="info">{q.totalQuestions || 0}</Badge></td>
+                                <td>
+                                    <Button variant="outline-info" size="sm" className="me-1"
+                                        onClick={() => handleViewQuestions(q)}>
+                                        <i className="bi bi-list-ul"></i> Câu hỏi
+                                    </Button>
+                                    <Button variant="outline-primary" size="sm" className="me-1"
+                                        onClick={() => handleOpenEdit(q)}>
+                                        <i className="bi bi-pencil"></i>
+                                    </Button>
+                                    <Button variant="outline-danger" size="sm"
+                                        onClick={() => handleDelete(q.id)}>
+                                        <i className="bi bi-trash"></i>
+                                    </Button>
+                                </td>
+                            </tr>
+                        ))}
+                        {quizzes.length === 0 && (
+                            <tr><td colSpan="5" className="text-center text-muted py-3">Chưa có quiz</td></tr>
+                        )}
+                    </tbody>
+                </Table>
+            </div>
+
+            <Modal show={showModal} onHide={() => setShowModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>{editingQuiz ? "Sửa quiz" : "Tạo quiz"}</Modal.Title>
+                </Modal.Header>
+                <Form onSubmit={handleSubmit}>
+                    <Modal.Body>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Tên quiz</Form.Label>
+                            <Form.Control type="text" value={formData.title || ''}
+                                onChange={e => setFormData({ ...formData, title: e.target.value })} required />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Thời gian (phút)</Form.Label>
+                            <Form.Control type="number" value={formData.duration || 30}
+                                onChange={e => setFormData({ ...formData, duration: parseInt(e.target.value) })} />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Mô tả</Form.Label>
+                            <Form.Control as="textarea" rows={3} value={formData.description || ''}
+                                onChange={e => setFormData({ ...formData, description: e.target.value })} />
+                        </Form.Group>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button>
+                        <Button variant="primary" type="submit">Lưu</Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
+
+            <Modal show={showQuestions} onHide={() => setShowQuestions(false)} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Câu hỏi - {selectedQuiz?.title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="d-flex justify-content-end mb-3">
+                        <Button variant="primary" size="sm" onClick={handleCreateQuestion}>
+                            <i className="bi bi-plus-lg me-1"></i> Thêm câu hỏi
+                        </Button>
+                    </div>
+                    <Table hover responsive>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nội dung câu hỏi</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {questions.map((q, idx) => (
+                                <tr key={q.id}>
+                                    <td>{idx + 1}</td>
+                                    <td style={{ fontSize: '0.88rem' }}>{q.content}</td>
+                                    <td>
+                                        <Button variant="outline-primary" size="sm" className="me-1"
+                                            onClick={() => handleEditQuestion(q)}>
+                                            <i className="bi bi-pencil"></i>
+                                        </Button>
+                                        <Button variant="outline-danger" size="sm"
+                                            onClick={() => handleDeleteQuestion(q.id)}>
+                                            <i className="bi bi-trash"></i>
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                            {questions.length === 0 && (
+                                <tr><td colSpan="3" className="text-center text-muted">Chưa có câu hỏi</td></tr>
+                            )}
+                        </tbody>
+                    </Table>
+                </Modal.Body>
+            </Modal>
+
+            <Modal show={showQModal} onHide={() => setShowQModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>{editingQ ? "Sửa câu hỏi" : "Thêm câu hỏi"}</Modal.Title>
+                </Modal.Header>
+                <Form onSubmit={handleSubmitQuestion}>
+                    <Modal.Body>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Nội dung câu hỏi</Form.Label>
+                            <Form.Control as="textarea" rows={3} value={qFormData.content || ''}
+                                onChange={e => setQFormData({ ...qFormData, content: e.target.value })} required />
+                        </Form.Group>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowQModal(false)}>Hủy</Button>
+                        <Button variant="primary" type="submit">Lưu</Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
+        </>
+    );
+}
+
+export default LecturerQuiz;

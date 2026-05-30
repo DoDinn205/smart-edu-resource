@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/student")
-@CrossOrigin
 public class ApiStudentResourceController {
 
     @Autowired
