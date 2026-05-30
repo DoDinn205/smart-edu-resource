@@ -15,6 +15,7 @@ import com.paq.repository.EnrollmentRepository;
 import com.paq.service.StudentCourseService;
 import com.paq.service.UserService;
 import com.paq.utils.DTOMapper;
+import com.paq.utils.constant.EnrollmentStatusEnum;
 import com.paq.utils.error.IdInvalidException;
 import com.paq.utils.error.PermissionException;
 import java.util.Date;
@@ -28,7 +29,7 @@ import org.springframework.stereotype.Service;
  * @author Admin
  */
 @Service
-public class StudentCourseServicerImpl implements StudentCourseService {
+public class StudentCourseServiceImpl implements StudentCourseService {
 
     @Autowired
     private CourseRepository courseRepo;
@@ -82,7 +83,7 @@ public class StudentCourseServicerImpl implements StudentCourseService {
         e.setEnrollDate(new Date());
         e.setOverallProgress(0.0);
         e.setTotalStudyTime(0);
-        e.setStatus("ACTIVE");
+        e.setStatus(EnrollmentStatusEnum.SUCCESS);
 
         Enrollment saved = this.enrollmentRepo.addEnrollment(e);
 

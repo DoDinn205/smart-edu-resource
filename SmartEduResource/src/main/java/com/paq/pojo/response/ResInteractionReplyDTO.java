@@ -11,8 +11,6 @@ package com.paq.pojo.response;
 public class ResInteractionReplyDTO {
     private Integer id;
     private String content;
-    private String createdAt;
-
     private Integer interactionId;
 
     private Integer userId;
@@ -26,22 +24,14 @@ public class ResInteractionReplyDTO {
     public void setId(Integer id) {
         this.id = id;
     }
-    
+
     public String getContent() {
         return content;
     }
 
     public void setContent(String content) {
         this.content = content;
-    }
-    
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
+    }   
 
     public Integer getInteractionId() {
         return interactionId;
@@ -58,7 +48,7 @@ public class ResInteractionReplyDTO {
     public void setUserId(Integer userId) {
         this.userId = userId;
     }
-    
+
     public String getUsername() {
         return username;
     }

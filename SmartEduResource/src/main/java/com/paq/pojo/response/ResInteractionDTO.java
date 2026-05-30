@@ -9,8 +9,7 @@ package com.paq.pojo.response;
  * @author Admin
  */
 public class ResInteractionDTO {
-
-    private Integer id;
+     private Integer id;
     private String note;
     private String selectedText;
     private String type;
