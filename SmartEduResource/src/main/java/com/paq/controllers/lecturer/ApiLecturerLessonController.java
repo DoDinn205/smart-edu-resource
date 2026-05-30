@@ -29,7 +29,7 @@ public class ApiLecturerLessonController {
     private CourseLessonService lessonService;
 
     @GetMapping("/courses/{courseId}/lessons")
-    public ResponseEntity<ResResponse<List<ResCourseLessonDTO>>> getLessonsByCourse(@PathVariable int courseId) {
+    public ResponseEntity<ResResponse<List<ResCourseLessonDTO>>> getLessonsByCourse(@PathVariable("courseId") int courseId) {
         ResResponse<List<ResCourseLessonDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Lấy danh sách bài học thành công");
@@ -51,7 +51,7 @@ public class ApiLecturerLessonController {
 
     @PutMapping("/lessons/{id}")
     public ResponseEntity<ResResponse<ResCourseLessonDTO>> updateLesson(
-            @PathVariable int id,
+            @PathVariable("id") int id,
             @Valid @RequestBody ReqCourseLessonDTO request) {
         ResResponse<ResCourseLessonDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -62,7 +62,7 @@ public class ApiLecturerLessonController {
     }
 
     @DeleteMapping("/lessons/{id}")
-    public ResponseEntity<ResResponse<Object>> deleteLesson(@PathVariable int id) {
+    public ResponseEntity<ResResponse<Object>> deleteLesson(@PathVariable("id") int id) {
         this.lessonService.deleteLesson(id);
 
         ResResponse<Object> res = new ResResponse<>();

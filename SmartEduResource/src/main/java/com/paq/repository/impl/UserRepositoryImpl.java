@@ -327,4 +327,110 @@ public class UserRepositoryImpl implements UserRepository {
         return session.merge(user);
     }
 
+    @Override
+    public Long countUsers(Map<String, String> params) {
+        Session session = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = session.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<User> root = q.from(User.class);
+        q.select(b.countDistinct(root));
+
+        List<Predicate> predicates = new ArrayList<>();
+        if (params != null) {
+            String kw = params.get("kw");
+            if (kw != null && !kw.isBlank()) {
+                String like = String.format("%%%s%%", kw.trim().toLowerCase());
+                predicates.add(b.or(
+                        b.like(b.lower(root.get("fullName")), like),
+                        b.like(b.lower(root.get("username")), like),
+                        b.like(b.lower(root.get("email")), like),
+                        b.like(b.lower(root.get("phone")), like)));
+            }
+            String role = params.get("role");
+            if (role != null && !role.isBlank()) {
+                predicates.add(b.equal(root.get("role"), RoleEnum.valueOf(role.trim().toUpperCase())));
+            }
+            String isActive = params.get("isActive");
+            if (isActive != null && !isActive.isBlank()) {
+                predicates.add(b.equal(root.get("isActive"), Boolean.valueOf(isActive)));
+            }
+        }
+        if (!predicates.isEmpty()) {
+            q.where(predicates.toArray(Predicate[]::new));
+        }
+
+        return session.createQuery(q).getSingleResult();
+    }
+
+    @Override
+    public Long countStudents(Map<String, String> params) {
+        Session session = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = session.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Student> root = q.from(Student.class);
+        Join<Student, User> user = root.join("userId", JoinType.INNER);
+        q.select(b.countDistinct(root));
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(b.equal(user.get("role"), RoleEnum.STUDENT));
+        if (params != null) {
+            String kw = params.get("kw");
+            if (kw != null && !kw.isBlank()) {
+                String like = String.format("%%%s%%", kw.trim().toLowerCase());
+                predicates.add(b.or(
+                        b.like(b.lower(user.get("fullName")), like),
+                        b.like(b.lower(user.get("username")), like),
+                        b.like(b.lower(user.get("email")), like),
+                        b.like(b.lower(user.get("phone")), like)));
+            }
+            String isActive = params.get("isActive");
+            if (isActive != null && !isActive.isBlank()) {
+                predicates.add(b.equal(user.get("isActive"), Boolean.valueOf(isActive)));
+            }
+            String studentCode = params.get("studentCode");
+            if (studentCode != null && !studentCode.isBlank()) {
+                predicates.add(b.like(b.lower(root.get("studentCode")),
+                        String.format("%%%s%%", studentCode.trim().toLowerCase())));
+            }
+        }
+        q.where(predicates.toArray(Predicate[]::new));
+
+        return session.createQuery(q).getSingleResult();
+    }
+
+    @Override
+    public Long countLecturers(Map<String, String> params) {
+        Session session = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = session.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Lecturer> root = q.from(Lecturer.class);
+        Join<Lecturer, User> user = root.join("userId", JoinType.INNER);
+        q.select(b.countDistinct(root));
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(b.equal(user.get("role"), RoleEnum.LECTURER));
+        if (params != null) {
+            String kw = params.get("kw");
+            if (kw != null && !kw.isBlank()) {
+                String like = String.format("%%%s%%", kw.trim().toLowerCase());
+                predicates.add(b.or(
+                        b.like(b.lower(user.get("fullName")), like),
+                        b.like(b.lower(user.get("username")), like),
+                        b.like(b.lower(user.get("email")), like),
+                        b.like(b.lower(user.get("phone")), like)));
+            }
+            String isActive = params.get("isActive");
+            if (isActive != null && !isActive.isBlank()) {
+                predicates.add(b.equal(user.get("isActive"), Boolean.valueOf(isActive)));
+            }
+            String isApprove = params.get("isApprove");
+            if (isApprove != null && !isApprove.isBlank()) {
+                predicates.add(b.equal(root.get("isApprove"), Boolean.valueOf(isApprove)));
+            }
+        }
+        q.where(predicates.toArray(Predicate[]::new));
+
+        return session.createQuery(q).getSingleResult();
+    }
+
 }

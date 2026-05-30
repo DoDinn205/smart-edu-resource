@@ -64,6 +64,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Long countUsers(Map<String, String> params) {
+        this.permissionService.requireAdmin();
+        return this.userRepo.countUsers(params);
+    }
+
+    @Override
     public ResUserDTO getUserById(int id) {
         this.permissionService.requireAdmin();
         User user = this.userRepo.getUserById(id);
@@ -197,6 +203,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Long countStudents(Map<String, String> params) {
+        this.permissionService.requireAdmin();
+        return this.userRepo.countStudents(params);
+    }
+
+    @Override
     public ResStudentDTO getStudentById(int id) {
         this.permissionService.requireAdmin();
         Student student = this.getExistingStudent(id);
@@ -253,6 +265,12 @@ public class UserServiceImpl implements UserService {
         return this.userRepo.getLecturers(params).stream()
                 .map(DTOMapper::toResLecturerDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Long countLecturers(Map<String, String> params) {
+        this.permissionService.requireAdmin();
+        return this.userRepo.countLecturers(params);
     }
 
     @Override

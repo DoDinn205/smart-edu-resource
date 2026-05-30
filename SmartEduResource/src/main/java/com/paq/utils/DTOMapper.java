@@ -1,16 +1,24 @@
 package com.paq.utils;
 
-import com.paq.pojo.Course;
-import com.paq.pojo.CourseLesson;
-import com.paq.pojo.Enrollment;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.paq.pojo.AnswerOption;
 import com.paq.pojo.ChatParticipant;
 import com.paq.pojo.ChatRoom;
+import com.paq.pojo.Course;
+import com.paq.pojo.CourseLesson;
+import com.paq.pojo.Enrollment;
 import com.paq.pojo.ForumCategory;
 import com.paq.pojo.ForumPost;
 import com.paq.pojo.ForumThread;
 import com.paq.pojo.Interaction;
 import com.paq.pojo.InteractionReply;
+import com.paq.pojo.LearningLog;
 import com.paq.pojo.Lecturer;
 import com.paq.pojo.Payment;
 import com.paq.pojo.Question;
@@ -25,15 +33,15 @@ import com.paq.pojo.StudentAnswer;
 import com.paq.pojo.Subject;
 import com.paq.pojo.Topic;
 import com.paq.pojo.User;
+import com.paq.pojo.response.ResAnswerOptionDTO;
 import com.paq.pojo.response.ResCategoryDTO;
+import com.paq.pojo.response.ResChatParticipantDTO;
+import com.paq.pojo.response.ResChatRoomDTO;
 import com.paq.pojo.response.ResCourseChapterDTO;
 import com.paq.pojo.response.ResCourseDTO;
 import com.paq.pojo.response.ResCourseLearnDTO;
 import com.paq.pojo.response.ResCourseLessonDTO;
 import com.paq.pojo.response.ResEnrollmentDTO;
-import com.paq.pojo.response.ResAnswerOptionDTO;
-import com.paq.pojo.response.ResChatParticipantDTO;
-import com.paq.pojo.response.ResChatRoomDTO;
 import com.paq.pojo.response.ResForumCategoryDTO;
 import com.paq.pojo.response.ResForumPostDTO;
 import com.paq.pojo.response.ResForumThreadDTO;
@@ -41,24 +49,29 @@ import com.paq.pojo.response.ResInteractionDTO;
 import com.paq.pojo.response.ResInteractionReplyDTO;
 import com.paq.pojo.response.ResLearningLogDTO;
 import com.paq.pojo.response.ResLearningProgressDTO;
+import com.paq.pojo.response.ResLecturerDTO;
+import com.paq.pojo.response.ResPageDTO;
 import com.paq.pojo.response.ResPaymentDTO;
 import com.paq.pojo.response.ResQuestionDTO;
 import com.paq.pojo.response.ResQuizAttemptDTO;
 import com.paq.pojo.response.ResQuizDTO;
 import com.paq.pojo.response.ResResourceDTO;
-import com.paq.pojo.response.ResLecturerDTO;
-import com.paq.pojo.response.ResStudentDTO;
 import com.paq.pojo.response.ResStudentAnswerResultDTO;
+import com.paq.pojo.response.ResStudentDTO;
 import com.paq.pojo.response.ResSubjectDTO;
 import com.paq.pojo.response.ResUserDTO;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class DTOMapper {
+
+    public static <T> ResPageDTO<T> toResPageDTO(List<T> items, long totalItems, int page, int pageSize) {
+        ResPageDTO<T> pageDTO = new ResPageDTO<>();
+        pageDTO.setItems(items);
+        pageDTO.setTotalItems(totalItems);
+        pageDTO.setPage(page);
+        pageDTO.setPageSize(pageSize);
+        pageDTO.setTotalPages((int) Math.ceil((double) totalItems / pageSize));
+        return pageDTO;
+    }
 
     public static ResUserDTO toResUserDTO(User user) {
         if (user == null) {
@@ -265,6 +278,7 @@ public class DTOMapper {
         dto.setStartDate(course.getStartDate());
         dto.setEndDate(course.getEndDate());
         dto.setIsPaid(course.getIsPaid());
+        dto.setPrice(course.getPrice());
         dto.setIsDeleted(course.getIsDeleted());
         dto.setTargetLevel(course.getTargetLevel() != null ? course.getTargetLevel().name() : null);
         dto.setCreatedBy(toResUserDTO(course.getCreatedBy()));
@@ -273,11 +287,9 @@ public class DTOMapper {
             dto.setLecturerUser(toResUserDTO(course.getLecturerId().getUserId()));
         }
 
-        if (course.getSubjectSet() != null) {
-            List<ResSubjectDTO> subjects = course.getSubjectSet().stream()
-                    .map(DTOMapper::toResSubjectDTO)
-                    .collect(Collectors.toList());
-            dto.setSubjects(subjects);
+        if (course.getSubjectId() != null) {
+            dto.setSubjectId(course.getSubjectId().getId());
+            dto.setSubject(toResSubjectDTO(course.getSubjectId()));
         }
 
         if (course.getEnrollmentSet() != null) {
@@ -336,6 +348,27 @@ public class DTOMapper {
                     .map(ResourceRelation::getRelatedId)
                     .map(DTOMapper::toResResourceBasicDTO)
                     .collect(Collectors.toList()));
+        }
+
+        return dto;
+    }
+
+    public static ResResourceDTO toPublicResResourceDTO(Resource resource) {
+        return redactResourceFileUrl(toResResourceDTO(resource));
+    }
+
+    public static ResResourceDTO toPublicResResourceDTO(Resource resource, List<ResourceRelation> relations) {
+        return redactResourceFileUrl(toResResourceDTO(resource, relations));
+    }
+
+    private static ResResourceDTO redactResourceFileUrl(ResResourceDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        dto.setFileUrl(null);
+        if (dto.getRelatedResources() != null) {
+            dto.getRelatedResources().forEach(related -> related.setFileUrl(null));
         }
 
         return dto;
@@ -594,6 +627,10 @@ public class DTOMapper {
     // ── CourseLesson ────────────────────────────────────────────────────────────
 
     public static ResCourseLessonDTO toResCourseLessonDTO(CourseLesson cl) {
+        return toResCourseLessonDTO(cl, true);
+    }
+
+    public static ResCourseLessonDTO toResCourseLessonDTO(CourseLesson cl, boolean includeProtectedContent) {
         if (cl == null) {
             return null;
         }
@@ -607,11 +644,13 @@ public class DTOMapper {
 
         Resource res = cl.getResourceId();
         if (res != null) {
-            dto.setResourceId(res.getId());
             dto.setResourceTitle(res.getTitle());
-            dto.setFileUrl(res.getFileUrl());
             dto.setThumbnailUrl(res.getThumbnailUrl());
             dto.setPageCount(res.getPageCount());
+            if (includeProtectedContent) {
+                dto.setResourceId(res.getId());
+                dto.setFileUrl(res.getFileUrl());
+            }
             if (res.getFormat() != null) {
                 String fmt = res.getFormat().name();
                 dto.setFormat(fmt);
@@ -621,9 +660,11 @@ public class DTOMapper {
 
         Quiz quiz = cl.getQuizId();
         if (quiz != null) {
-            dto.setQuizId(quiz.getId());
             dto.setQuizTitle(quiz.getTitle());
             dto.setDurationMinutes(quiz.getDurationMinutes());
+            if (includeProtectedContent) {
+                dto.setQuizId(quiz.getId());
+            }
             if (quiz.getQuestionSet() != null) {
                 dto.setQuestionCount(quiz.getQuestionSet().size());
             }
@@ -700,7 +741,7 @@ public class DTOMapper {
             dto.setLecturerTitle(course.getLecturerId().getSpecialization());
         }
 
-        List<ResCourseChapterDTO> chapters = toResCourseChapterList(lessons);
+        List<ResCourseChapterDTO> chapters = toResCourseChapterList(lessons, hasAccess);
         dto.setChapters(chapters);
         dto.setTotalChapters(chapters.size());
         dto.setTotalLessons(lessons != null ? lessons.size() : 0);
@@ -708,12 +749,13 @@ public class DTOMapper {
         return dto;
     }
 
-    private static List<ResCourseChapterDTO> toResCourseChapterList(List<CourseLesson> lessons) {
+    private static List<ResCourseChapterDTO> toResCourseChapterList(List<CourseLesson> lessons, boolean hasAccess) {
         Map<Integer, List<ResCourseLessonDTO>> map = new LinkedHashMap<>();
         if (lessons != null) {
             for (CourseLesson cl : lessons) {
+                boolean canAccessLesson = hasAccess || Boolean.TRUE.equals(cl.getIsFree());
                 map.computeIfAbsent(cl.getChapterNum(), k -> new ArrayList<>())
-                   .add(toResCourseLessonDTO(cl));
+                   .add(toResCourseLessonDTO(cl, canAccessLesson));
             }
         }
 
@@ -752,7 +794,7 @@ public class DTOMapper {
         return dto;
     }
 
-    public static ResLearningLogDTO toLearningLogDTO(com.paq.pojo.LearningLog log) {
+    public static ResLearningLogDTO toLearningLogDTO(LearningLog log) {
         if (log == null) {
             return null;
         }

@@ -40,6 +40,12 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    public long countPayments(Map<String, String> params) {
+        this.permissionService.requireAdmin();
+        return this.paymentRepo.countPayments(params);
+    }
+
+    @Override
     public ResPaymentDTO getPaymentById(int id) {
         this.permissionService.requirePaymentOwnerOrAdmin(id);
 

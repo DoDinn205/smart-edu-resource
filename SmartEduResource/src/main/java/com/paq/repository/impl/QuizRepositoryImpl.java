@@ -16,6 +16,8 @@ import java.util.Map;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,10 +28,14 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Repository
 @Transactional
+@PropertySource("classpath:configs.properties")
 public class QuizRepositoryImpl implements QuizRepository {
 
     @Autowired
     private LocalSessionFactoryBean factory;
+
+    @Autowired
+    private Environment env;
 
     @Override
     public List<Quiz> getQuizzes() {
@@ -69,7 +75,44 @@ public class QuizRepositoryImpl implements QuizRepository {
             }
         }
 
+        int pageSize = this.env.getProperty("quizzes.page_size", Integer.class);
+        int page = 1;
+        if (params != null && params.containsKey("page")) {
+            page = Integer.parseInt(params.get("page"));
+        }
+        q.setMaxResults(pageSize);
+        q.setFirstResult((page - 1) * pageSize);
+
         return q.getResultList();
+    }
+
+    @Override
+    public Long countQuizzes(Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        String hql = "SELECT COUNT(q) FROM Quiz q WHERE q.isDeleted = false";
+
+        if (params != null) {
+            if (params.containsKey("keyword")) {
+                hql += " AND q.title LIKE :kw";
+            }
+            if (params.containsKey("courseId")) {
+                hql += " AND q.courseId.id = :courseId";
+            }
+        }
+
+        Query<Long> q = s.createQuery(hql, Long.class);
+
+        if (params != null) {
+            if (params.containsKey("keyword")) {
+                q.setParameter("kw", "%" + params.get("keyword") + "%");
+            }
+            if (params.containsKey("courseId")) {
+                q.setParameter("courseId", Integer.parseInt(params.get("courseId")));
+            }
+        }
+
+        return q.getSingleResult();
     }
 
     @Override

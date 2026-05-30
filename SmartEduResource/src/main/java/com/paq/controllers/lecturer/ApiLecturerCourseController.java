@@ -1,9 +1,11 @@
 package com.paq.controllers.lecturer;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,9 +22,11 @@ import com.paq.pojo.request.ReqCourseDTO;
 import com.paq.pojo.request.ReqEnrollmentStatusDTO;
 import com.paq.pojo.response.ResCourseDTO;
 import com.paq.pojo.response.ResEnrollmentDTO;
+import com.paq.pojo.response.ResPageDTO;
 import com.paq.pojo.response.ResResponse;
 import com.paq.service.CourseService;
 import com.paq.service.EnrollmentService;
+import com.paq.utils.DTOMapper;
 
 import jakarta.validation.Valid;
 
@@ -35,6 +39,37 @@ public class ApiLecturerCourseController {
 
     @Autowired
     private EnrollmentService enrollmentService;
+
+    @Autowired
+    private Environment env;
+
+    @GetMapping("/courses")
+    public ResponseEntity<ResResponse<ResPageDTO<ResCourseDTO>>> getMyCourses(@RequestParam Map<String, String> params) {
+        int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 1;
+        int pageSize = this.env.getProperty("courses.page_size", Integer.class);
+
+        Map<String, String> countParams = new HashMap<>(params);
+        Long totalItems = this.courseService.countCoursesByCurrentLecturer(countParams);
+
+        ResPageDTO<ResCourseDTO> pageDTO = DTOMapper.toResPageDTO(this.courseService.getCoursesByCurrentLecturer(params), totalItems, page, pageSize);
+
+        ResResponse<ResPageDTO<ResCourseDTO>> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Lấy danh sách khóa học thành công");
+        res.setData(pageDTO);
+
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/courses/{id}")
+    public ResponseEntity<ResResponse<ResCourseDTO>> getCourseById(@PathVariable("id") int id) {
+        ResResponse<ResCourseDTO> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Lấy thông tin khóa học thành công");
+        res.setData(this.courseService.getCourseById(id));
+
+        return ResponseEntity.ok(res);
+    }
 
     @PostMapping("/courses")
     public ResponseEntity<ResResponse<ResCourseDTO>> createCourse(@Valid @RequestBody ReqCourseDTO request) {

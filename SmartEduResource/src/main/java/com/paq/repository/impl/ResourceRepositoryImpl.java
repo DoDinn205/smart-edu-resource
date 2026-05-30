@@ -14,6 +14,8 @@ import jakarta.persistence.NoResultException;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,10 +26,14 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Repository
 @Transactional
+@PropertySource("classpath:configs.properties")
 public class ResourceRepositoryImpl implements ResourceRepository {
 
     @Autowired
     private LocalSessionFactoryBean factory;
+
+    @Autowired
+    private Environment env;
 
     @Override
     public List<Resource> getResources(Map<String, String> params) {
@@ -45,6 +51,9 @@ public class ResourceRepositoryImpl implements ResourceRepository {
             if (params.containsKey("subjectId")) {
                 hql += " AND :subjectId MEMBER OF r.subjectSet";
             }
+            if (params.containsKey("uploaderId")) {
+                hql += " AND r.uploadBy.id = :uploaderId";
+            }
         }
 
         Query<Resource> q = s.createQuery(hql, Resource.class);
@@ -56,9 +65,58 @@ public class ResourceRepositoryImpl implements ResourceRepository {
             if (params.containsKey("level")) {
                 q.setParameter("level", params.get("level"));
             }
+            if (params.containsKey("uploaderId")) {
+                q.setParameter("uploaderId", Integer.parseInt(params.get("uploaderId")));
+            }
         }
 
+        int pageSize = this.env.getProperty("resources.page_size", Integer.class);
+        int page = 1;
+        if (params != null && params.containsKey("page")) {
+            page = Integer.parseInt(params.get("page"));
+        }
+        q.setMaxResults(pageSize);
+        q.setFirstResult((page - 1) * pageSize);
+
         return q.getResultList();
+    }
+
+    @Override
+    public Long countResources(Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        String hql = "SELECT COUNT(r) FROM Resource r WHERE r.isDeleted = false";
+
+        if (params != null) {
+            if (params.containsKey("keyword")) {
+                hql += " AND r.title LIKE :kw";
+            }
+            if (params.containsKey("level")) {
+                hql += " AND r.level = :level";
+            }
+            if (params.containsKey("subjectId")) {
+                hql += " AND :subjectId MEMBER OF r.subjectSet";
+            }
+            if (params.containsKey("uploaderId")) {
+                hql += " AND r.uploadBy.id = :uploaderId";
+            }
+        }
+
+        Query<Long> q = s.createQuery(hql, Long.class);
+
+        if (params != null) {
+            if (params.containsKey("keyword")) {
+                q.setParameter("kw", "%" + params.get("keyword") + "%");
+            }
+            if (params.containsKey("level")) {
+                q.setParameter("level", params.get("level"));
+            }
+            if (params.containsKey("uploaderId")) {
+                q.setParameter("uploaderId", Integer.parseInt(params.get("uploaderId")));
+            }
+        }
+
+        return q.getSingleResult();
     }
 
     @Override

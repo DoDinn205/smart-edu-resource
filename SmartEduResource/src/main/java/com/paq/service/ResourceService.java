@@ -8,6 +8,10 @@ import java.util.Map;
 public interface ResourceService {
 
     List<ResResourceDTO> getResources(Map<String, String> params);
+    
+    List<ResResourceDTO> getLecturerResources(Map<String, String> params);
+
+    Long countLecturerResources(Map<String, String> params);
 
     ResResourceDTO getResourceById(int id);
 

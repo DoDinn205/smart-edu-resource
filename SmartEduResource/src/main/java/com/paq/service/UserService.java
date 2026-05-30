@@ -18,6 +18,8 @@ public interface UserService extends UserDetailsService {
 
     List<ResUserDTO> getUsers(Map<String, String> params);
 
+    Long countUsers(Map<String, String> params);
+
     ResUserDTO getUserById(int id);
 
     User getUserByUsername(String username);
@@ -34,6 +36,8 @@ public interface UserService extends UserDetailsService {
 
     List<ResStudentDTO> getStudents(Map<String, String> params);
 
+    Long countStudents(Map<String, String> params);
+
     ResStudentDTO getStudentById(int id);
 
     ResStudentDTO createStudent(ReqStudentDTO request);
@@ -43,6 +47,8 @@ public interface UserService extends UserDetailsService {
     void deleteStudent(int id);
 
     List<ResLecturerDTO> getLecturers(Map<String, String> params);
+
+    Long countLecturers(Map<String, String> params);
 
     ResLecturerDTO getLecturerById(int id);
 

@@ -17,5 +17,7 @@ public interface CourseLessonRepository {
 
     boolean hasActiveEnrollment(int courseId, int studentId);
 
+    boolean hasSuccessfulEnrollment(int courseId, Integer studentId);
+
     boolean hasSuccessfulPayment(int courseId, int studentId);
 }

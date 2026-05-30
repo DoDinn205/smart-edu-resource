@@ -19,7 +19,7 @@ const CourseBrowse = () => {
                 await new Promise(r => setTimeout(r, 400));
                 let list = [...COURSES];
                 if (filters.kw) { const kw = filters.kw.toLowerCase(); list = list.filter(c => c.name.toLowerCase().includes(kw) || c.description.toLowerCase().includes(kw)); }
-                if (filters.subjectId) list = list.filter(c => c.subjects.some(s => s.id === parseInt(filters.subjectId)));
+                if (filters.subjectId) list = list.filter(c => c.subject?.id === parseInt(filters.subjectId));
                 if (filters.priceType === "free") list = list.filter(c => !c.isPaid);
                 else if (filters.priceType === "paid") list = list.filter(c => c.isPaid);
                 setCourses(list);

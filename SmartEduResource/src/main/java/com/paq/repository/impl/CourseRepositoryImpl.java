@@ -12,6 +12,8 @@ import java.util.Map;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +24,14 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Repository
 @Transactional
+@PropertySource("classpath:configs.properties")
 public class CourseRepositoryImpl implements CourseRepository {
 
     @Autowired
     private LocalSessionFactoryBean factory;
+
+    @Autowired
+    private Environment env;
 
     @Override
     public List<Course> getCourses(Map<String, String> params) {
@@ -61,6 +67,14 @@ public class CourseRepositoryImpl implements CourseRepository {
                 q.setParameter("isPaid", Boolean.parseBoolean(params.get("isPaid")));
             }
         }
+
+        int pageSize = this.env.getProperty("courses.page_size", Integer.class);
+        int page = 1;
+        if (params != null && params.containsKey("page")) {
+            page = Integer.parseInt(params.get("page"));
+        }
+        q.setMaxResults(pageSize);
+        q.setFirstResult((page - 1) * pageSize);
 
         return q.getResultList();
     }
@@ -106,5 +120,43 @@ public class CourseRepositoryImpl implements CourseRepository {
             course.setIsDeleted(Boolean.TRUE);
             s.merge(course);
         }
+    }
+
+    @Override
+    public Long countCourses(Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        String hql = "SELECT COUNT(c) FROM Course c WHERE c.isDeleted = false";
+
+        if (params != null) {
+            if (params.containsKey("keyword")) {
+                hql += " AND c.name LIKE :kw";
+            }
+            if (params.containsKey("lecturerId")) {
+                hql += " AND c.lecturerId.id = :lecturerId";
+            }
+            if (params.containsKey("subjectId")) {
+                hql += " AND :subjectId MEMBER OF c.subjectSet";
+            }
+            if (params.containsKey("isPaid")) {
+                hql += " AND c.isPaid = :isPaid";
+            }
+        }
+
+        Query<Long> q = s.createQuery(hql, Long.class);
+
+        if (params != null) {
+            if (params.containsKey("keyword")) {
+                q.setParameter("kw", "%" + params.get("keyword") + "%");
+            }
+            if (params.containsKey("lecturerId")) {
+                q.setParameter("lecturerId", Integer.parseInt(params.get("lecturerId")));
+            }
+            if (params.containsKey("isPaid")) {
+                q.setParameter("isPaid", Boolean.parseBoolean(params.get("isPaid")));
+            }
+        }
+
+        return q.getSingleResult();
     }
 }

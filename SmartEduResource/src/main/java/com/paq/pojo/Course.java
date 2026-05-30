@@ -15,9 +15,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
@@ -75,6 +73,8 @@ public class Course implements Serializable {
     private Date endDate;
     @Column(name = "is_paid")
     private Boolean isPaid;
+    @Column(name = "price")
+    private Long price;
     @Column(name = "is_deleted")
     private Boolean isDeleted;
     @Enumerated(EnumType.STRING)
@@ -86,11 +86,9 @@ public class Course implements Serializable {
     @JoinColumn(name = "lecturer_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Lecturer lecturerId;
-    @JoinTable(name = "course_subject", joinColumns = {
-        @JoinColumn(name = "course_id", referencedColumnName = "id")}, inverseJoinColumns = {
-        @JoinColumn(name = "subject_id", referencedColumnName = "id")})
-    @ManyToMany
-    private Set<Subject> subjectSet;
+    @JoinColumn(name = "subject_id", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private Subject subjectId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "courseId")
     @JsonIgnore
     private Set<Quiz> quizSet;
@@ -161,6 +159,14 @@ public class Course implements Serializable {
         this.isPaid = isPaid;
     }
 
+    public Long getPrice() {
+        return price;
+    }
+
+    public void setPrice(Long price) {
+        this.price = price;
+    }
+
     public Boolean getIsDeleted() {
         return isDeleted;
     }
@@ -194,12 +200,12 @@ public class Course implements Serializable {
     }
 
     @XmlTransient
-    public Set<Subject> getSubjectSet() {
-        return subjectSet;
+    public Subject getSubjectId() {
+        return subjectId;
     }
 
-    public void setSubjectSet(Set<Subject> subjectSet) {
-        this.subjectSet = subjectSet;
+    public void setSubjectId(Subject subjectId) {
+        this.subjectId = subjectId;
     }
 
     @XmlTransient
@@ -254,16 +260,5 @@ public class Course implements Serializable {
         return "com.paq.pojo.Course[ id=" + id + " ]";
     }
 
-    public Object getPrice() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 
-    public Object getDuration() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public Object getLevel() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-    
 }

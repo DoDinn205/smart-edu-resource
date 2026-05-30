@@ -17,6 +17,8 @@ public interface ResourceRepository {
 
     List<Resource> getResources(Map<String, String> params);
 
+    Long countResources(Map<String, String> params);
+
     Resource getResourceById(int id);
 
     Resource getResourceByTitle(String title);
