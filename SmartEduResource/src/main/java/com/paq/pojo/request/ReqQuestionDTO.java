@@ -1,6 +1,7 @@
 package com.paq.pojo.request;
 
 import com.paq.utils.constant.QuestionTypeEnum;
+import java.util.List;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -8,17 +9,19 @@ import jakarta.validation.constraints.NotNull;
 
 public class ReqQuestionDTO {
 
-    @NotBlank(message = "Content khong duoc de trong")
+    @NotBlank(message = "Content không được để trống")
     private String content;
 
-    @NotNull(message = "Score khong duoc de trong")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Score phai lon hon 0")
+    @NotNull(message = "Score không được để trống")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Score phải lớn hơn 0")
     private Double score;
 
     private String explanation;
 
-    @NotNull(message = "Type khong duoc de trong")
+    @NotNull(message = "Type không được để trống")
     private QuestionTypeEnum type;
+
+    private List<ReqAnswerOptionDTO> options;
 
     public String getContent() {
         return content;
@@ -50,5 +53,13 @@ public class ReqQuestionDTO {
 
     public void setType(QuestionTypeEnum type) {
         this.type = type;
+    }
+
+    public List<ReqAnswerOptionDTO> getOptions() {
+        return options;
+    }
+
+    public void setOptions(List<ReqAnswerOptionDTO> options) {
+        this.options = options;
     }
 }

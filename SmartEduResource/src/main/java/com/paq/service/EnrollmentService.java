@@ -2,12 +2,13 @@ package com.paq.service;
 
 import com.paq.pojo.request.ReqEnrollmentStatusDTO;
 import com.paq.pojo.response.ResEnrollmentDTO;
+import com.paq.pojo.response.ResPageDTO;
 import java.util.List;
 import java.util.Map;
 
 public interface EnrollmentService {
 
-    List<ResEnrollmentDTO> getEnrollmentsByCourseId(int courseId, Map<String, String> params);
+    ResPageDTO<ResEnrollmentDTO> getEnrollmentsByCourseId(int courseId, Map<String, String> params);
 
     List<ResEnrollmentDTO> getMyEnrollments(String username);
 

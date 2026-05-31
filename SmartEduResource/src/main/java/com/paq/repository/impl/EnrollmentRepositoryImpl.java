@@ -12,6 +12,7 @@ import java.util.Map;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,9 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
 
     @Autowired
     private LocalSessionFactoryBean factory;
+
+    @Autowired
+    private Environment env;
 
     @Override
     public boolean existsByStudentAndCourse(int studentId, int courseId) {
@@ -129,6 +133,8 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
             hql += " AND e.status = :status";
         }
 
+        hql += " ORDER BY e.enrollDate DESC";
+
         Query<Enrollment> q = s.createQuery(hql, Enrollment.class);
         q.setParameter("courseId", courseId);
 
@@ -136,7 +142,34 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
             q.setParameter("status", params.get("status"));
         }
 
+        if (params != null && params.containsKey("page")) {
+            int pageSize = this.env.getProperty("enrollments.page_size", Integer.class, 10);
+            int page = Integer.parseInt(params.get("page"));
+            q.setFirstResult((page - 1) * pageSize);
+            q.setMaxResults(pageSize);
+        }
+
         return q.getResultList();
+    }
+
+    @Override
+    public Long countEnrollmentsByCourseId(int courseId, Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        String hql = "SELECT COUNT(e) FROM Enrollment e WHERE e.courseId.id = :courseId";
+
+        if (params != null && params.containsKey("status")) {
+            hql += " AND e.status = :status";
+        }
+
+        Query<Long> q = s.createQuery(hql, Long.class);
+        q.setParameter("courseId", courseId);
+
+        if (params != null && params.containsKey("status")) {
+            q.setParameter("status", params.get("status"));
+        }
+
+        return q.getSingleResult();
     }
 
     @Override

@@ -18,6 +18,8 @@ const LecturerCourse = () => {
     const [formData, setFormData] = useState({});
     const [showEnrollments, setShowEnrollments] = useState(false);
     const [enrollments, setEnrollments] = useState([]);
+    const [enrollmentPage, setEnrollmentPage] = useState(1);
+    const [enrollmentTotalPages, setEnrollmentTotalPages] = useState(1);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const nav = useNavigate();
     const [q] = useSearchParams();
@@ -112,11 +114,21 @@ const LecturerCourse = () => {
         }
     };
 
-    const handleViewEnrollments = async (course) => {
+    const handleViewEnrollments = async (course, page = 1) => {
         try {
             setSelectedCourse(course);
-            let res = await authApis().get(endpoints['lecturer-course-enrollments'](course.id));
-            setEnrollments(res.data.data || []);
+            let res = await authApis().get(endpoints['lecturer-course-enrollments'](course.id) + `?page=${page}`);
+            const responseData = res.data.data;
+            
+            if (Array.isArray(responseData)) {
+                setEnrollments(responseData);
+                setEnrollmentTotalPages(1);
+            } else {
+                setEnrollments(responseData?.items || []);
+                setEnrollmentTotalPages(responseData?.totalPages || 1);
+            }
+            
+            setEnrollmentPage(page);
             setShowEnrollments(true);
         } catch (ex) {
             console.error(ex);
@@ -139,8 +151,6 @@ const LecturerCourse = () => {
     };
 
     if (loading) return <MySpinner />;
-
-    console.log(subjects);
 
     return (
         <>
@@ -282,30 +292,43 @@ const LecturerCourse = () => {
                 <Modal.Header closeButton>
                     <Modal.Title>Học viên - {selectedCourse?.name}</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
-                    <Table hover responsive>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Tên học viên</th>
-                                <th>Ngày đăng ký</th>
-                                <th>Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {enrollments.map(e => (
-                                <tr key={e.id}>
-                                    <td>{e.id}</td>
-                                    <td>{e.studentName || "—"}</td>
-                                    <td>{e.enrollDate || "—"}</td>
-                                    <td><Badge bg="success">{e.status || "ACTIVE"}</Badge></td>
+                <Modal.Body className="p-0">
+                    <div className="lecturer-panel" style={{ border: 'none', marginBottom: 0 }}>
+                        <Table hover responsive className="mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên học viên</th>
+                                    <th>Ngày đăng ký</th>
+                                    <th>Trạng thái</th>
                                 </tr>
-                            ))}
-                            {enrollments.length === 0 && (
-                                <tr><td colSpan="4" className="text-center text-muted">Chưa có học viên</td></tr>
-                            )}
-                        </tbody>
-                    </Table>
+                            </thead>
+                            <tbody>
+                                {enrollments.map(e => (
+                                    <tr key={e.id}>
+                                        <td>{e.id}</td>
+                                        <td>{e.user?.fullName || "—"}</td>
+                                        <td>{e.enrollDate ? new Date(e.enrollDate).toLocaleDateString('vi-VN') : "—"}</td>
+                                        <td><Badge bg="success">{e.status || "ACTIVE"}</Badge></td>
+                                    </tr>
+                                ))}
+                                {enrollments.length === 0 && (
+                                    <tr><td colSpan="4" className="text-center text-muted py-3">Chưa có học viên</td></tr>
+                                )}
+                            </tbody>
+                        </Table>
+                        {enrollmentTotalPages > 1 && (
+                            <div className="d-flex justify-content-center mt-3 pb-2">
+                                <Pagination size="sm">
+                                    {Array.from({ length: enrollmentTotalPages }, (_, i) => i + 1).map(num => (
+                                        <Pagination.Item key={num} active={num === enrollmentPage} onClick={() => handleViewEnrollments(selectedCourse, num)}>
+                                            {num}
+                                        </Pagination.Item>
+                                    ))}
+                                </Pagination>
+                            </div>
+                        )}
+                    </div>
                 </Modal.Body>
             </Modal>
         </>

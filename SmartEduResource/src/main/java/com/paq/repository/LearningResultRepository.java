@@ -12,7 +12,13 @@ public interface LearningResultRepository {
 
     QuizAttempt getQuizAttemptById(int id);
 
+    List<Enrollment> getLearningProgress(Map<String, String> params);
+
+    Long countLearningProgress(Map<String, String> params);
+
     List<Enrollment> getLearningProgressByCourseId(int courseId, Map<String, String> params);
+
+    Long countLearningProgressByCourseId(int courseId, Map<String, String> params);
 
     Student getStudentByUserId(int userId);
 }

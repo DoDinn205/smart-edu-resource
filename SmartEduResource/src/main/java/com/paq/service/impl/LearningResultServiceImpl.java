@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import com.paq.pojo.QuizAttempt;
 import com.paq.pojo.Student;
 import com.paq.pojo.User;
 import com.paq.pojo.response.ResLearningProgressDTO;
+import com.paq.pojo.response.ResPageDTO;
 import com.paq.pojo.response.ResQuizAttemptDTO;
 import com.paq.repository.CourseRepository;
 import com.paq.repository.EnrollmentRepository;
@@ -49,6 +51,9 @@ public class LearningResultServiceImpl implements LearningResultService {
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private Environment env;
 
     @Override
     public List<ResQuizAttemptDTO> getQuizAttempts(Map<String, String> params) {
@@ -92,7 +97,30 @@ public class LearningResultServiceImpl implements LearningResultService {
     }
 
     @Override
-    public List<ResLearningProgressDTO> getLearningProgressByCourseId(int courseId, Map<String, String> params) {
+    public ResPageDTO<ResLearningProgressDTO> getLearningProgress(Map<String, String> params) {
+        Map<String, String> safeParams = this.copyParams(params);
+        User user = this.getCurrentUser();
+        if (user.getRole() == RoleEnum.STUDENT) {
+            safeParams.put("studentId", String.valueOf(this.getCurrentStudent().getId()));
+        } else {
+            this.permissionService.requireLecturerOrAdmin();
+            if (user.getRole() == RoleEnum.LECTURER) {
+                safeParams.put("lecturerUserId", String.valueOf(user.getId()));
+            }
+        }
+
+        int page = safeParams.containsKey("page") ? Integer.parseInt(safeParams.get("page")) : 1;
+        int pageSize = this.env.getProperty("enrollments.page_size", Integer.class, 10);
+        Long totalItems = this.learningResultRepo.countLearningProgress(safeParams);
+        List<ResLearningProgressDTO> items = this.learningResultRepo.getLearningProgress(safeParams).stream()
+                .map(e -> this.toProgressDTO(e, e.getCourseId().getId()))
+                .collect(Collectors.toList());
+
+        return DTOMapper.toResPageDTO(items, totalItems, page, pageSize);
+    }
+
+    @Override
+    public ResPageDTO<ResLearningProgressDTO> getLearningProgressByCourseId(int courseId, Map<String, String> params) {
         if (this.courseRepo.getCourseById(courseId) == null) {
             throw new IdInvalidException("Course không tồn tại");
         }
@@ -105,9 +133,14 @@ public class LearningResultServiceImpl implements LearningResultService {
             this.permissionService.requireCourseLecturerOrAdmin(courseId);
         }
 
-        return this.learningResultRepo.getLearningProgressByCourseId(courseId, safeParams).stream()
+        int page = safeParams.containsKey("page") ? Integer.parseInt(safeParams.get("page")) : 1;
+        int pageSize = this.env.getProperty("enrollments.page_size", Integer.class, 10);
+        Long totalItems = this.learningResultRepo.countLearningProgressByCourseId(courseId, safeParams);
+        List<ResLearningProgressDTO> items = this.learningResultRepo.getLearningProgressByCourseId(courseId, safeParams).stream()
                 .map(e -> this.toProgressDTO(e, courseId))
                 .collect(Collectors.toList());
+
+        return DTOMapper.toResPageDTO(items, totalItems, page, pageSize);
     }
 
     @Override
@@ -126,15 +159,14 @@ public class LearningResultServiceImpl implements LearningResultService {
     }
 
     private ResLearningProgressDTO toProgressDTO(Enrollment enrollment, int courseId) {
-        ResLearningProgressDTO dto = DTOMapper.toResLearningProgressDTO(enrollment);
         Map<String, String> attemptParams = new HashMap<>();
         attemptParams.put("courseId", String.valueOf(courseId));
         attemptParams.put("studentId", String.valueOf(enrollment.getStudentId().getId()));
-        dto.setQuizAttempts(this.learningResultRepo.getQuizAttempts(attemptParams).stream()
+        List<ResQuizAttemptDTO> quizAttempts = this.learningResultRepo.getQuizAttempts(attemptParams).stream()
                 .map(qa -> DTOMapper.toResQuizAttemptDTO(qa, false))
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
 
-        return dto;
+        return DTOMapper.toResLearningProgressDTO(enrollment, quizAttempts);
     }
 
     private QuizAttempt getExistingAttempt(int id) {

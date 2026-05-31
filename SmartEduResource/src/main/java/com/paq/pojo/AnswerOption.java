@@ -125,21 +125,19 @@ public class AnswerOption implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
+        return getClass().hashCode();
     }
 
     @Override
     public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
         if (!(object instanceof AnswerOption)) {
             return false;
         }
         AnswerOption other = (AnswerOption) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return this.id != null && this.id.equals(other.id);
     }
 
     @Override

@@ -113,7 +113,7 @@ public class LearningResultRepositoryImpl implements LearningResultRepository {
     }
 
     @Override
-    public List<Enrollment> getLearningProgressByCourseId(int courseId, Map<String, String> params) {
+    public List<Enrollment> getLearningProgress(Map<String, String> params) {
         Session session = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = session.getCriteriaBuilder();
         CriteriaQuery<Enrollment> q = b.createQuery(Enrollment.class);
@@ -122,15 +122,7 @@ public class LearningResultRepositoryImpl implements LearningResultRepository {
         root.fetch("studentId", JoinType.LEFT).fetch("userId", JoinType.LEFT);
         q.select(root).distinct(true);
 
-        List<Predicate> predicates = new ArrayList<>();
-        predicates.add(b.equal(root.get("courseId").get("id"), courseId));
-        if (params != null) {
-            String studentId = params.get("studentId");
-            if (studentId != null && !studentId.isEmpty()) {
-                predicates.add(b.equal(root.get("studentId").get("id"), Integer.parseInt(studentId)));
-            }
-        }
-
+        List<Predicate> predicates = this.buildLearningProgressPredicates(b, root, params);
         q.where(predicates.toArray(Predicate[]::new));
         q.orderBy(b.desc(root.get("id")));
 
@@ -147,6 +139,40 @@ public class LearningResultRepositoryImpl implements LearningResultRepository {
     }
 
     @Override
+    public Long countLearningProgress(Map<String, String> params) {
+        Session session = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = session.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<Enrollment> root = q.from(Enrollment.class);
+
+        q.select(b.countDistinct(root));
+        List<Predicate> predicates = this.buildLearningProgressPredicates(b, root, params);
+        q.where(predicates.toArray(Predicate[]::new));
+
+        return session.createQuery(q).getSingleResult();
+    }
+
+    @Override
+    public List<Enrollment> getLearningProgressByCourseId(int courseId, Map<String, String> params) {
+        Map<String, String> safeParams = new java.util.HashMap<>();
+        if (params != null) {
+            safeParams.putAll(params);
+        }
+        safeParams.put("courseId", String.valueOf(courseId));
+        return this.getLearningProgress(safeParams);
+    }
+
+    @Override
+    public Long countLearningProgressByCourseId(int courseId, Map<String, String> params) {
+        Map<String, String> safeParams = new java.util.HashMap<>();
+        if (params != null) {
+            safeParams.putAll(params);
+        }
+        safeParams.put("courseId", String.valueOf(courseId));
+        return this.countLearningProgress(safeParams);
+    }
+
+    @Override
     public Student getStudentByUserId(int userId) {
         try {
             Session session = this.factory.getObject().getCurrentSession();
@@ -158,5 +184,40 @@ public class LearningResultRepositoryImpl implements LearningResultRepository {
         } catch (NoResultException ex) {
             return null;
         }
+    }
+
+    private List<Predicate> buildLearningProgressPredicates(CriteriaBuilder b, Root<Enrollment> root,
+            Map<String, String> params) {
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (params == null) {
+            return predicates;
+        }
+
+        String courseId = params.get("courseId");
+        if (courseId != null && !courseId.isEmpty()) {
+            predicates.add(b.equal(root.get("courseId").get("id"), Integer.parseInt(courseId)));
+        }
+
+        String lecturerUserId = params.get("lecturerUserId");
+        if (lecturerUserId != null && !lecturerUserId.isEmpty()) {
+            predicates.add(b.equal(root.get("courseId").get("lecturerId").get("userId").get("id"),
+                    Integer.parseInt(lecturerUserId)));
+        }
+
+        String studentId = params.get("studentId");
+        if (studentId != null && !studentId.isEmpty()) {
+            predicates.add(b.equal(root.get("studentId").get("id"), Integer.parseInt(studentId)));
+        }
+
+        String keyword = params.get("keyword");
+        if (keyword != null && !keyword.isBlank()) {
+            String like = String.format("%%%s%%", keyword.trim().toLowerCase());
+            predicates.add(b.or(
+                    b.like(b.lower(root.get("studentId").get("studentCode")), like),
+                    b.like(b.lower(root.get("studentId").get("userId").get("fullName")), like)));
+        }
+
+        return predicates;
     }
 }

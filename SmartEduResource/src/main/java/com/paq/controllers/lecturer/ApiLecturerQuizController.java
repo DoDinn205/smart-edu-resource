@@ -67,7 +67,7 @@ public class ApiLecturerQuizController {
     }
 
     @GetMapping("/quizzes/{id}/manage")
-    public ResponseEntity<ResResponse<ResQuizDTO>> getQuizForManagement(@PathVariable int id) {
+    public ResponseEntity<ResResponse<ResQuizDTO>> getQuizForManagement(@PathVariable("id") int id) {
         ResResponse<ResQuizDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Lấy thông tin quản lý quiz thành công");
@@ -87,7 +87,7 @@ public class ApiLecturerQuizController {
     }
 
     @PutMapping("/quizzes/{id}")
-    public ResponseEntity<ResResponse<ResQuizDTO>> updateQuiz(@PathVariable int id,
+    public ResponseEntity<ResResponse<ResQuizDTO>> updateQuiz(@PathVariable("id") int id,
             @Valid @RequestBody ReqQuizDTO request) {
         ResResponse<ResQuizDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -98,7 +98,7 @@ public class ApiLecturerQuizController {
     }
 
     @DeleteMapping("/quizzes/{id}")
-    public ResponseEntity<ResResponse<Object>> deleteQuiz(@PathVariable int id) {
+    public ResponseEntity<ResResponse<Object>> deleteQuiz(@PathVariable("id") int id) {
         this.quizService.deleteQuiz(id);
 
         ResResponse<Object> res = new ResResponse<>();
@@ -109,7 +109,7 @@ public class ApiLecturerQuizController {
     }
 
     @GetMapping("/quizzes/{quizId}/questions")
-    public ResponseEntity<ResResponse<List<ResQuestionDTO>>> getQuestionsByQuizId(@PathVariable int quizId) {
+    public ResponseEntity<ResResponse<List<ResQuestionDTO>>> getQuestionsByQuizId(@PathVariable("quizId") int quizId) {
         ResResponse<List<ResQuestionDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Lấy danh sách câu hỏi thành công");
@@ -119,7 +119,7 @@ public class ApiLecturerQuizController {
     }
 
     @PostMapping("/quizzes/{quizId}/questions")
-    public ResponseEntity<ResResponse<ResQuestionDTO>> createQuestion(@PathVariable int quizId,
+    public ResponseEntity<ResResponse<ResQuestionDTO>> createQuestion(@PathVariable("quizId") int quizId,
             @Valid @RequestBody ReqQuestionDTO request) {
         ResResponse<ResQuestionDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.CREATED.value());
@@ -130,7 +130,7 @@ public class ApiLecturerQuizController {
     }
 
     @PutMapping("/questions/{id}")
-    public ResponseEntity<ResResponse<ResQuestionDTO>> updateQuestion(@PathVariable int id,
+    public ResponseEntity<ResResponse<ResQuestionDTO>> updateQuestion(@PathVariable("id") int id,
             @Valid @RequestBody ReqQuestionDTO request) {
         ResResponse<ResQuestionDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -141,7 +141,7 @@ public class ApiLecturerQuizController {
     }
 
     @DeleteMapping("/questions/{id}")
-    public ResponseEntity<ResResponse<Object>> deleteQuestion(@PathVariable int id) {
+    public ResponseEntity<ResResponse<Object>> deleteQuestion(@PathVariable("id") int id) {
         this.questionService.deleteQuestion(id);
 
         ResResponse<Object> res = new ResResponse<>();
@@ -153,7 +153,7 @@ public class ApiLecturerQuizController {
 
     @GetMapping("/questions/{questionId}/answers")
     public ResponseEntity<ResResponse<List<ResAnswerOptionDTO>>> getAnswersByQuestionId(
-            @PathVariable int questionId) {
+            @PathVariable("questionId") int questionId) {
         ResResponse<List<ResAnswerOptionDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Lấy danh sách đáp án thành công");
@@ -163,7 +163,7 @@ public class ApiLecturerQuizController {
     }
 
     @PostMapping("/questions/{questionId}/answers")
-    public ResponseEntity<ResResponse<ResAnswerOptionDTO>> createAnswer(@PathVariable int questionId,
+    public ResponseEntity<ResResponse<ResAnswerOptionDTO>> createAnswer(@PathVariable("questionId") int questionId,
             @Valid @RequestBody ReqAnswerOptionDTO request) {
         ResResponse<ResAnswerOptionDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.CREATED.value());
@@ -174,7 +174,7 @@ public class ApiLecturerQuizController {
     }
 
     @PutMapping("/answers/{id}")
-    public ResponseEntity<ResResponse<ResAnswerOptionDTO>> updateAnswer(@PathVariable int id,
+    public ResponseEntity<ResResponse<ResAnswerOptionDTO>> updateAnswer(@PathVariable("id") int id,
             @Valid @RequestBody ReqAnswerOptionDTO request) {
         ResResponse<ResAnswerOptionDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -185,7 +185,7 @@ public class ApiLecturerQuizController {
     }
 
     @DeleteMapping("/answers/{id}")
-    public ResponseEntity<ResResponse<Object>> deleteAnswer(@PathVariable int id) {
+    public ResponseEntity<ResResponse<Object>> deleteAnswer(@PathVariable("id") int id) {
         this.answerOptionService.deleteAnswer(id);
 
         ResResponse<Object> res = new ResResponse<>();

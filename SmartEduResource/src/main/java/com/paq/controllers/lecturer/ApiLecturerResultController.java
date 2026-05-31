@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.paq.pojo.response.ResLearningProgressDTO;
+import com.paq.pojo.response.ResPageDTO;
 import com.paq.pojo.response.ResQuizAttemptDTO;
 import com.paq.pojo.response.ResResponse;
 import com.paq.service.LearningResultService;
@@ -38,7 +39,7 @@ public class ApiLecturerResultController {
     }
 
     @GetMapping("/quiz-attempts/{id}")
-    public ResponseEntity<ResResponse<ResQuizAttemptDTO>> getQuizAttemptById(@PathVariable int id) {
+    public ResponseEntity<ResResponse<ResQuizAttemptDTO>> getQuizAttemptById(@PathVariable("id") int id) {
         ResResponse<ResQuizAttemptDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Lấy chi tiết câu trả lời thành công");
@@ -49,7 +50,7 @@ public class ApiLecturerResultController {
 
     @GetMapping("/courses/{courseId}/quiz-attempts")
     public ResponseEntity<ResResponse<List<ResQuizAttemptDTO>>> getQuizAttemptsByCourseId(
-            @PathVariable int courseId,
+            @PathVariable("courseId") int courseId,
             @RequestParam Map<String, String> params) {
         ResResponse<List<ResQuizAttemptDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -61,7 +62,7 @@ public class ApiLecturerResultController {
 
     @GetMapping("/quizzes/{quizId}/quiz-attempts")
     public ResponseEntity<ResResponse<List<ResQuizAttemptDTO>>> getQuizAttemptsByQuizId(
-            @PathVariable int quizId,
+            @PathVariable("quizId") int quizId,
             @RequestParam Map<String, String> params) {
         ResResponse<List<ResQuizAttemptDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -71,11 +72,22 @@ public class ApiLecturerResultController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/courses/{courseId}/progress")
-    public ResponseEntity<ResResponse<List<ResLearningProgressDTO>>> getLearningProgressByCourseId(
-            @PathVariable int courseId,
+    @GetMapping("/progress")
+    public ResponseEntity<ResResponse<ResPageDTO<ResLearningProgressDTO>>> getLearningProgress(
             @RequestParam Map<String, String> params) {
-        ResResponse<List<ResLearningProgressDTO>> res = new ResResponse<>();
+        ResResponse<ResPageDTO<ResLearningProgressDTO>> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Lấy tiến độ học tập thành công");
+        res.setData(this.learningResultService.getLearningProgress(params));
+
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/courses/{courseId}/progress")
+    public ResponseEntity<ResResponse<ResPageDTO<ResLearningProgressDTO>>> getLearningProgressByCourseId(
+            @PathVariable("courseId") int courseId,
+            @RequestParam Map<String, String> params) {
+        ResResponse<ResPageDTO<ResLearningProgressDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Lấy tiến độ học tập thành công");
         res.setData(this.learningResultService.getLearningProgressByCourseId(courseId, params));
@@ -85,7 +97,7 @@ public class ApiLecturerResultController {
 
     @PostMapping("/progress/{enrollmentId}/feedback")
     public ResponseEntity<ResResponse<ResLearningProgressDTO>> updateLecturerFeedback(
-            @PathVariable int enrollmentId,
+            @PathVariable("enrollmentId") int enrollmentId,
             @RequestBody Map<String, String> body) {
         ResResponse<ResLearningProgressDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());

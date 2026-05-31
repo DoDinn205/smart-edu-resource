@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 import { Button, Container, Form } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
 import MySpinner from "../../components/common/MySpinner";
-import { CHAT_ROOMS } from "../../configs/MockData";
 
 const MOCK_MESSAGES = [
     { id: 1, sender: "TS. Nguyễn Văn An", content: "Tuần này các em hoàn thành bài tập chương 3 nhé", isMine: false, time: "09:00" },
@@ -16,16 +16,44 @@ const MOCK_MESSAGES = [
 const Chat = () => {
     const [user] = useContext(MyUserContext);
     const [loading, setLoading] = useState(true);
+    const [rooms, setRooms] = useState([]);
     const [activeRoom, setActiveRoom] = useState(null);
     const [messages, setMessages] = useState(MOCK_MESSAGES);
     const [msgText, setMsgText] = useState("");
     const nav = useNavigate();
+    const [q] = useSearchParams();
+    const roomIdParam = q.get("room");
 
     useEffect(() => {
         if (!user) { nav('/login'); return; }
-        const t = setTimeout(() => { setLoading(false); setActiveRoom(CHAT_ROOMS[0]); }, 400);
-        return () => clearTimeout(t);
+        loadRooms();
     }, [user, nav]);
+
+    const loadRooms = async () => {
+        setLoading(true);
+        try {
+            let url = (user.role === 'LECTURER' || user.role === 'ADMIN')
+                ? `${endpoints['lecturer-chat-rooms']}?lecturerId=${user.id}`
+                : endpoints['chat-rooms'];
+
+            const res = await authApis().get(url);
+            const data = res.data.data;
+            const loadedRooms = data?.items || data || [];
+            setRooms(loadedRooms);
+
+            if (roomIdParam) {
+                const targetRoom = loadedRooms.find(r => r.id.toString() === roomIdParam);
+                if (targetRoom) setActiveRoom(targetRoom);
+                else if (loadedRooms.length > 0) setActiveRoom(loadedRooms[0]);
+            } else if (loadedRooms.length > 0) {
+                setActiveRoom(loadedRooms[0]);
+            }
+        } catch (ex) {
+            console.error("Failed to load chat rooms", ex);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSend = (e) => {
         e.preventDefault();
@@ -41,12 +69,15 @@ const Chat = () => {
             <h2 style={{ fontSize: '1.35rem', fontWeight: 700, marginBottom: '16px' }}>Tin nhắn</h2>
             <div className="chat-layout">
                 <div className="chat-sidebar">
-                    {CHAT_ROOMS.map(room => (
+                    {rooms.map(room => (
                         <div key={room.id} className={`room-item ${activeRoom?.id === room.id ? 'active' : ''}`} onClick={() => setActiveRoom(room)}>
                             <div className="room-name">{room.name}</div>
-                            <div className="room-last">{room.lastMessage}</div>
+                            <div className="room-last">{room.courseName || 'Phòng chung'}</div>
                         </div>
                     ))}
+                    {rooms.length === 0 && (
+                        <div className="text-muted text-center mt-4">Không có phòng chat nào</div>
+                    )}
                 </div>
                 <div className="chat-main">
                     {activeRoom ? (

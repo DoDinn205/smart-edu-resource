@@ -68,7 +68,7 @@ public class ApiUserController {
             @Valid @RequestBody ReqLecturerDTO request) {
         ResResponse<ResLecturerDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.CREATED.value());
-        res.setMessage("Dang ky giang vien thanh cong, vui long cho admin duyet");
+        res.setMessage("Đăng ký giảng viên thành công, vui lòng chờ admin duyệt");
         res.setData(this.userService.registerLecturer(request));
 
         return new ResponseEntity<>(res, HttpStatus.CREATED);

@@ -470,6 +470,12 @@ public class DTOMapper {
         dto.setCourseId(quiz.getCourseId() != null ? quiz.getCourseId().getId() : null);
         dto.setCreatedBy(toResUserDTO(quiz.getCreatedBy()));
 
+        if (quiz.getQuestionSet() != null) {
+            dto.setQuestionCount((int) quiz.getQuestionSet().stream()
+                    .filter(q -> !Boolean.TRUE.equals(q.getIsDeleted()))
+                    .count());
+        }
+
         if (includeQuestions && quiz.getQuestionSet() != null) {
             dto.setQuestions(quiz.getQuestionSet().stream()
                     .filter(q -> !Boolean.TRUE.equals(q.getIsDeleted()))
@@ -596,6 +602,11 @@ public class DTOMapper {
     }
 
     public static ResLearningProgressDTO toResLearningProgressDTO(Enrollment enrollment) {
+        return toResLearningProgressDTO(enrollment, null);
+    }
+
+    public static ResLearningProgressDTO toResLearningProgressDTO(Enrollment enrollment,
+            List<ResQuizAttemptDTO> quizAttempts) {
         if (enrollment == null) {
             return null;
         }
@@ -620,6 +631,7 @@ public class DTOMapper {
         }
 
         dto.setLecturerFeedback(enrollment.getLecturerFeedback());
+        dto.setQuizAttempts(quizAttempts);
 
         return dto;
     }

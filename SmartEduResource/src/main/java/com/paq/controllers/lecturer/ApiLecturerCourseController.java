@@ -104,10 +104,10 @@ public class ApiLecturerCourseController {
     }
 
     @GetMapping("/courses/{courseId}/enrollments")
-    public ResponseEntity<ResResponse<List<ResEnrollmentDTO>>> getEnrollmentsByCourseId(
-            @PathVariable int courseId,
+    public ResponseEntity<ResResponse<ResPageDTO<ResEnrollmentDTO>>> getEnrollmentsByCourseId(
+            @PathVariable("courseId") int courseId,
             @RequestParam Map<String, String> params) {
-        ResResponse<List<ResEnrollmentDTO>> res = new ResResponse<>();
+        ResResponse<ResPageDTO<ResEnrollmentDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Lấy danh sách đăng ký của khóa học thành công");
         res.setData(this.enrollmentService.getEnrollmentsByCourseId(courseId, params));
@@ -117,7 +117,7 @@ public class ApiLecturerCourseController {
 
     @PutMapping("/enrollments/{id}/status")
     public ResponseEntity<ResResponse<ResEnrollmentDTO>> updateEnrollmentStatus(
-            @PathVariable int id,
+            @PathVariable("id") int id,
             @Valid @RequestBody ReqEnrollmentStatusDTO request) {
         ResResponse<ResEnrollmentDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());

@@ -1,34 +1,40 @@
 package com.paq.pojo.request;
 
+import java.util.Set;
+
+import org.springframework.web.multipart.MultipartFile;
 import com.paq.utils.constant.FormatEnum;
 import com.paq.utils.constant.LevelEnum;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import java.util.Set;
 
 public class ReqResourceDTO {
 
-    @NotBlank(message = "Title khong duoc de trong")
-    @Size(max = 255, message = "Title toi da 255 ky tu")
+    private MultipartFile file;
+    private MultipartFile thumbnailFile;
+
+    @NotBlank(message = "Title không được để trống")
+    @Size(max = 255, message = "Title tối đa 255 ký tự")
     private String title;
 
     private String description;
 
-    @Size(max = 255, message = "File URL toi da 255 ky tu")
+    @Size(max = 255, message = "File URL tối đa 255 ký tự")
     private String fileUrl;
 
-    @Size(max = 255, message = "Thumbnail URL toi da 255 ky tu")
+    @Size(max = 255, message = "Thumbnail URL tối đa 255 ký tự")
     private String thumbnailUrl;
 
     private FormatEnum format;
 
-    @Min(value = 0, message = "File size phai lon hon hoac bang 0")
+    @Min(value = 0, message = "File size phải lớn hơn hoặc bằng 0")
     private Integer fileSize;
 
     private LevelEnum level;
 
-    @Min(value = 0, message = "Page count phai lon hon hoac bang 0")
+    @Min(value = 0, message = "Page count phải lớn hơn hoặc bằng 0")
     private Integer pageCount;
 
     private Set<Integer> subjectIds;
@@ -139,5 +145,21 @@ public class ReqResourceDTO {
 
     public void setRelatedResourceIds(Set<Integer> relatedResourceIds) {
         this.relatedResourceIds = relatedResourceIds;
+    }
+
+    public MultipartFile getFile() {
+        return file;
+    }
+
+    public void setFile(MultipartFile file) {
+        this.file = file;
+    }
+
+    public MultipartFile getThumbnailFile() {
+        return thumbnailFile;
+    }
+
+    public void setThumbnailFile(MultipartFile thumbnailFile) {
+        this.thumbnailFile = thumbnailFile;
     }
 }

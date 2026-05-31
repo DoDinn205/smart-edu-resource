@@ -68,7 +68,7 @@ public class Question implements Serializable {
     private QuestionTypeEnum type;
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "questionId")
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "questionId")
     @JsonIgnore
     private Set<AnswerOption> answerOptionSet;
     @JoinColumn(name = "quiz_id", referencedColumnName = "id")

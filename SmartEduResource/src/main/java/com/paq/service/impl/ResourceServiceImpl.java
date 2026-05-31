@@ -1,5 +1,6 @@
 package com.paq.service.impl;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -9,11 +10,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.poi.xslf.usermodel.XMLSlideShow;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.paq.pojo.Resource;
 import com.paq.pojo.ResourceTag;
 import com.paq.pojo.ResourceType;
@@ -31,10 +38,12 @@ import com.paq.repository.UserRepository;
 import com.paq.service.PermissionService;
 import com.paq.service.ResourceService;
 import com.paq.utils.DTOMapper;
+import com.paq.utils.constant.FormatEnum;
 import com.paq.utils.error.IdInvalidException;
 import com.paq.utils.error.PermissionException;
 
 @Service
+@Transactional
 public class ResourceServiceImpl implements ResourceService {
 
     @Autowired
@@ -45,6 +54,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Autowired
     private SubjectRepository subjectRepo;
+
+    @Autowired
+    private Cloudinary cloudinary;
 
     @Autowired
     private TopicRepository topicRepo;
@@ -165,16 +177,87 @@ public class ResourceServiceImpl implements ResourceService {
     private void copyResourceFields(Resource resource, ReqResourceDTO request) {
         resource.setTitle(request.getTitle());
         resource.setDescription(request.getDescription());
-        resource.setFileUrl(request.getFileUrl());
-        resource.setThumbnailUrl(request.getThumbnailUrl());
-        resource.setFormat(request.getFormat());
-        resource.setFileSize(request.getFileSize());
+
+        if (request.getFile() != null && !request.getFile().isEmpty()) {
+            try {
+                byte[] fileBytes = request.getFile().getBytes();
+                FormatEnum format = FormatEnum.fromFilename(request.getFile().getOriginalFilename());
+                String contentType = request.getFile().getContentType();
+                String resourceType = this.resolveCloudinaryResourceType(contentType);
+
+                Map uploadParams = ObjectUtils.asMap("resource_type", resourceType);
+
+                if ("raw".equals(resourceType)) {
+                    String originalFilename = request.getFile().getOriginalFilename();
+                    if (originalFilename != null && !originalFilename.isEmpty()) {
+                        String safeName = originalFilename.replaceAll("[^a-zA-Z0-9._-]", "_");
+                        uploadParams = ObjectUtils.asMap(
+                            "resource_type", resourceType,
+                            "public_id", safeName
+                        );
+                    }
+                }
+
+                Map res = this.cloudinary.uploader().upload(fileBytes, uploadParams);
+                resource.setFileUrl(res.get("secure_url").toString());
+                resource.setFileSize((int) request.getFile().getSize());
+                resource.setFormat(format);
+                resource.setPageCount(this.resolvePageCount(format, fileBytes));
+            } catch (Exception ex) {
+                throw new RuntimeException("Lỗi khi upload file: " + ex.getMessage());
+            }
+        } else if (request.getFileUrl() != null) {
+            resource.setFileUrl(request.getFileUrl());
+            if (request.getFileSize() != null) {
+                resource.setFileSize(request.getFileSize());
+            }
+            resource.setFormat(request.getFormat());
+            resource.setPageCount(request.getPageCount());
+        }
+
+        if (request.getThumbnailFile() != null && !request.getThumbnailFile().isEmpty()) {
+            try {
+                Map uploadParams = ObjectUtils.asMap("resource_type", "image");
+                Map res = this.cloudinary.uploader().upload(request.getThumbnailFile().getBytes(), uploadParams);
+                resource.setThumbnailUrl(res.get("secure_url").toString());
+            } catch (Exception ex) {
+                throw new RuntimeException("Lỗi khi upload thumbnail: " + ex.getMessage());
+            }
+        } else if (request.getThumbnailUrl() != null) {
+            resource.setThumbnailUrl(request.getThumbnailUrl());
+        }
         resource.setLevel(request.getLevel());
-        resource.setPageCount(request.getPageCount());
         resource.setSubjectSet(this.resolveSubjects(request.getSubjectIds()));
         resource.setTopicSet(this.resolveTopics(request.getTopicIds()));
         resource.setResourceTagSet(this.resolveTags(request.getTagIds()));
         resource.setResourceTypeSet(this.resolveTypes(request.getTypeIds()));
+    }
+
+    private String resolveCloudinaryResourceType(String contentType) {
+        if (contentType == null) {
+            return "raw";
+        }
+        if (contentType.startsWith("image/")) {
+            return "image";
+        }
+        if (contentType.startsWith("video/")) {
+            return "video";
+        }
+        return "raw";
+    }
+
+    private Integer resolvePageCount(FormatEnum format, byte[] fileBytes) throws Exception {
+        if (FormatEnum.PDF.equals(format)) {
+            try (PDDocument document = Loader.loadPDF(fileBytes)) {
+                return document.getNumberOfPages();
+            }
+        }
+        if (FormatEnum.PPTX.equals(format)) {
+            try (XMLSlideShow slideShow = new XMLSlideShow(new ByteArrayInputStream(fileBytes))) {
+                return slideShow.getSlides().size();
+            }
+        }
+        return null;
     }
 
     private Set<Subject> resolveSubjects(Set<Integer> ids) {

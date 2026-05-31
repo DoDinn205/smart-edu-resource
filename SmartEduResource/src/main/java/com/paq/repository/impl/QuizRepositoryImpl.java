@@ -62,6 +62,9 @@ public class QuizRepositoryImpl implements QuizRepository {
             if (params.containsKey("courseId")) {
                 hql += " AND q.courseId.id = :courseId";
             }
+            if (params.containsKey("lecturerId")) {
+                hql += " AND q.courseId.lecturerId.id = :lecturerId";
+            }
         }
 
         Query<Quiz> q = s.createQuery(hql, Quiz.class);
@@ -72,6 +75,9 @@ public class QuizRepositoryImpl implements QuizRepository {
             }
             if (params.containsKey("courseId")) {
                 q.setParameter("courseId", Integer.parseInt(params.get("courseId")));
+            }
+            if (params.containsKey("lecturerId")) {
+                q.setParameter("lecturerId", Integer.parseInt(params.get("lecturerId")));
             }
         }
 
@@ -99,6 +105,9 @@ public class QuizRepositoryImpl implements QuizRepository {
             if (params.containsKey("courseId")) {
                 hql += " AND q.courseId.id = :courseId";
             }
+            if (params.containsKey("lecturerId")) {
+                hql += " AND q.courseId.lecturerId.id = :lecturerId";
+            }
         }
 
         Query<Long> q = s.createQuery(hql, Long.class);
@@ -109,6 +118,9 @@ public class QuizRepositoryImpl implements QuizRepository {
             }
             if (params.containsKey("courseId")) {
                 q.setParameter("courseId", Integer.parseInt(params.get("courseId")));
+            }
+            if (params.containsKey("lecturerId")) {
+                q.setParameter("lecturerId", Integer.parseInt(params.get("lecturerId")));
             }
         }
 

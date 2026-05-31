@@ -67,6 +67,7 @@ export const endpoints = {
     'lecturer-course-lessons': (id) => `/secure/lecturer/courses/${id}/lessons`,
     'lecturer-course-enrollments': (id) => `/secure/lecturer/courses/${id}/enrollments`,
     'lecturer-enrollment-status': (id) => `/secure/lecturer/enrollments/${id}/status`,
+    'lecturer-progress': '/secure/lecturer/progress',
     'lecturer-course-progress': (id) => `/secure/lecturer/courses/${id}/progress`,
     'lecturer-resources': '/secure/lecturer/resources',
     'lecturer-resource-detail': (id) => `/secure/lecturer/resources/${id}`,
@@ -83,6 +84,7 @@ export const endpoints = {
     'lecturer-chat-rooms': '/secure/lecturer/chat-rooms',
     'lecturer-chat-room-detail': (id) => `/secure/lecturer/chat-rooms/${id}`,
     'lecturer-chat-participants': (roomId) => `/secure/lecturer/chat-rooms/${roomId}/participants`,
+    'lecturer-chat-participant-detail': (id) => `/secure/lecturer/chat-participants/${id}`,
     'lecturer-progress-feedback': (id) => `/secure/lecturer/progress/${id}/feedback`,
 }
 
