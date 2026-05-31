@@ -67,6 +67,16 @@ public class PaymentRepositoryImpl implements PaymentRepository {
                 predicates.add(b.equal(user.get("id"), Integer.parseInt(userId)));
             }
 
+            String keyword = params.get("keyword");
+            if (keyword != null && !keyword.isBlank()) {
+                String like = String.format("%%%s%%", keyword.trim().toLowerCase());
+                predicates.add(b.or(
+                        b.like(b.lower(root.get("transactionCode")), like),
+                        b.like(b.lower(course.get("name")), like),
+                        b.like(b.lower(user.get("fullName")), like),
+                        b.like(b.lower(user.get("email")), like)));
+            }
+
             Date fromDate = this.parseDate(params.get("fromDate"));
             if (fromDate != null) {
                 predicates.add(b.greaterThanOrEqualTo(root.get("createdAt"), fromDate));
@@ -179,6 +189,75 @@ public class PaymentRepositoryImpl implements PaymentRepository {
         return results;
     }
 
+    @Override
+    public List<Object[]> getRevenueByMonth(Map<String, String> params) {
+        Session session = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = session.getCriteriaBuilder();
+        CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
+        Root<Payment> root = q.from(Payment.class);
+
+        List<Predicate> predicates = this.buildPredicates(params, b, root);
+        predicates.add(b.equal(root.get("status"), PaymentStatusEnum.SUCCESS));
+
+        q.multiselect(
+                b.function("YEAR", Integer.class, root.get("createdAt")),
+                b.function("MONTH", Integer.class, root.get("createdAt")),
+                b.sum(root.get("amount")),
+                b.count(root.get("id"))
+        );
+        q.where(predicates.toArray(Predicate[]::new));
+        q.groupBy(
+                b.function("YEAR", Integer.class, root.get("createdAt")),
+                b.function("MONTH", Integer.class, root.get("createdAt"))
+        );
+        q.orderBy(
+                b.asc(b.function("YEAR", Integer.class, root.get("createdAt"))),
+                b.asc(b.function("MONTH", Integer.class, root.get("createdAt")))
+        );
+
+        return session.createQuery(q).getResultList();
+    }
+
+    @Override
+    public Map<String, Long> countPaymentsByUserRole(Map<String, String> params) {
+        Session session = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = session.getCriteriaBuilder();
+        CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
+        Root<Payment> root = q.from(Payment.class);
+
+        Join<Object, Object> enrollment = root.join("enrollmentId", JoinType.INNER);
+        Join<Object, Object> course = enrollment.join("courseId", JoinType.INNER);
+        Join<Object, Object> student = enrollment.join("studentId", JoinType.INNER);
+        Join<Object, Object> user = student.join("userId", JoinType.INNER);
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(b.or(b.isFalse(course.get("isDeleted")), b.isNull(course.get("isDeleted"))));
+
+        if (params != null) {
+            Date fromDate = this.parseDate(params.get("fromDate"));
+            if (fromDate != null) {
+                predicates.add(b.greaterThanOrEqualTo(root.get("createdAt"), fromDate));
+            }
+            Date toDate = this.parseDate(params.get("toDate"));
+            if (toDate != null) {
+                predicates.add(b.lessThan(root.get("createdAt"), this.nextDate(toDate)));
+            }
+        }
+
+        q.multiselect(user.get("role"), b.count(root.get("id")));
+        q.where(predicates.toArray(Predicate[]::new));
+        q.groupBy(user.get("role"));
+
+        List<Object[]> rows = session.createQuery(q).getResultList();
+        Map<String, Long> results = new HashMap<>();
+        for (Object[] row : rows) {
+            if (row[0] != null) {
+                results.put(row[0].toString(), this.safeLong((Long) row[1]));
+            }
+        }
+        return results;
+    }
+
     private List<Predicate> buildPredicates(Map<String, String> params, CriteriaBuilder b, Root<Payment> root) {
         List<Predicate> predicates = new ArrayList<>();
         Join<Object, Object> enrollment = root.join("enrollmentId", JoinType.INNER);
@@ -200,6 +279,16 @@ public class PaymentRepositoryImpl implements PaymentRepository {
         String userId = params.get("userId");
         if (userId != null && !userId.isEmpty()) {
             predicates.add(b.equal(user.get("id"), Integer.parseInt(userId)));
+        }
+
+        String keyword = params.get("keyword");
+        if (keyword != null && !keyword.isBlank()) {
+            String like = String.format("%%%s%%", keyword.trim().toLowerCase());
+            predicates.add(b.or(
+                    b.like(b.lower(root.get("transactionCode")), like),
+                    b.like(b.lower(course.get("name")), like),
+                    b.like(b.lower(user.get("fullName")), like),
+                    b.like(b.lower(user.get("email")), like)));
         }
 
         Date fromDate = this.parseDate(params.get("fromDate"));

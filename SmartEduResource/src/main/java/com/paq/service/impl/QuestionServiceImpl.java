@@ -2,7 +2,9 @@ package com.paq.service.impl;
 
 import com.paq.pojo.Question;
 import com.paq.pojo.Quiz;
+import com.paq.pojo.AnswerOption;
 import com.paq.pojo.request.ReqQuestionDTO;
+import com.paq.pojo.request.ReqAnswerOptionDTO;
 import com.paq.pojo.response.ResQuestionDTO;
 import com.paq.repository.QuestionRepository;
 import com.paq.repository.QuizRepository;
@@ -11,6 +13,8 @@ import com.paq.service.QuestionService;
 import com.paq.utils.DTOMapper;
 import com.paq.utils.error.IdInvalidException;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -95,6 +99,23 @@ public class QuestionServiceImpl implements QuestionService {
         question.setScore(request.getScore());
         question.setExplanation(request.getExplanation());
         question.setType(request.getType());
+
+        if (request.getOptions() != null) {
+            if (question.getAnswerOptionSet() == null) {
+                question.setAnswerOptionSet(new HashSet<>());
+            } else {
+                question.getAnswerOptionSet().clear();
+            }
+
+            for (ReqAnswerOptionDTO opt : request.getOptions()) {
+                AnswerOption answerOption = new AnswerOption();
+                answerOption.setContent(opt.getContent());
+                answerOption.setIsCorrect(opt.getIsCorrect());
+                answerOption.setIsDeleted(false);
+                answerOption.setQuestionId(question);
+                question.getAnswerOptionSet().add(answerOption);
+            }
+        }
     }
 
     private void refreshQuizTotalScore(int quizId) {

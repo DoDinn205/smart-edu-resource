@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
@@ -66,7 +67,7 @@ public class Subject implements Serializable {
     private Date createdAt;
     @Column(name = "is_deleted")
     private Boolean isDeleted;
-    @ManyToMany(mappedBy = "subjectSet")
+    @OneToMany(mappedBy = "subjectId")
     @JsonIgnore
     private Set<Course> courseSet;
     @ManyToMany(mappedBy = "subjectSet")

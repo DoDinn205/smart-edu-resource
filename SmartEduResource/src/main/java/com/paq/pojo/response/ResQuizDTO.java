@@ -23,6 +23,7 @@ public class ResQuizDTO {
     private Date createdAt;
     private Integer courseId;
     private String courseName;
+    private Integer questionCount;
     private ResUserDTO createdBy;
     private List<ResQuestionDTO> questions;
 
@@ -90,6 +91,15 @@ public class ResQuizDTO {
     public void setCourseName(String courseName) {
         this.courseName = courseName;
     }
+
+    public Integer getQuestionCount() {
+        return questionCount;
+    }
+
+    public void setQuestionCount(Integer questionCount) {
+        this.questionCount = questionCount;
+    }
+
     public ResUserDTO getCreatedBy() {
         return createdBy;
     }

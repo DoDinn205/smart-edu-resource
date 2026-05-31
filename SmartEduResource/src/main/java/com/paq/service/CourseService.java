@@ -16,4 +16,8 @@ public interface CourseService {
     ResCourseDTO updateCourse(int id, ReqCourseDTO request);
 
     void deleteCourse(int id);
+
+    List<ResCourseDTO> getCoursesByCurrentLecturer(Map<String, String> params);
+
+    Long countCoursesByCurrentLecturer(Map<String, String> params);
 }

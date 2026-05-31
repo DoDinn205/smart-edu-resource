@@ -1,126 +1,35 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package com.paq.repository.impl;
 
 import com.paq.pojo.Enrollment;
 import com.paq.repository.EnrollmentRepository;
-import com.paq.utils.constant.EnrollmentStatusEnum;
 import jakarta.persistence.NoResultException;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ *
+ * @author Admin
+ */
 @Repository
-@PropertySource("classpath:configs.properties")
 @Transactional
 public class EnrollmentRepositoryImpl implements EnrollmentRepository {
 
     @Autowired
-    private Environment env;
-
-    @Autowired
     private LocalSessionFactoryBean factory;
 
-    @Override
-    public List<Enrollment> getEnrollmentsByCourseId(int courseId, Map<String, String> params) {
-        Session session = this.factory.getObject().getCurrentSession();
-        CriteriaBuilder b = session.getCriteriaBuilder();
-        CriteriaQuery<Enrollment> q = b.createQuery(Enrollment.class);
-        Root<Enrollment> root = q.from(Enrollment.class);
-        root.fetch("courseId", JoinType.LEFT);
-        root.fetch("studentId", JoinType.LEFT).fetch("userId", JoinType.LEFT);
-        q.select(root).distinct(true);
-
-        List<Predicate> predicates = new ArrayList<>();
-        predicates.add(b.equal(root.get("courseId").get("id"), courseId));
-
-        if (params != null) {
-            String status = params.get("status");
-            if (status != null && !status.isEmpty()) {
-                predicates.add(b.equal(root.get("status"), EnrollmentStatusEnum.valueOf(status)));
-            }
-        }
-
-        q.where(predicates.toArray(Predicate[]::new));
-        q.orderBy(b.desc(root.get("id")));
-
-        Query<Enrollment> query = session.createQuery(q);
-
-        if (params != null) {
-            int pageSize = this.env.getProperty("enrollments.page_size", Integer.class);
-            int page = Integer.parseInt(params.getOrDefault("page", "1"));
-            int start = (page - 1) * pageSize;
-
-            query.setMaxResults(pageSize);
-            query.setFirstResult(start);
-        }
-
-        return query.getResultList();
-    }
-
-    @Override
-    public Enrollment getEnrollmentById(int id) {
-        try {
-            Session session = this.factory.getObject().getCurrentSession();
-            Query<Enrollment> q = session.createQuery(
-                    "SELECT e FROM Enrollment e "
-                    + "JOIN FETCH e.courseId c "
-                    + "JOIN FETCH e.studentId s "
-                    + "JOIN FETCH s.userId "
-                    + "WHERE e.id = :id "
-                    + "AND (c.isDeleted = false OR c.isDeleted IS NULL)",
-                    Enrollment.class);
-            q.setParameter("id", id);
-            return q.getSingleResult();
-        } catch (NoResultException ex) {
-            return null;
-        }
-    }
-
-    @Override
-    public Enrollment addOrUpdateEnrollment(Enrollment enrollment) {
-        Session session = this.factory.getObject().getCurrentSession();
-        if (enrollment.getId() != null) {
-            return session.merge(enrollment);
-        }
-
-        session.persist(enrollment);
-        return enrollment;
-    }
-
-    @Override
-    public boolean existsByCourseId(int courseId) {
-        Session session = this.factory.getObject().getCurrentSession();
-        Query<Long> q = session.createQuery(
-                "SELECT COUNT(e.id) FROM Enrollment e WHERE e.courseId.id = :courseId",
-                Long.class);
-        q.setParameter("courseId", courseId);
-        return q.getSingleResult() > 0;
-    }
-
-    @Override
-    public boolean existsByCourseIdAndUserId(int courseId, int userId) {
-        Session session = this.factory.getObject().getCurrentSession();
-        Query<Long> q = session.createQuery(
-                "SELECT COUNT(e.id) FROM Enrollment e "
-                + "WHERE e.courseId.id = :courseId "
-                + "AND e.studentId.userId.id = :userId",
-                Long.class);
-        q.setParameter("courseId", courseId);
-        q.setParameter("userId", userId);
-        return q.getSingleResult() > 0;
-    }
+    @Autowired
+    private Environment env;
 
     @Override
     public boolean existsByStudentAndCourse(int studentId, int courseId) {
@@ -128,14 +37,25 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
 
         Query<Long> q = s.createQuery(
                 "SELECT COUNT(e) FROM Enrollment e "
-                + "WHERE e.studentId.id = :studentId "
-                + "AND e.courseId.id = :courseId",
+                + "WHERE e.studentId.id=:studentId AND e.courseId.id=:courseId",
                 Long.class
         );
-
         q.setParameter("studentId", studentId);
         q.setParameter("courseId", courseId);
+        return q.getSingleResult() > 0;
+    }
 
+    @Override
+    public boolean existsByCourseIdAndUserId(int courseId, int userId) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        Query<Long> q = s.createQuery(
+                "SELECT COUNT(e) FROM Enrollment e "
+                + "WHERE e.courseId.id=:courseId AND e.studentId.userId.id=:userId",
+                Long.class
+        );
+        q.setParameter("courseId", courseId);
+        q.setParameter("userId", userId);
         return q.getSingleResult() > 0;
     }
 
@@ -147,14 +67,46 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
     }
 
     @Override
-    public List<Enrollment> getEnrollmentsByStudentId(int studentId) {
+    public Enrollment addOrUpdateEnrollment(Enrollment enrollment) {
+        Session s = this.factory.getObject().getCurrentSession();
+        if (enrollment.getId() != null) {
+            return s.merge(enrollment);
+        }
+        s.persist(enrollment);
+        return enrollment;
+    }
+
+    @Override
+    public Enrollment getEnrollmentById(int id) {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.get(Enrollment.class, id);
+    }
+
+    @Override
+    public Enrollment findByCourseAndStudent(int courseId, int studentId) {
         Session s = this.factory.getObject().getCurrentSession();
 
         Query<Enrollment> q = s.createQuery(
-                "FROM Enrollment e WHERE e.studentId.id = :studentId",
+                "FROM Enrollment e WHERE e.courseId.id = :courseId AND e.studentId.id = :studentId",
                 Enrollment.class
         );
+        q.setParameter("courseId", courseId);
+        q.setParameter("studentId", studentId);
 
+        try {
+            return q.getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+        }
+    }
+
+    @Override
+    public List<Enrollment> getEnrollmentsByStudentId(int studentId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        Query<Enrollment> q = s.createQuery(
+                "FROM Enrollment e WHERE e.studentId.id=:studentId",
+                Enrollment.class
+        );
         q.setParameter("studentId", studentId);
         return q.getResultList();
     }
@@ -164,11 +116,72 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
         Session s = this.factory.getObject().getCurrentSession();
 
         Query<Enrollment> q = s.createQuery(
-                "FROM Enrollment e WHERE e.studentId.userId.username = :username",
+                "FROM Enrollment e WHERE e.studentId.userId.username=:username",
                 Enrollment.class
         );
 
         q.setParameter("username", username);
+        return q.getResultList();
+    }
+
+    @Override
+    public List<Enrollment> getEnrollmentsByCourseId(int courseId, Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        String hql = "FROM Enrollment e WHERE e.courseId.id = :courseId";
+
+        if (params != null && params.containsKey("status")) {
+            hql += " AND e.status = :status";
+        }
+
+        hql += " ORDER BY e.enrollDate DESC";
+
+        Query<Enrollment> q = s.createQuery(hql, Enrollment.class);
+        q.setParameter("courseId", courseId);
+
+        if (params != null && params.containsKey("status")) {
+            q.setParameter("status", params.get("status"));
+        }
+
+        if (params != null && params.containsKey("page")) {
+            int pageSize = this.env.getProperty("enrollments.page_size", Integer.class, 10);
+            int page = Integer.parseInt(params.get("page"));
+            q.setFirstResult((page - 1) * pageSize);
+            q.setMaxResults(pageSize);
+        }
+
+        return q.getResultList();
+    }
+
+    @Override
+    public Long countEnrollmentsByCourseId(int courseId, Map<String, String> params) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        String hql = "SELECT COUNT(e) FROM Enrollment e WHERE e.courseId.id = :courseId";
+
+        if (params != null && params.containsKey("status")) {
+            hql += " AND e.status = :status";
+        }
+
+        Query<Long> q = s.createQuery(hql, Long.class);
+        q.setParameter("courseId", courseId);
+
+        if (params != null && params.containsKey("status")) {
+            q.setParameter("status", params.get("status"));
+        }
+
+        return q.getSingleResult();
+    }
+
+    @Override
+    public List<Enrollment> getMyEnrollments(int studentId) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        Query<Enrollment> q = s.createQuery(
+                "FROM Enrollment e WHERE e.studentId.id = :studentId ORDER BY e.enrollDate DESC",
+                Enrollment.class
+        );
+        q.setParameter("studentId", studentId);
         return q.getResultList();
     }
 

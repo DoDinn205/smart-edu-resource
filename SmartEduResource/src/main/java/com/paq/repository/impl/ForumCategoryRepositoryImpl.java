@@ -63,6 +63,28 @@ public class ForumCategoryRepositoryImpl implements ForumCategoryRepository {
     }
 
     @Override
+    public long countCategories(Map<String, String> params) {
+        Session session = this.factory.getObject().getCurrentSession();
+        CriteriaBuilder b = session.getCriteriaBuilder();
+        CriteriaQuery<Long> q = b.createQuery(Long.class);
+        Root<ForumCategory> root = q.from(ForumCategory.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(b.or(b.isFalse(root.get("isDeleted")), b.isNull(root.get("isDeleted"))));
+
+        if (params != null) {
+            String kw = params.get("kw");
+            if (kw != null && !kw.isEmpty()) {
+                predicates.add(b.like(root.get("name"), String.format("%%%s%%", kw)));
+            }
+        }
+
+        q.select(b.count(root.get("id")));
+        q.where(predicates.toArray(Predicate[]::new));
+        return session.createQuery(q).getSingleResult();
+    }
+
+    @Override
     public ForumCategory getCategoryById(int id) {
         Session session = this.factory.getObject().getCurrentSession();
         ForumCategory category = session.get(ForumCategory.class, id);

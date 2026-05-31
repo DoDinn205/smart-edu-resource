@@ -195,7 +195,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public boolean canManageChatRooms(User user) {
-        return this.isAdmin(user) || this.isLecturer(user);
+        return this.isAdmin(user);
     }
 
     @Override

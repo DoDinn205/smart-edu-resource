@@ -9,6 +9,10 @@ public interface QuizService {
 
     List<ResQuizDTO> getQuizzes(Map<String, String> params);
 
+    List<ResQuizDTO> getLecturerQuizzes(Map<String, String> params);
+
+    Long countLecturerQuizzes(Map<String, String> params);
+
     ResQuizDTO getQuizById(int id);
 
     ResQuizDTO getQuizForManagement(int id);

@@ -1,12 +1,12 @@
 package com.paq.pojo.request;
 
 import java.util.Date;
-import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.paq.utils.constant.LevelEnum;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
@@ -27,12 +27,16 @@ public class ReqCourseDTO {
 
     private Boolean isPaid;
 
+    private Long price;
+
     private LevelEnum targetLevel;
 
     @Positive(message = "Lecturer id phai lon hon 0")
     private Integer lecturerId;
 
-    private Set<Integer> subjectIds;
+    @NotNull(message = "Subject id khong duoc de trong")
+    @Positive(message = "Subject id phai lon hon 0")
+    private Integer subjectId;
 
     public String getName() {
         return name;
@@ -74,6 +78,14 @@ public class ReqCourseDTO {
         this.isPaid = isPaid;
     }
 
+    public Long getPrice() {
+        return price;
+    }
+
+    public void setPrice(Long price) {
+        this.price = price;
+    }
+
     public LevelEnum getTargetLevel() {
         return targetLevel;
     }
@@ -90,11 +102,11 @@ public class ReqCourseDTO {
         this.lecturerId = lecturerId;
     }
 
-    public Set<Integer> getSubjectIds() {
-        return subjectIds;
+    public Integer getSubjectId() {
+        return subjectId;
     }
 
-    public void setSubjectIds(Set<Integer> subjectIds) {
-        this.subjectIds = subjectIds;
+    public void setSubjectId(Integer subjectId) {
+        this.subjectId = subjectId;
     }
 }

@@ -13,13 +13,12 @@ import com.paq.pojo.StudentAnswer;
 import com.paq.pojo.User;
 import com.paq.pojo.request.ReqStudentAnswerDTO;
 import com.paq.pojo.request.ReqSubmitQuizDTO;
-import com.paq.pojo.response.ResAnswerOptionDTO;
-import com.paq.pojo.response.ResQuestionDTO;
 import com.paq.pojo.response.ResQuizDTO;
 import com.paq.pojo.response.ResQuizResultDTO;
 import com.paq.repository.QuizRepository;
 import com.paq.service.StudentQuizService;
 import com.paq.service.UserService;
+import com.paq.utils.DTOMapper;
 import com.paq.utils.constant.AttemptStatusEnum;
 import com.paq.utils.error.IdInvalidException;
 import com.paq.utils.error.PermissionException;
@@ -50,7 +49,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
     public List<ResQuizDTO> getQuizzes() {
         return this.quizRepo.getQuizzes(new HashMap<>())
                 .stream()
-                .map(q -> this.toQuizDTO(q, false))
+                .map(q -> DTOMapper.toResQuizDTO(q, false, false))
                 .collect(Collectors.toList());
     }
 
@@ -62,7 +61,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
             throw new IdInvalidException("Quiz khong ton tai");
         }
 
-        return this.toQuizDTO(quiz, true);
+        return DTOMapper.toResQuizDTO(quiz, false, true);
     }
 
     @Override
@@ -135,11 +134,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
 
         savedAttempt.setScore(totalScore);
 
-        return this.toQuizResultDTO(
-                savedAttempt,
-                totalQuestions,
-                correctCount
-        );
+        return this.toQuizResultDTO(savedAttempt, totalQuestions, correctCount);
     }
 
     @Override
@@ -158,63 +153,6 @@ public class StudentQuizServiceImpl implements StudentQuizService {
                 .orElse(null);
     }
 
-    private ResQuizDTO toQuizDTO(Quiz q, boolean includeQuestions) {
-        ResQuizDTO dto = new ResQuizDTO();
-
-        dto.setId(q.getId());
-        dto.setTitle(q.getTitle());
-        dto.setDescription(q.getDescription());
-        dto.setDurationMinutes(q.getDurationMinutes());
-        dto.setTotalScore(q.getTotalScore());
-
-        dto.setCreatedAt(
-                q.getCreatedAt()
-        );
-
-        if (q.getCourseId() != null) {
-            dto.setCourseId(q.getCourseId().getId());
-            dto.setCourseName(q.getCourseId().getName());
-        }
-
-        if (includeQuestions) {
-            List<ResQuestionDTO> questions = this.quizRepo.getQuestionsByQuizId(q.getId())
-                    .stream()
-                    .map(question -> this.toQuestionDTO(question))
-                    .collect(Collectors.toList());
-
-            dto.setQuestions(questions);
-        }
-
-        return dto;
-    }
-
-    private ResQuestionDTO toQuestionDTO(Question q) {
-        ResQuestionDTO dto = new ResQuestionDTO();
-
-        dto.setId(q.getId());
-        dto.setContent(q.getContent());
-        dto.setScore(q.getScore());
-        dto.setType(q.getType() != null ? q.getType().name() : null);
-
-        List<ResAnswerOptionDTO> options = this.quizRepo.getOptionsByQuestionId(q.getId())
-                .stream()
-                .map(option -> this.toAnswerOptionDTO(option))
-                .collect(Collectors.toList());
-
-        dto.setOptions(options);
-
-        return dto;
-    }
-
-    private ResAnswerOptionDTO toAnswerOptionDTO(AnswerOption a) {
-        ResAnswerOptionDTO dto = new ResAnswerOptionDTO();
-
-        dto.setId(a.getId());
-        dto.setContent(a.getContent());
-
-        return dto;
-    }
-
     private ResQuizResultDTO toQuizResultDTO(
             QuizAttempt attempt,
             Integer totalQuestions,
@@ -230,7 +168,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
         }
 
         dto.setScore(attempt.getScore());
-        dto.setStatus(attempt.getStatus()!= null ? attempt.getStatus().name() : null);
+        dto.setStatus(attempt.getStatus() != null ? attempt.getStatus().name() : null);
 
         dto.setSubmittedAt(
                 attempt.getSubmittedAt() != null

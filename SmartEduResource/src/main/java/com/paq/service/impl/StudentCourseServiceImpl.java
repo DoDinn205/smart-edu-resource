@@ -45,7 +45,7 @@ public class StudentCourseServiceImpl implements StudentCourseService {
     public List<ResCourseDTO> getCourses() {
         return this.courseRepo.getCourses(new HashMap<>())
                 .stream()
-                .map(c -> DTOMapper.toCourseDTO(c))
+                .map(c -> DTOMapper.toResCourseDTO(c))
                 .collect(Collectors.toList());
     }
 
@@ -56,7 +56,7 @@ public class StudentCourseServiceImpl implements StudentCourseService {
             throw new IdInvalidException("Course không tồn tại");
         }
 
-        return DTOMapper.toCourseDTO(c);
+        return DTOMapper.toResCourseDTO(c);
     }
 
     @Override
@@ -88,7 +88,7 @@ public class StudentCourseServiceImpl implements StudentCourseService {
 
         Enrollment saved = this.enrollmentRepo.addEnrollment(e);
 
-        return DTOMapper.toEnrollmentDTO(saved);
+        return DTOMapper.toResEnrollmentDTO(saved);
     }
 
     @Override
@@ -101,9 +101,8 @@ public class StudentCourseServiceImpl implements StudentCourseService {
 
         return this.enrollmentRepo.getEnrollmentsByStudentId(user.getStudent().getId())
                 .stream()
-                .map(e -> DTOMapper.toEnrollmentDTO(e))
+                .map(e -> DTOMapper.toResEnrollmentDTO(e))
                 .collect(Collectors.toList());
     }
-    
 
 }

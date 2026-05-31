@@ -1,5 +1,6 @@
 package com.paq.pojo.response;
 
+import java.util.List;
 import java.util.Map;
 
 public class ResPaymentStatsDTO {
@@ -11,6 +12,8 @@ public class ResPaymentStatsDTO {
     private Long refundedTransactions;
     private Long cancelledTransactions;
     private Map<String, Long> methodCounts;
+    private List<ResRevenueByMonthDTO> revenueByMonth;
+    private Map<String, Long> userRoleCounts;
 
     public Long getTotalRevenue() {
         return totalRevenue;
@@ -67,4 +70,20 @@ public class ResPaymentStatsDTO {
     public void setMethodCounts(Map<String, Long> methodCounts) {
         this.methodCounts = methodCounts;
     }
-}
+
+    public List<ResRevenueByMonthDTO> getRevenueByMonth() {
+        return revenueByMonth;
+    }
+
+    public void setRevenueByMonth(List<ResRevenueByMonthDTO> revenueByMonth) {
+        this.revenueByMonth = revenueByMonth;
+    }
+
+    public Map<String, Long> getUserRoleCounts() {
+        return userRoleCounts;
+    }
+
+    public void setUserRoleCounts(Map<String, Long> userRoleCounts) {
+        this.userRoleCounts = userRoleCounts;
+    }
+}

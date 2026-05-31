@@ -17,6 +17,7 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.paq.filters.JwtFilter;
+import com.paq.repository.UserRepository;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -38,6 +39,9 @@ public class SpringSecurityConfigs {
     @Autowired
     private Environment env;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -46,6 +50,11 @@ public class SpringSecurityConfigs {
     @Bean
     public HandlerMappingIntrospector mvcHandlerMappingIntrospector() {
         return new HandlerMappingIntrospector();
+    }
+
+    @Bean
+    public JwtFilter jwtFilter() {
+        return new JwtFilter(userRepository);
     }
 
     @Bean
@@ -58,7 +67,10 @@ public class SpringSecurityConfigs {
                 .authorizeHttpRequests(auth -> auth
                 .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(
+                        jwtFilter(),
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }

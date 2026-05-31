@@ -15,6 +15,7 @@ public class ResLearningProgressDTO {
     private Integer studentId;
     private String studentCode;
     private ResUserDTO studentUser;
+    private String lecturerFeedback;
     private List<ResQuizAttemptDTO> quizAttempts;
 
     public Integer getEnrollmentId() {
@@ -95,6 +96,14 @@ public class ResLearningProgressDTO {
 
     public void setStudentUser(ResUserDTO studentUser) {
         this.studentUser = studentUser;
+    }
+
+    public String getLecturerFeedback() {
+        return lecturerFeedback;
+    }
+
+    public void setLecturerFeedback(String lecturerFeedback) {
+        this.lecturerFeedback = lecturerFeedback;
     }
 
     public List<ResQuizAttemptDTO> getQuizAttempts() {

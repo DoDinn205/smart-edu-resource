@@ -8,7 +8,11 @@ public interface ChatRoomRepository {
 
     List<ChatRoom> getRooms(Map<String, String> params);
 
+    Long countRooms(Map<String, String> params);
+
     List<ChatRoom> getRoomsAvailableToUser(Map<String, String> params, int userId);
+
+    Long countRoomsAvailableToUser(Map<String, String> params, int userId);
 
     ChatRoom getRoomById(int id);
 

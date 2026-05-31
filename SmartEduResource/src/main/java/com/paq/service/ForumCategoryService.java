@@ -9,6 +9,8 @@ public interface ForumCategoryService {
 
     List<ResForumCategoryDTO> getCategories(Map<String, String> params);
 
+    long countCategories(Map<String, String> params);
+
     ResForumCategoryDTO getCategoryById(int id);
 
     ResForumCategoryDTO createCategory(ReqForumCategoryDTO request);

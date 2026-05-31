@@ -1,9 +1,8 @@
 package com.paq.service.impl;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +48,23 @@ public class CourseServiceImpl implements CourseService {
         return this.courseRepo.getCourses(params).stream()
                 .map(DTOMapper::toResCourseDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Long countCoursesByCurrentLecturer(Map<String, String> params) {
+        this.permissionService.requireLecturerOrAdmin();
+        User currentUser = this.getCurrentUser();
+        Lecturer lecturer = this.userRepo.getLecturerByUserId(currentUser.getId());
+        if (lecturer == null) {
+            throw new IdInvalidException("Tài khoản giảng viên chưa có hồ sơ giảng viên");
+        }
+
+        if (params == null) {
+            params = new HashMap<>();
+        }
+        params.put("lecturerId", String.valueOf(lecturer.getId()));
+
+        return this.courseRepo.countCourses(params);
     }
 
     @Override
@@ -114,6 +130,25 @@ public class CourseServiceImpl implements CourseService {
         this.courseRepo.deleteCourse(id);
     }
 
+    @Override
+    public List<ResCourseDTO> getCoursesByCurrentLecturer(Map<String, String> params) {
+        this.permissionService.requireLecturerOrAdmin();
+        User currentUser = this.getCurrentUser();
+        Lecturer lecturer = this.userRepo.getLecturerByUserId(currentUser.getId());
+        if (lecturer == null) {
+            throw new IdInvalidException("Tài khoản giảng viên chưa có hồ sơ giảng viên");
+        }
+
+        if (params == null) {
+            params = new HashMap<>();
+        }
+        params.put("lecturerId", String.valueOf(lecturer.getId()));
+
+        return this.courseRepo.getCourses(params).stream()
+                .map(DTOMapper::toResCourseDTO)
+                .collect(Collectors.toList());
+    }
+
     private void validateDates(ReqCourseDTO request) {
         if (request.getStartDate() != null
                 && request.getEndDate() != null
@@ -127,26 +162,24 @@ public class CourseServiceImpl implements CourseService {
         course.setDescription(request.getDescription());
         course.setStartDate(request.getStartDate());
         course.setEndDate(request.getEndDate());
-        course.setIsPaid(request.getIsPaid() != null ? request.getIsPaid() : Boolean.FALSE);
+        course.setPrice(request.getPrice());
+        // Tự động set isPaid dựa vào price
+        if (request.getPrice() != null && request.getPrice() > 0) {
+            course.setIsPaid(Boolean.TRUE);
+        } else {
+            course.setIsPaid(request.getIsPaid() != null ? request.getIsPaid() : Boolean.FALSE);
+        }
         course.setTargetLevel(request.getTargetLevel());
-        course.setSubjectSet(this.resolveSubjects(request.getSubjectIds()));
+        course.setSubjectId(this.resolveSubject(request.getSubjectId()));
     }
 
-    private Set<Subject> resolveSubjects(Set<Integer> subjectIds) {
-        Set<Subject> subjects = new HashSet<>();
-        if (subjectIds == null || subjectIds.isEmpty()) {
-            return subjects;
+    private Subject resolveSubject(Integer subjectId) {
+        Subject subject = this.subjectRepo.getSubjectById(subjectId);
+        if (subject == null || Boolean.TRUE.equals(subject.getIsDeleted())) {
+            throw new IdInvalidException("Subject không tồn tại: " + subjectId);
         }
 
-        for (Integer subjectId : subjectIds) {
-            Subject subject = this.subjectRepo.getSubjectById(subjectId);
-            if (subject == null || Boolean.TRUE.equals(subject.getIsDeleted())) {
-                throw new IdInvalidException("Subject không tồn tại: " + subjectId);
-            }
-            subjects.add(subject);
-        }
-
-        return subjects;
+        return subject;
     }
 
     private User getCurrentUser() {

@@ -1,9 +1,10 @@
-package com.paq.controllers.client;
+package com.paq.controllers.admin;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,31 +16,40 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.paq.pojo.response.ResPaymentDTO;
 import com.paq.pojo.response.ResPaymentStatsDTO;
+import com.paq.pojo.response.ResPageDTO;
 import com.paq.pojo.response.ResResponse;
 import com.paq.service.PaymentService;
+import com.paq.utils.DTOMapper;
 import com.paq.utils.constant.PaymentStatusEnum;
 
 import jakarta.validation.constraints.NotNull;
 
 @RestController
-@RequestMapping("/api")
-public class ApiPaymentController {
+@RequestMapping("/api/secure/admin")
+public class ApiAdminPaymentController {
 
     @Autowired
     private PaymentService paymentService;
 
-    @GetMapping("/secure/payments")
-    public ResponseEntity<ResResponse<List<ResPaymentDTO>>> getPayments(
+    @Autowired
+    private Environment env;
+
+    @GetMapping("/payments")
+    public ResponseEntity<ResResponse<ResPageDTO<ResPaymentDTO>>> getPayments(
             @RequestParam Map<String, String> params) {
-        ResResponse<List<ResPaymentDTO>> res = new ResResponse<>();
+        int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 1;
+        int pageSize = this.env.getProperty("payments.page_size", Integer.class, 10);
+        long totalItems = this.paymentService.countPayments(new HashMap<>(params));
+
+        ResResponse<ResPageDTO<ResPaymentDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Lấy danh sách giao dịch thành công");
-        res.setData(this.paymentService.getPayments(params));
+        res.setData(DTOMapper.toResPageDTO(this.paymentService.getPayments(params), totalItems, page, pageSize));
 
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/secure/payments/stats")
+    @GetMapping("/payments/stats")
     public ResponseEntity<ResResponse<ResPaymentStatsDTO>> getPaymentStats(
             @RequestParam Map<String, String> params) {
         ResResponse<ResPaymentStatsDTO> res = new ResResponse<>();
@@ -50,7 +60,7 @@ public class ApiPaymentController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/secure/payments/{id}")
+    @GetMapping("/payments/{id}")
     public ResponseEntity<ResResponse<ResPaymentDTO>> getPaymentById(@PathVariable int id) {
         ResResponse<ResPaymentDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
@@ -60,7 +70,7 @@ public class ApiPaymentController {
         return ResponseEntity.ok(res);
     }
 
-    @PutMapping("/secure/payments/{id}/status")
+    @PutMapping("/payments/{id}/status")
     public ResponseEntity<ResResponse<ResPaymentDTO>> updatePaymentStatus(
             @PathVariable int id,
             @NotNull(message = "Status khong duoc de trong") @RequestParam PaymentStatusEnum status) {

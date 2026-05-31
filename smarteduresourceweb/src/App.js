@@ -1,25 +1,125 @@
-import logo from './logo.svg';
+import { useReducer } from "react";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import cookies from "react-cookies";
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import { MyUserContext } from "./configs/Context";
+import MyUserReducer from "./reducers/MyUserReducer";
+
+import Header from "./components/common/Header";
+import Footer from "./components/common/Footer";
+
+import Home from "./screens/Home/Home";
+import Login from "./screens/auth/Login";
+import StudentRegister from "./screens/auth/StudentRegister";
+import LecturerRegister from "./screens/auth/LecturerRegister";
+import ResourceBrowse from "./screens/Resource/ResourceBrowse";
+import ResourceDetail from "./screens/Resource/ResourceDetail";
+import CourseBrowse from "./screens/Course/CourseBrowse";
+import CourseDetail from "./screens/Course/CourseDetail";
+import CourseLearn from "./screens/Course/CourseLearn";
+import StudentDashboard from "./screens/Student/StudentDashboard";
+import MyCourses from "./screens/Student/MyCourses";
+import StudentProfile from "./screens/Student/StudentProfile";
+import LearningPath from "./screens/Student/LearningPath";
+import QuizList from "./screens/Quiz/QuizList";
+import QuizTaking from "./screens/Quiz/QuizTaking";
+import QuizResult from "./screens/Quiz/QuizResult";
+import Forum from "./screens/Forum/Forum";
+import ForumThread from "./screens/Forum/ForumThread";
+import Chat from "./screens/Chat/Chat";
+import PaymentHistory from "./screens/Payment/PaymentHistory";
+
+import AdminLayout from "./components/Layouts/AdminLayout";
+import AdminDashboard from "./screens/Admin/AdminDashboard/AdminDashboard";
+import AdminUser from "./screens/Admin/AdminUser/AdminUser";
+import AdminLecturer from "./screens/Admin/AdminLecturer/AdminLecturer";
+import AdminCategory from "./screens/Admin/AdminCategory/AdminCategory";
+import AdminPayment from "./screens/Admin/AdminPayment/AdminPayment";
+import AdminForum from "./screens/Admin/AdminForum/AdminForum";
+import AdminReport from "./screens/Admin/AdminReport/AdminReport";
+
+import LecturerLayout from "./components/Layouts/LecturerLayout";
+import LecturerDashboard from "./screens/Lecturer/LecturerDashboard/LecturerDashboard";
+import LecturerCourse from "./screens/Lecturer/LecturerCourse/LecturerCourse";
+import LecturerLesson from "./screens/Lecturer/LecturerCourse/LecturerLesson";
+import LecturerResource from "./screens/Lecturer/LecturerResource/LecturerResource";
+import LecturerQuiz from "./screens/Lecturer/LecturerQuiz/LecturerQuiz";
+import LecturerChat from "./screens/Lecturer/LecturerChat/LecturerChat";
+import LecturerResult from "./screens/Lecturer/LecturerResult/LecturerResult";
+
+const AppLayout = () => {
+    const { pathname } = useLocation();
+    const isFullscreen = /^\/courses\/\d+\/learn$/.test(pathname);
+    const isDashboard = pathname.startsWith('/admin') || pathname.startsWith('/lecturer');
+
+    if (isDashboard) {
+        return (
+            <Routes>
+                <Route path="/admin/dashboard" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+                <Route path="/admin/students" element={<AdminLayout><AdminUser /></AdminLayout>} />
+                <Route path="/admin/lecturers" element={<AdminLayout><AdminLecturer /></AdminLayout>} />
+                <Route path="/admin/categories" element={<AdminLayout><AdminCategory /></AdminLayout>} />
+                <Route path="/admin/payments" element={<AdminLayout><AdminPayment /></AdminLayout>} />
+                <Route path="/admin/forum" element={<AdminLayout><AdminForum /></AdminLayout>} />
+                <Route path="/admin/reports" element={<AdminLayout><AdminReport /></AdminLayout>} />
+
+                <Route path="/lecturer/dashboard" element={<LecturerLayout><LecturerDashboard /></LecturerLayout>} />
+                <Route path="/lecturer/courses" element={<LecturerLayout><LecturerCourse /></LecturerLayout>} />
+                <Route path="/lecturer/courses/:id/lessons" element={<LecturerLayout><LecturerLesson /></LecturerLayout>} />
+                <Route path="/lecturer/resources" element={<LecturerLayout><LecturerResource /></LecturerLayout>} />
+                <Route path="/lecturer/quizzes" element={<LecturerLayout><LecturerQuiz /></LecturerLayout>} />
+                <Route path="/lecturer/chat" element={<LecturerLayout><LecturerChat /></LecturerLayout>} />
+                <Route path="/lecturer/results" element={<LecturerLayout><LecturerResult /></LecturerLayout>} />
+            </Routes>
+        );
+    }
+
+    return (
+        <div className={isFullscreen ? "" : "d-flex flex-column min-vh-100"}>
+            {!isFullscreen && <Header />}
+            <main className={isFullscreen ? "" : "flex-grow-1"}>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register/student" element={<StudentRegister />} />
+                    <Route path="/register/lecturer" element={<LecturerRegister />} />
+                    <Route path="/resources" element={<ResourceBrowse />} />
+                    <Route path="/resources/:id" element={<ResourceDetail />} />
+                    <Route path="/courses" element={<CourseBrowse />} />
+                    <Route path="/courses/:id" element={<CourseDetail />} />
+                    <Route path="/courses/:id/learn" element={<CourseLearn />} />
+                    <Route path="/student/dashboard" element={<StudentDashboard />} />
+                    <Route path="/my-courses" element={<MyCourses />} />
+                    <Route path="/profile" element={<StudentProfile />} />
+                    <Route path="/learning-path" element={<LearningPath />} />
+                    <Route path="/quizzes" element={<QuizList />} />
+                    <Route path="/quizzes/:id/take" element={<QuizTaking />} />
+                    <Route path="/quizzes/:id/result" element={<QuizResult />} />
+                    <Route path="/forum" element={<Forum />} />
+                    <Route path="/forum/threads/:threadId" element={<ForumThread />} />
+                    <Route path="/chat" element={<Chat />} />
+                    <Route path="/payments" element={<PaymentHistory />} />
+                </Routes>
+            </main>
+            {!isFullscreen && <Footer />}
+        </div>
+    );
+};
+
+const App = () => {
+    const [user, dispatch] = useReducer(MyUserReducer, cookies.load('user') || null);
+
+    return (
+        <MyUserContext.Provider value={[user, dispatch]}>
+            <BrowserRouter>
+                <AppLayout />
+            </BrowserRouter>
+        </MyUserContext.Provider>
+    );
 }
 
 export default App;

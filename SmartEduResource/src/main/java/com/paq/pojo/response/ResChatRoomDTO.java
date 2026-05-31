@@ -10,6 +10,7 @@ public class ResChatRoomDTO {
     private Date createdAt;
     private Integer courseId;
     private String courseName;
+    private Long participantCount;
     private ResUserDTO createdBy;
 
     public Integer getId() {
@@ -58,6 +59,14 @@ public class ResChatRoomDTO {
 
     public void setCourseName(String courseName) {
         this.courseName = courseName;
+    }
+
+    public Long getParticipantCount() {
+        return participantCount;
+    }
+
+    public void setParticipantCount(Long participantCount) {
+        this.participantCount = participantCount;
     }
 
     public ResUserDTO getCreatedBy() {

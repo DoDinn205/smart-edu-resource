@@ -33,6 +33,11 @@ public class ForumCategoryServiceImpl implements ForumCategoryService {
     }
 
     @Override
+    public long countCategories(Map<String, String> params) {
+        return this.categoryRepo.countCategories(params);
+    }
+
+    @Override
     public ResForumCategoryDTO getCategoryById(int id) {
         ForumCategory category = this.categoryRepo.getCategoryById(id);
         if (category == null) {

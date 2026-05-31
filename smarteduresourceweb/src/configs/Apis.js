@@ -1,0 +1,102 @@
+import axios from "axios";
+import cookies from 'react-cookies'
+
+export const endpoints = {
+    'login': '/login',
+    'student-register': '/register/student',
+    'lecturer-register': '/register/lecturer',
+    'profile': '/secure/profile',
+    'resources': '/resources',
+    'resource-detail': (id) => `/resources/${id}`,
+    'subjects': '/subjects',
+    'topics': '/topics',
+    'resource-types': '/resource-types',
+    'resource-tags': '/resource-tags',
+    'courses': '/courses',
+    'course-detail': (id) => `/courses/${id}`,
+    'enrollments': (courseId) => `/secure/courses/${courseId}/enrollments`,
+    'enroll-self': (courseId) => `/secure/courses/${courseId}/enroll`,
+    'my-enrollments': '/secure/my-enrollments',
+    'course-learn': (courseId) => `/secure/student/courses/${courseId}/learn`,
+    'course-lessons': (courseId) => `/secure/courses/${courseId}/lessons`,
+    'lesson-create': '/secure/lessons',
+    'lesson-update': (id) => `/secure/lessons/${id}`,
+    'lesson-delete': (id) => `/secure/lessons/${id}`,
+    'quizzes': '/quizzes',
+    'quiz-detail': (id) => `/quizzes/${id}`,
+    'quiz-questions': (quizId) => `/secure/quizzes/${quizId}/questions`,
+    'forum-categories': '/forum-categories',
+    'forum-threads': '/forum-threads',
+    'forum-thread-detail': (id) => `/forum-threads/${id}`,
+    'forum-posts': (threadId) => `/forum-threads/${threadId}/posts`,
+    'chat-rooms': '/secure/chat-rooms',
+    'chat-room-detail': (id) => `/secure/chat-rooms/${id}`,
+    'payments': '/secure/payments',
+    'payment-detail': (id) => `/secure/payments/${id}`,
+    'payment-stats': '/secure/payments/stats',
+
+    'admin-dashboard': '/secure/admin/dashboard',
+    'admin-users': '/secure/admin/users',
+    'admin-user-detail': (id) => `/secure/admin/users/${id}`,
+    'admin-user-status': (id) => `/secure/admin/users/${id}/status`,
+    'admin-students': '/secure/admin/students',
+    'admin-student-detail': (id) => `/secure/admin/students/${id}`,
+    'admin-lecturers': '/secure/admin/lecturers',
+    'admin-lecturer-detail': (id) => `/secure/admin/lecturers/${id}`,
+    'admin-lecturer-approval': (id) => `/secure/admin/lecturers/${id}/approval`,
+    'admin-subjects': '/secure/admin/subjects',
+    'admin-subject-detail': (id) => `/secure/admin/subjects/${id}`,
+    'admin-topics': '/secure/admin/topics',
+    'admin-topic-detail': (id) => `/secure/admin/topics/${id}`,
+    'admin-resource-tags': '/secure/admin/resource-tags',
+    'admin-resource-tag-detail': (id) => `/secure/admin/resource-tags/${id}`,
+    'admin-resource-types': '/secure/admin/resource-types',
+    'admin-resource-type-detail': (id) => `/secure/admin/resource-types/${id}`,
+    'admin-payments': '/secure/admin/payments',
+    'admin-payment-detail': (id) => `/secure/admin/payments/${id}`,
+    'admin-payment-stats': '/secure/admin/payments/stats',
+    'admin-payment-status': (id) => `/secure/admin/payments/${id}/status`,
+    'admin-forum-categories': '/secure/admin/forum-categories',
+    'admin-forum-category-detail': (id) => `/secure/admin/forum-categories/${id}`,
+    'admin-forum-thread-lock': (id) => `/secure/admin/forum-threads/${id}/lock`,
+    'admin-forum-thread-delete': (id) => `/secure/admin/forum-threads/${id}`,
+
+    'lecturer-dashboard': '/secure/lecturer/dashboard',
+    'lecturer-courses': '/secure/lecturer/courses',
+    'lecturer-course-detail': (id) => `/secure/lecturer/courses/${id}`,
+    'lecturer-course-lessons': (id) => `/secure/lecturer/courses/${id}/lessons`,
+    'lecturer-course-enrollments': (id) => `/secure/lecturer/courses/${id}/enrollments`,
+    'lecturer-enrollment-status': (id) => `/secure/lecturer/enrollments/${id}/status`,
+    'lecturer-progress': '/secure/lecturer/progress',
+    'lecturer-course-progress': (id) => `/secure/lecturer/courses/${id}/progress`,
+    'lecturer-resources': '/secure/lecturer/resources',
+    'lecturer-resource-detail': (id) => `/secure/lecturer/resources/${id}`,
+    'lecturer-lessons': '/secure/lecturer/lessons',
+    'lecturer-lesson-detail': (id) => `/secure/lecturer/lessons/${id}`,
+    'lecturer-quizzes': '/secure/lecturer/quizzes',
+    'lecturer-quiz-detail': (id) => `/secure/lecturer/quizzes/${id}`,
+    'lecturer-quiz-questions': (id) => `/secure/lecturer/quizzes/${id}/questions`,
+    'lecturer-questions': '/secure/lecturer/questions',
+    'lecturer-question-detail': (id) => `/secure/lecturer/questions/${id}`,
+    'lecturer-answers': '/secure/lecturer/answers',
+    'lecturer-answer-detail': (id) => `/secure/lecturer/answers/${id}`,
+    'lecturer-quiz-attempts': '/secure/lecturer/quiz-attempts',
+    'lecturer-chat-rooms': '/secure/lecturer/chat-rooms',
+    'lecturer-chat-room-detail': (id) => `/secure/lecturer/chat-rooms/${id}`,
+    'lecturer-chat-participants': (roomId) => `/secure/lecturer/chat-rooms/${roomId}/participants`,
+    'lecturer-chat-participant-detail': (id) => `/secure/lecturer/chat-participants/${id}`,
+    'lecturer-progress-feedback': (id) => `/secure/lecturer/progress/${id}/feedback`,
+}
+
+export const authApis = () => {
+    return axios.create({
+        baseURL: 'http://localhost:8080/api/',
+        headers: {
+            'Authorization': `Bearer ${cookies.load('token')}`
+        }
+    })
+}
+
+export default axios.create({
+    baseURL: 'http://localhost:8080/api/'
+})

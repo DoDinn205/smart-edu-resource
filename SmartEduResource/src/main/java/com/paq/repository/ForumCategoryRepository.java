@@ -8,6 +8,8 @@ public interface ForumCategoryRepository {
 
     List<ForumCategory> getCategories(Map<String, String> params);
 
+    long countCategories(Map<String, String> params);
+
     ForumCategory getCategoryById(int id);
 
     ForumCategory getCategoryByName(String name);

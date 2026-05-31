@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/secure/student")
-@CrossOrigin
 public class ApiStudentLearningController {
 
     @Autowired

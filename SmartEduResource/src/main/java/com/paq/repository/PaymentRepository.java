@@ -21,4 +21,8 @@ public interface PaymentRepository {
     long getTotalRevenue(Map<String, String> params);
 
     Map<PaymentMethodEnum, Long> countPaymentsByMethod(Map<String, String> params);
+
+    List<Object[]> getRevenueByMonth(Map<String, String> params);
+
+    Map<String, Long> countPaymentsByUserRole(Map<String, String> params);
 }
