@@ -34,6 +34,7 @@ public class InteractionRepositoryImpl implements InteractionRepository {
         Query<Interaction> q = s.createQuery(
                 "FROM Interaction i "
                 + "WHERE i.resourceId.id = :resourceId "
+                + "AND (i.isDeleted = false OR i.isDeleted IS NULL) "
                 + "ORDER BY i.createdAt DESC",
                 Interaction.class
         );

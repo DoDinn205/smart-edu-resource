@@ -40,7 +40,7 @@ public class JwtFilter implements Filter {
             String username = JwtUtils.validateTokenAndGetUsername(token);
             if (username != null) {
                 UsernamePasswordAuthenticationToken authentication
-                        = new UsernamePasswordAuthenticationToken(username, null, null);
+                        = new UsernamePasswordAuthenticationToken(username, null, java.util.Collections.emptyList());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 httpRequest.setAttribute("username", username);
                 chain.doFilter(request, response);
