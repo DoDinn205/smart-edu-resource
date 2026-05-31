@@ -23,4 +23,5 @@ public interface EnrollmentRepository {
     List<Enrollment> getEnrollmentsByStudentId(int studentId);
 
     List<Enrollment> getEnrollmentsByUsername(String username);
+
 }

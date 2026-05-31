@@ -12,6 +12,8 @@ import java.util.List;
  * @author Admin
  */
 public interface LearningLogRepository {
+
     LearningLog addLearningLog(LearningLog log);
+
     List<LearningLog> getLearningLogsByUsername(String username);
 }

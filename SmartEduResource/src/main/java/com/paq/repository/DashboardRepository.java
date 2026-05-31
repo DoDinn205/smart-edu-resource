@@ -54,4 +54,16 @@ public interface DashboardRepository {
     long getLecturerTotalRevenue(int userId);
 
     long countLecturerPaymentsByStatus(int userId, PaymentStatusEnum status);
+
+    long countStudentEnrollments(String username);
+
+    long countStudentCompletedResources(String username);
+
+    long getStudentTotalStudyTime(String username);
+
+    long countStudentQuizAttempts(String username);
+
+    double getStudentAverageQuizScore(String username);
+
+    long countStudentLearningLogs(String username);
 }

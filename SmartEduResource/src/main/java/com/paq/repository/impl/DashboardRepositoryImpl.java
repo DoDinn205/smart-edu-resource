@@ -276,4 +276,95 @@ public class DashboardRepositoryImpl implements DashboardRepository {
     private double safeDouble(Double value) {
         return value == null ? 0D : value;
     }
+
+    @Override
+    public long countStudentEnrollments(String username) {
+        Session session = this.factory.getObject().getCurrentSession();
+
+        Long result = session.createQuery(
+                "SELECT COUNT(e.id) "
+                + "FROM Enrollment e "
+                + "WHERE e.studentId.userId.username = :username",
+                Long.class)
+                .setParameter("username", username)
+                .getSingleResult();
+
+        return this.safeLong(result);
+    }
+
+    @Override
+    public long countStudentCompletedResources(String username) {
+        Session session = this.factory.getObject().getCurrentSession();
+
+        Long result = session.createQuery(
+                "SELECT COUNT(l.id) "
+                + "FROM LearningLog l "
+                + "WHERE l.enrollmentId.studentId.userId.username = :username "
+                + "AND l.completionStatus = 100",
+                Long.class)
+                .setParameter("username", username)
+                .getSingleResult();
+
+        return this.safeLong(result);
+    }
+
+    @Override
+    public long countStudentLearningLogs(String username) {
+        Session session = this.factory.getObject().getCurrentSession();
+
+        Long result = session.createQuery(
+                "SELECT COUNT(l.id) "
+                + "FROM LearningLog l "
+                + "WHERE l.enrollmentId.studentId.userId.username = :username",
+                Long.class)
+                .setParameter("username", username)
+                .getSingleResult();
+
+        return this.safeLong(result);
+    }
+
+    @Override
+    public long countStudentQuizAttempts(String username) {
+        Session session = this.factory.getObject().getCurrentSession();
+
+        Long result = session.createQuery(
+                "SELECT COUNT(qa.id) "
+                + "FROM QuizAttempt qa "
+                + "WHERE qa.studentId.userId.username = :username",
+                Long.class)
+                .setParameter("username", username)
+                .getSingleResult();
+
+        return this.safeLong(result);
+    }
+
+    @Override
+    public double getStudentAverageQuizScore(String username) {
+        Session session = this.factory.getObject().getCurrentSession();
+
+        Double result = session.createQuery(
+                "SELECT AVG(qa.score) "
+                + "FROM QuizAttempt qa "
+                + "WHERE qa.studentId.userId.username = :username",
+                Double.class)
+                .setParameter("username", username)
+                .getSingleResult();
+
+        return this.safeDouble(result);
+    }
+
+    @Override
+    public long getStudentTotalStudyTime(String username) {
+        Session session = this.factory.getObject().getCurrentSession();
+
+        Long result = session.createQuery(
+                "SELECT SUM(e.totalStudyTime) "
+                + "FROM Enrollment e "
+                + "WHERE e.studentId.userId.username = :username",
+                Long.class)
+                .setParameter("username", username)
+                .getSingleResult();
+
+        return this.safeLong(result);
+    }
 }

@@ -171,4 +171,5 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
         q.setParameter("username", username);
         return q.getResultList();
     }
+
 }

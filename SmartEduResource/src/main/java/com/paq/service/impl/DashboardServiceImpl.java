@@ -3,6 +3,7 @@ package com.paq.service.impl;
 import com.paq.pojo.User;
 import com.paq.pojo.response.ResDashboardDTO;
 import com.paq.pojo.response.ResLecturerDashboardDTO;
+import com.paq.pojo.response.ResStudentDashboardDTO;
 import com.paq.repository.DashboardRepository;
 import com.paq.service.DashboardService;
 import com.paq.service.PermissionService;
@@ -77,5 +78,36 @@ public class DashboardServiceImpl implements DashboardService {
     private long resolveLecturerCount() {
         long lecturerRows = this.dashboardRepo.countLecturers();
         return lecturerRows > 0 ? lecturerRows : this.dashboardRepo.countUsersByRole(RoleEnum.LECTURER);
+    }
+
+    @Override
+    public ResStudentDashboardDTO getStudentDashboard(String username) {
+        ResStudentDashboardDTO dto = new ResStudentDashboardDTO();
+
+        dto.setTotalEnrollments(
+                this.dashboardRepo.countStudentEnrollments(username));
+
+        dto.setCompletedResources(
+                this.dashboardRepo.countStudentCompletedResources(username));
+
+        dto.setTotalStudyTime(
+                this.dashboardRepo.getStudentTotalStudyTime(username));
+
+        dto.setTotalQuizAttempts(
+                this.dashboardRepo.countStudentQuizAttempts(username));
+
+        dto.setAverageQuizScore(
+                this.dashboardRepo.getStudentAverageQuizScore(username));
+
+        long totalLogs
+                = this.dashboardRepo.countStudentLearningLogs(username);
+
+        double progress = totalLogs == 0
+                ? 0.0
+                : dto.getCompletedResources() * 100.0 / totalLogs;
+
+        dto.setLearningProgress(progress);
+
+        return dto;
     }
 }

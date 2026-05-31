@@ -45,4 +45,5 @@ public class LearningLogRepositoryImpl implements LearningLogRepository {
         q.setParameter("username", username);
         return q.getResultList();
     }
+
 }
