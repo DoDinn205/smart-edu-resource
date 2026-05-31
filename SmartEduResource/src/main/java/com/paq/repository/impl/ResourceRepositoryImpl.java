@@ -65,6 +65,9 @@ public class ResourceRepositoryImpl implements ResourceRepository {
             if (params.containsKey("level")) {
                 q.setParameter("level", params.get("level"));
             }
+            if (params.containsKey("subjectId")) {
+                q.setParameter("subjectId", Integer.parseInt(params.get("subjectId")));
+            }
             if (params.containsKey("uploaderId")) {
                 q.setParameter("uploaderId", Integer.parseInt(params.get("uploaderId")));
             }
@@ -110,6 +113,9 @@ public class ResourceRepositoryImpl implements ResourceRepository {
             }
             if (params.containsKey("level")) {
                 q.setParameter("level", params.get("level"));
+            }
+            if (params.containsKey("subjectId")) {
+                q.setParameter("subjectId", Integer.parseInt(params.get("subjectId")));
             }
             if (params.containsKey("uploaderId")) {
                 q.setParameter("uploaderId", Integer.parseInt(params.get("uploaderId")));

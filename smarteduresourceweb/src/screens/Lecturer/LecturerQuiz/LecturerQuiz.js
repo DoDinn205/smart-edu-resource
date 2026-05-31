@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Badge, Button, Form, Modal, Table , InputGroup, Pagination} from "react-bootstrap";
-import { useNavigate , useSearchParams} from "react-router-dom";
+import { Alert, Badge, Button, Form, Modal, Table, InputGroup, Pagination } from "react-bootstrap";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { MyUserContext } from "../../../configs/Context";
 import { authApis, endpoints } from "../../../configs/Apis";
@@ -10,6 +10,7 @@ import "../Lecturer.css";
 const LecturerQuiz = () => {
     const [user] = useContext(MyUserContext);
     const [quizzes, setQuizzes] = useState([]);
+    const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState("");
     const [showModal, setShowModal] = useState(false);
@@ -34,6 +35,7 @@ const LecturerQuiz = () => {
             nav('/login'); return;
         }
         loadQuizzes();
+        loadCourses();
     }, [user, nav, kwParam, currentPage]);
 
     useEffect(() => {
@@ -58,9 +60,19 @@ const LecturerQuiz = () => {
         }
     };
 
+    const loadCourses = async () => {
+        try {
+            let res = await authApis().get(endpoints['lecturer-courses']);
+            setCourses(res.data.data?.items || []);
+        } catch (ex) {
+            console.error(ex);
+            setErr("Không thể tải danh sách khóa học.");
+        }
+    };
+
     const handleOpenCreate = () => {
         setEditingQuiz(null);
-        setFormData({});
+        setFormData({ durationMinutes: 30, courseId: "" });
         setShowModal(true);
     };
 
@@ -69,7 +81,7 @@ const LecturerQuiz = () => {
         setFormData({
             title: q.title || "",
             description: q.description || "",
-            duration: q.duration || 30,
+            durationMinutes: q.durationMinutes || 30,
             courseId: q.courseId || "",
         });
         setShowModal(true);
@@ -106,7 +118,7 @@ const LecturerQuiz = () => {
     const handleViewQuestions = async (quiz) => {
         try {
             setSelectedQuiz(quiz);
-            let res = await authApis().get(endpoints['quiz-questions'](quiz.id));
+            let res = await authApis().get(endpoints['lecturer-quiz-questions'](quiz.id));
             setQuestions(res.data.data || []);
             setShowQuestions(true);
         } catch (ex) {
@@ -115,9 +127,31 @@ const LecturerQuiz = () => {
         }
     };
 
+    const getInitialOptions = (type, existingAnswers = []) => {
+        if (existingAnswers && existingAnswers.length > 0) {
+            return existingAnswers.map(ans => ({ ...ans }));
+        }
+        if (type === "SINGLE_CHOICE" || type === "MULTIPLE_CHOICE") {
+            return [
+                { content: "", isCorrect: false },
+                { content: "", isCorrect: false },
+                { content: "", isCorrect: false },
+                { content: "", isCorrect: false }
+            ];
+        } else if (type === "TRUE_FALSE") {
+            return [
+                { content: "Đúng", isCorrect: true },
+                { content: "Sai", isCorrect: false }
+            ];
+        } else if (type === "SHORT_ANSWER") {
+            return [{ content: "", isCorrect: true }];
+        }
+        return [];
+    };
+
     const handleCreateQuestion = () => {
         setEditingQ(null);
-        setQFormData({ quizId: selectedQuiz.id });
+        setQFormData({ score: 1, type: "SINGLE_CHOICE", options: getInitialOptions("SINGLE_CHOICE") });
         setShowQModal(true);
     };
 
@@ -125,9 +159,21 @@ const LecturerQuiz = () => {
         setEditingQ(q);
         setQFormData({
             content: q.content || "",
-            quizId: selectedQuiz.id,
+            score: q.score || 1,
+            explanation: q.explanation || "",
+            type: q.type || "SINGLE_CHOICE",
+            options: getInitialOptions(q.type || "SINGLE_CHOICE", q.answers || q.options),
         });
         setShowQModal(true);
+    };
+
+    const handleTypeChange = (e) => {
+        const newType = e.target.value;
+        setQFormData({
+            ...qFormData,
+            type: newType,
+            options: getInitialOptions(newType)
+        });
     };
 
     const handleSubmitQuestion = async (e) => {
@@ -136,7 +182,7 @@ const LecturerQuiz = () => {
             if (editingQ) {
                 await authApis().put(endpoints['lecturer-question-detail'](editingQ.id), qFormData);
             } else {
-                await authApis().post(endpoints['lecturer-questions'], qFormData);
+                await authApis().post(endpoints['lecturer-quiz-questions'](selectedQuiz.id), qFormData);
             }
             setShowQModal(false);
             handleViewQuestions(selectedQuiz);
@@ -192,8 +238,8 @@ const LecturerQuiz = () => {
                         </InputGroup>
                     </Form>
                     <Button style={{ backgroundColor: "#6366f1", borderColor: "#6366f1", whiteSpace: "nowrap" }} variant="primary" size="sm" onClick={handleOpenCreate}>
-                    <i className="bi bi-plus-lg me-1"></i> Tạo quiz
-                </Button>
+                        <i className="bi bi-plus-lg me-1"></i> Tạo quiz
+                    </Button>
                 </div>
             </div>
 
@@ -215,8 +261,8 @@ const LecturerQuiz = () => {
                             <tr key={q.id}>
                                 <td>{q.id}</td>
                                 <td>{q.title}</td>
-                                <td>{q.duration} phút</td>
-                                <td><Badge bg="info">{q.totalQuestions || 0}</Badge></td>
+                                <td>{q.durationMinutes} phút</td>
+                                <td><Badge bg="info">{q.questionCount || 0}</Badge></td>
                                 <td>
                                     <Button variant="outline-info" size="sm" className="me-1"
                                         onClick={() => handleViewQuestions(q)}>
@@ -264,9 +310,20 @@ const LecturerQuiz = () => {
                                 onChange={e => setFormData({ ...formData, title: e.target.value })} required />
                         </Form.Group>
                         <Form.Group className="mb-3">
+                            <Form.Label>Khóa học</Form.Label>
+                            <Form.Select value={formData.courseId || ''}
+                                onChange={e => setFormData({ ...formData, courseId: parseInt(e.target.value) })}
+                                required>
+                                <option value="">-- Chọn khóa học --</option>
+                                {courses.map(course => (
+                                    <option key={course.id} value={course.id}>{course.name}</option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
                             <Form.Label>Thời gian (phút)</Form.Label>
-                            <Form.Control type="number" value={formData.duration || 30}
-                                onChange={e => setFormData({ ...formData, duration: parseInt(e.target.value) })} />
+                            <Form.Control type="number" min={1} value={formData.durationMinutes || 30}
+                                onChange={e => setFormData({ ...formData, durationMinutes: parseInt(e.target.value) })} />
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Mô tả</Form.Label>
@@ -281,7 +338,7 @@ const LecturerQuiz = () => {
                 </Form>
             </Modal>
 
-            <Modal show={showQuestions} onHide={() => setShowQuestions(false)} size="lg">
+            <Modal show={showQuestions && !showQModal} onHide={() => setShowQuestions(false)} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>Câu hỏi - {selectedQuiz?.title}</Modal.Title>
                 </Modal.Header>
@@ -336,6 +393,66 @@ const LecturerQuiz = () => {
                             <Form.Control as="textarea" rows={3} value={qFormData.content || ''}
                                 onChange={e => setQFormData({ ...qFormData, content: e.target.value })} required />
                         </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Điểm</Form.Label>
+                            <Form.Control type="number" min={0.1} step={0.1} value={qFormData.score || 1}
+                                onChange={e => setQFormData({ ...qFormData, score: parseFloat(e.target.value) })} required />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Loại câu hỏi</Form.Label>
+                            <Form.Select value={qFormData.type || 'SINGLE_CHOICE'}
+                                onChange={handleTypeChange} required>
+                                <option value="SINGLE_CHOICE">Một đáp án</option>
+                                <option value="MULTIPLE_CHOICE">Nhiều đáp án</option>
+                                <option value="TRUE_FALSE">Đúng / sai</option>
+                                <option value="SHORT_ANSWER">Trả lời ngắn</option>
+                            </Form.Select>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Giải thích</Form.Label>
+                            <Form.Control as="textarea" rows={2} value={qFormData.explanation || ''}
+                                onChange={e => setQFormData({ ...qFormData, explanation: e.target.value })} />
+                        </Form.Group>
+                        {qFormData.options && qFormData.options.length > 0 && (
+                            <Form.Group className="mb-3">
+                                <Form.Label>Đáp án</Form.Label>
+                                {qFormData.options.map((opt, idx) => (
+                                    <div key={idx} className="d-flex align-items-center mb-2">
+                                        <div className="me-2" style={{ width: '30px', fontWeight: 'bold' }}>{String.fromCharCode(65 + idx)}.</div>
+                                        <Form.Control
+                                            type="text"
+                                            placeholder={`Nhập đáp án ${String.fromCharCode(65 + idx)}`}
+                                            value={opt.content || ''}
+                                            onChange={(e) => {
+                                                const newOptions = [...qFormData.options];
+                                                newOptions[idx].content = e.target.value;
+                                                setQFormData({ ...qFormData, options: newOptions });
+                                            }}
+                                            className="me-2"
+                                            required
+                                            disabled={qFormData.type === 'TRUE_FALSE'}
+                                        />
+                                        <Form.Check
+                                            type={qFormData.type === 'MULTIPLE_CHOICE' ? 'checkbox' : 'radio'}
+                                            name="correctOption"
+                                            id={`correct-opt-${idx}`}
+                                            checked={opt.isCorrect || false}
+                                            onChange={(e) => {
+                                                const newOptions = [...qFormData.options];
+                                                if (qFormData.type === 'SINGLE_CHOICE' || qFormData.type === 'TRUE_FALSE') {
+                                                    newOptions.forEach(o => o.isCorrect = false);
+                                                    newOptions[idx].isCorrect = e.target.checked;
+                                                } else {
+                                                    newOptions[idx].isCorrect = e.target.checked;
+                                                }
+                                                setQFormData({ ...qFormData, options: newOptions });
+                                            }}
+                                            style={{ whiteSpace: 'nowrap' }}
+                                        />
+                                    </div>
+                                ))}
+                            </Form.Group>
+                        )}
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={() => setShowQModal(false)}>Hủy</Button>

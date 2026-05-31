@@ -12,6 +12,8 @@ public interface ChatParticipantRepository {
 
     ChatParticipant getParticipantByRoomIdAndUserId(int roomId, int userId);
 
+    Long countStudentParticipantsByRoomId(int roomId);
+
     ChatParticipant addParticipant(ChatParticipant participant);
 
     void deleteParticipant(int id);

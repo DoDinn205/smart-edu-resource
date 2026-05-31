@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import com.paq.pojo.Student;
 import com.paq.pojo.User;
 import com.paq.pojo.request.ReqEnrollmentStatusDTO;
 import com.paq.pojo.response.ResEnrollmentDTO;
+import com.paq.pojo.response.ResPageDTO;
 import com.paq.repository.CourseRepository;
 import com.paq.repository.EnrollmentRepository;
 import com.paq.repository.UserRepository;
@@ -37,15 +39,25 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Autowired
     private UserRepository userRepo;
 
+    @Autowired
+    private Environment env;
+
     @Override
-    public List<ResEnrollmentDTO> getEnrollmentsByCourseId(int courseId, Map<String, String> params) {
+    public ResPageDTO<ResEnrollmentDTO> getEnrollmentsByCourseId(int courseId, Map<String, String> params) {
         if (this.courseRepo.getCourseById(courseId) == null) {
             throw new IdInvalidException("Course không tồn tại");
         }
 
-        return this.enrollmentRepo.getEnrollmentsByCourseId(courseId, params).stream()
+        int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 1;
+        int pageSize = this.env.getProperty("enrollments.page_size", Integer.class, 10);
+
+        Long totalItems = this.enrollmentRepo.countEnrollmentsByCourseId(courseId, params);
+
+        List<ResEnrollmentDTO> items = this.enrollmentRepo.getEnrollmentsByCourseId(courseId, params).stream()
                 .map(DTOMapper::toResEnrollmentDTO)
                 .collect(Collectors.toList());
+
+        return DTOMapper.toResPageDTO(items, totalItems, page, pageSize);
     }
 
     @Override

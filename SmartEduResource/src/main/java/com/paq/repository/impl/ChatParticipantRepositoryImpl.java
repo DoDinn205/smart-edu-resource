@@ -2,6 +2,7 @@ package com.paq.repository.impl;
 
 import com.paq.pojo.ChatParticipant;
 import com.paq.repository.ChatParticipantRepository;
+import com.paq.utils.constant.RoleEnum;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -42,7 +43,7 @@ public class ChatParticipantRepositoryImpl implements ChatParticipantRepository 
                 .orderBy(b.asc(root.get("joinedAt")), b.asc(root.get("id")));
 
         Query<ChatParticipant> query = session.createQuery(q);
-        if (params != null) {
+        if (params != null && params.containsKey("page")) {
             int pageSize = this.env.getProperty("chat_participants.page_size", Integer.class, 10);
             int page = Integer.parseInt(params.getOrDefault("page", "1"));
             query.setMaxResults(pageSize);
@@ -83,6 +84,18 @@ public class ChatParticipantRepositoryImpl implements ChatParticipantRepository 
         } catch (NoResultException ex) {
             return null;
         }
+    }
+
+    @Override
+    public Long countStudentParticipantsByRoomId(int roomId) {
+        Session session = this.factory.getObject().getCurrentSession();
+        Query<Long> q = session.createQuery(
+                "SELECT COUNT(p) FROM ChatParticipant p "
+                + "WHERE p.roomId.id = :roomId AND p.userId.role = :role",
+                Long.class);
+        q.setParameter("roomId", roomId);
+        q.setParameter("role", RoleEnum.STUDENT);
+        return q.getSingleResult();
     }
 
     @Override

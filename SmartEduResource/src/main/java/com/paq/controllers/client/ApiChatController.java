@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.paq.pojo.response.ResChatParticipantDTO;
 import com.paq.pojo.response.ResChatRoomDTO;
+import com.paq.pojo.response.ResPageDTO;
 import com.paq.pojo.response.ResResponse;
 import com.paq.service.ChatParticipantService;
 import com.paq.service.ChatRoomService;
@@ -29,9 +30,9 @@ public class ApiChatController {
     private ChatParticipantService participantService;
 
     @GetMapping("/chat-rooms")
-    public ResponseEntity<ResResponse<List<ResChatRoomDTO>>> getRooms(
+    public ResponseEntity<ResResponse<ResPageDTO<ResChatRoomDTO>>> getRooms(
             @RequestParam Map<String, String> params) {
-        ResResponse<List<ResChatRoomDTO>> res = new ResResponse<>();
+        ResResponse<ResPageDTO<ResChatRoomDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Lấy danh sách phòng chat thành công");
         res.setData(this.roomService.getRooms(params));
@@ -39,7 +40,7 @@ public class ApiChatController {
     }
 
     @GetMapping("/chat-rooms/{id}")
-    public ResponseEntity<ResResponse<ResChatRoomDTO>> getRoomById(@PathVariable int id) {
+    public ResponseEntity<ResResponse<ResChatRoomDTO>> getRoomById(@PathVariable("id") int id) {
         ResResponse<ResChatRoomDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Lấy thông tin phòng chat thành công");
@@ -49,7 +50,7 @@ public class ApiChatController {
 
     @GetMapping("/chat-rooms/{roomId}/participants")
     public ResponseEntity<ResResponse<List<ResChatParticipantDTO>>> getParticipants(
-            @PathVariable int roomId,
+            @PathVariable("roomId") int roomId,
             @RequestParam Map<String, String> params) {
         ResResponse<List<ResChatParticipantDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());

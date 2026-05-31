@@ -33,11 +33,13 @@ const LecturerLesson = () => {
     const loadResourcesAndQuizzes = async () => {
         try {
             let resResources = await authApis().get(endpoints['lecturer-resources']);
-            setResources(resResources.data.data || []);
+            const resourceData = resResources.data.data;
+            setResources(Array.isArray(resourceData) ? resourceData : resourceData?.items || []);
             console.log(resResources.data.data);
 
             let resQuizzes = await authApis().get(endpoints['lecturer-quizzes'] + `?courseId=${id}`);
-            setQuizzes(resQuizzes.data.data || []);
+            const quizData = resQuizzes.data.data;
+            setQuizzes(Array.isArray(quizData) ? quizData : quizData?.items || []);
             console.log(resQuizzes.data.data);
         } catch (ex) {
             console.error("Lỗi tải danh sách resource/quiz:", ex);

@@ -4,6 +4,7 @@ import { useNavigate , useSearchParams} from "react-router-dom";
 
 import { MyUserContext } from "../../../configs/Context";
 import Apis, { authApis, endpoints } from "../../../configs/Apis";
+
 import MySpinner from "../../../components/common/MySpinner";
 import "../Lecturer.css";
 
@@ -11,7 +12,9 @@ const LecturerResource = () => {
     const [user] = useContext(MyUserContext);
     const [resources, setResources] = useState([]);
     const [subjects, setSubjects] = useState([]);
+    const [resourceTypes, setResourceTypes] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [err, setErr] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [editingResource, setEditingResource] = useState(null);
@@ -31,6 +34,7 @@ const LecturerResource = () => {
         }
         loadResources();
         loadSubjects();
+        loadResourceTypes();
     }, [user, nav, kwParam, currentPage]);
 
     useEffect(() => {
@@ -66,6 +70,15 @@ const LecturerResource = () => {
         }
     };
 
+    const loadResourceTypes = async () => {
+        try {
+            let res = await Apis.get(endpoints['resource-types']);
+            setResourceTypes(res.data.data || []);
+        } catch (ex) {
+            console.error(ex);
+        }
+    };
+
     const handleOpenCreate = () => {
         setEditingResource(null);
         setFormData({});
@@ -77,19 +90,36 @@ const LecturerResource = () => {
         setFormData({
             title: r.title || "",
             description: r.description || "",
-            subjectId: r.subjectId || "",
+            fileUrl: r.fileUrl || "",
+            thumbnailUrl: r.thumbnailUrl || "",
+            format: r.format || "",
+            fileSize: r.fileSize,
+            level: r.level || "",
+            pageCount: r.pageCount,
+            subjectIds: r.subjects?.map(s => s.id) || [],
+            topicIds: r.topics?.map(t => t.id) || [],
+            tagIds: r.tags?.map(t => t.id) || [],
+            typeIds: r.types?.map(t => t.id) || [],
+            relatedResourceIds: r.relatedResources?.map(resource => resource.id) || [],
         });
         setShowModal(true);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isSubmitting) return;
+
         try {
+            setIsSubmitting(true);
             setErr("");
             let data = new FormData();
-            Object.keys(formData).forEach(key => {
-                if (formData[key] !== undefined && formData[key] !== "") {
-                    data.append(key, formData[key]);
+            Object.entries(formData).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== "") {
+                    if (Array.isArray(value)) {
+                        value.forEach(item => data.append(key, item));
+                    } else {
+                        data.append(key, value);
+                    }
                 }
             });
             if (fileRef.current && fileRef.current.files[0]) {
@@ -110,6 +140,8 @@ const LecturerResource = () => {
         } catch (ex) {
             console.error(ex);
             setErr("Có lỗi xảy ra khi lưu học liệu.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -173,7 +205,10 @@ const LecturerResource = () => {
                             <th>ID</th>
                             <th>Tiêu đề</th>
                             <th>Môn học</th>
+                            <th>Độ khó</th>
                             <th>Loại</th>
+                            <th>Tài liệu</th>
+                            <th>Thumbnail</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
@@ -182,8 +217,27 @@ const LecturerResource = () => {
                             <tr key={r.id}>
                                 <td>{r.id}</td>
                                 <td>{r.title}</td>
-                                <td>{r.subjectName || "—"}</td>
-                                <td>{r.resourceTypeName || "—"}</td>
+                                <td>{r.subjects.map(s => s.name).join(", ") || "—"}</td>
+                                <td>
+                                    {r.level === "BEGINNER" ? "Cơ bản" :
+                                     r.level === "INTERMEDIATE" ? "Trung bình" :
+                                     r.level === "ADVANCED" ? "Nâng cao" : "—"}
+                                </td>
+                                <td>{r.types.map(t => t.name).join(", ") || "—"}</td>
+                                <td>
+                                    {r.fileUrl ? (
+                                        <a href={r.fileUrl} target="_blank" rel="noreferrer" className="text-decoration-none">
+                                            <i className="bi bi-box-arrow-up-right me-1"></i> Xem file
+                                        </a>
+                                    ) : "—"}
+                                </td>
+                                <td>
+                                    {r.thumbnailUrl ? (
+                                        <a href={r.thumbnailUrl} target="_blank" rel="noreferrer" className="text-decoration-none">
+                                            <i className="bi bi-box-arrow-up-right me-1"></i> Xem ảnh
+                                        </a>
+                                    ) : "—"}
+                                </td>
                                 <td>
                                     <Button variant="outline-primary" size="sm" className="me-1"
                                         onClick={() => handleOpenEdit(r)}>
@@ -228,12 +282,39 @@ const LecturerResource = () => {
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Môn học</Form.Label>
-                            <Form.Select value={formData.subjectId || ''}
-                                onChange={e => setFormData({ ...formData, subjectId: parseInt(e.target.value) })}>
+                            <Form.Select value={formData.subjectIds?.[0] || ''}
+                                onChange={e => setFormData({
+                                    ...formData,
+                                    subjectIds: e.target.value ? [parseInt(e.target.value)] : [],
+                                })}>
+
                                 <option value="">-- Chọn môn học --</option>
                                 {subjects.map(s => (
                                     <option key={s.id} value={s.id}>{s.name}</option>
                                 ))}
+                            </Form.Select>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Loại tài liệu</Form.Label>
+                            <Form.Select value={formData.typeIds?.[0] || ''}
+                                onChange={e => setFormData({
+                                    ...formData,
+                                    typeIds: e.target.value ? [parseInt(e.target.value)] : [],
+                                })}>
+                                <option value="">-- Chọn loại tài liệu --</option>
+                                {resourceTypes.map(t => (
+                                    <option key={t.id} value={t.id}>{t.name}</option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Độ khó (Level)</Form.Label>
+                            <Form.Select value={formData.level || ''}
+                                onChange={e => setFormData({ ...formData, level: e.target.value })}>
+                                <option value="">-- Chọn độ khó --</option>
+                                <option value="BEGINNER">Cơ bản (Beginner)</option>
+                                <option value="INTERMEDIATE">Trung bình (Intermediate)</option>
+                                <option value="ADVANCED">Nâng cao (Advanced)</option>
                             </Form.Select>
                         </Form.Group>
                         <Form.Group className="mb-3">
@@ -242,13 +323,20 @@ const LecturerResource = () => {
                                 onChange={e => setFormData({ ...formData, description: e.target.value })} />
                         </Form.Group>
                         <Form.Group className="mb-3">
+                            <Form.Label>Thumbnail (Tùy chọn)</Form.Label>
+                            <Form.Control type="file" accept="image/*" onChange={e => setFormData({ ...formData, thumbnailFile: e.target.files[0] })} />
+                            {formData.thumbnailUrl && <div className="mt-2 text-muted" style={{fontSize: '0.85rem'}}>Đã có thumbnail hiện tại (chọn file mới để thay đổi)</div>}
+                        </Form.Group>
+                        <Form.Group className="mb-3">
                             <Form.Label>File tài liệu</Form.Label>
                             <Form.Control type="file" ref={fileRef} />
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button>
-                        <Button variant="primary" type="submit">Lưu</Button>
+                        <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Hủy</Button>
+                        <Button variant="primary" type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? <><span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Đang lưu...</> : "Lưu"}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>
@@ -257,3 +345,4 @@ const LecturerResource = () => {
 }
 
 export default LecturerResource;
+

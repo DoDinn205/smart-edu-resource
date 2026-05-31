@@ -52,10 +52,10 @@ public class QuizServiceImpl implements QuizService {
     @Override
     public List<ResQuizDTO> getLecturerQuizzes(Map<String, String> params) {
         this.permissionService.requireLecturerOrAdmin();
-        if (params == null || !params.containsKey("courseId")) {
-            throw new IllegalArgumentException("Vui lòng cung cấp courseId");
+        params = this.applyLecturerFilters(params);
+        if (params.containsKey("courseId")) {
+            this.permissionService.requireCourseLecturerOrAdmin(Integer.parseInt(params.get("courseId")));
         }
-        this.permissionService.requireCourseLecturerOrAdmin(Integer.parseInt(params.get("courseId")));
         
         return this.quizRepo.getQuizzes(params).stream()
                 .map(q -> DTOMapper.toResQuizDTO(q, true, false))
@@ -64,6 +64,13 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     public Long countLecturerQuizzes(Map<String, String> params) {
+        this.permissionService.requireLecturerOrAdmin();
+        params = this.applyLecturerFilters(params);
+
+        return this.quizRepo.countQuizzes(params);
+    }
+
+    private Map<String, String> applyLecturerFilters(Map<String, String> params) {
         User currentUser = this.getCurrentUser();
         Lecturer lecturer = this.userRepo.getLecturerByUserId(currentUser.getId());
         if (lecturer == null) {
@@ -75,7 +82,7 @@ public class QuizServiceImpl implements QuizService {
         }
         params.put("lecturerId", String.valueOf(lecturer.getId()));
 
-        return this.quizRepo.countQuizzes(params);
+        return params;
     }
 
     @Override

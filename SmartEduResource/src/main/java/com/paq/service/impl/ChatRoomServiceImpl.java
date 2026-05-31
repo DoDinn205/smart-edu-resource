@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import com.paq.pojo.ChatRoom;
@@ -16,6 +17,7 @@ import com.paq.pojo.Lecturer;
 import com.paq.pojo.request.ReqChatRoomDTO;
 import com.paq.pojo.request.ReqPrivateChatRoomDTO;
 import com.paq.pojo.response.ResChatRoomDTO;
+import com.paq.pojo.response.ResPageDTO;
 import com.paq.repository.ChatParticipantRepository;
 import com.paq.repository.ChatRoomRepository;
 import com.paq.repository.CourseRepository;
@@ -45,19 +47,28 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Autowired
     private PermissionService permissionService;
 
+    @Autowired
+    private Environment env;
+
     @Override
-    public List<ResChatRoomDTO> getRooms(Map<String, String> params) {
+    public ResPageDTO<ResChatRoomDTO> getRooms(Map<String, String> params) {
         User user = this.permissionService.getCurrentUser();
         List<ChatRoom> rooms;
+        Long totalItems;
         if (this.permissionService.canManageChatRooms(user)) {
             rooms = this.roomRepo.getRooms(params);
+            totalItems = this.roomRepo.countRooms(params);
         } else {
             rooms = this.roomRepo.getRoomsAvailableToUser(params, user.getId());
+            totalItems = this.roomRepo.countRoomsAvailableToUser(params, user.getId());
         }
 
-        return rooms.stream()
-                .map(DTOMapper::toResChatRoomDTO)
+        List<ResChatRoomDTO> items = rooms.stream()
+                .map(this::toRoomDTO)
                 .collect(Collectors.toList());
+        int page = params != null && params.containsKey("page") ? Integer.parseInt(params.get("page")) : 1;
+        int pageSize = this.env.getProperty("chat_rooms.page_size", Integer.class, 10);
+        return DTOMapper.toResPageDTO(items, totalItems, page, pageSize);
     }
 
     @Override
@@ -69,7 +80,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             throw new IdInvalidException("Chat room không tồn tại");
         }
 
-        return DTOMapper.toResChatRoomDTO(room);
+        return this.toRoomDTO(room);
     }
 
     @Override
@@ -92,7 +103,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         ChatRoom savedRoom = this.roomRepo.addOrUpdateRoom(room);
         this.addCourseLecturerParticipant(savedRoom);
 
-        return DTOMapper.toResChatRoomDTO(savedRoom);
+        return this.toRoomDTO(savedRoom);
     }
 
     @Override
@@ -113,7 +124,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         ChatRoom existedRoom = this.roomRepo.getPrivateRoomByCourseAndUsers(
                 course.getId(), studentUser.getId(), lecturerUser.getId());
         if (existedRoom != null) {
-            return DTOMapper.toResChatRoomDTO(existedRoom);
+            return this.toRoomDTO(existedRoom);
         }
 
         ChatRoom room = new ChatRoom();
@@ -126,7 +137,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         this.addParticipantIfAbsent(savedRoom, studentUser);
         this.addParticipantIfAbsent(savedRoom, lecturerUser);
 
-        return DTOMapper.toResChatRoomDTO(savedRoom);
+        return this.toRoomDTO(savedRoom);
     }
 
     @Override
@@ -147,7 +158,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         room.setName(request.getName());
         room.setCourseId(course);
 
-        return DTOMapper.toResChatRoomDTO(this.roomRepo.addOrUpdateRoom(room));
+        return this.toRoomDTO(this.roomRepo.addOrUpdateRoom(room));
     }
 
     @Override
@@ -173,6 +184,15 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
 
         return course;
+    }
+
+    private ResChatRoomDTO toRoomDTO(ChatRoom room) {
+        ResChatRoomDTO dto = DTOMapper.toResChatRoomDTO(room);
+        if (dto != null && room.getId() != null) {
+            dto.setParticipantCount(this.participantRepo.countStudentParticipantsByRoomId(room.getId()));
+        }
+
+        return dto;
     }
 
     private void addCourseLecturerParticipant(ChatRoom room) {

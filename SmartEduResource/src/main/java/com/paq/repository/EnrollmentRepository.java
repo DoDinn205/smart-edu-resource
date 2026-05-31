@@ -32,5 +32,7 @@ public interface EnrollmentRepository {
 
     List<Enrollment> getEnrollmentsByCourseId(int courseId, Map<String, String> params);
 
+    Long countEnrollmentsByCourseId(int courseId, Map<String, String> params);
+
     List<Enrollment> getMyEnrollments(int studentId);
 }
