@@ -18,7 +18,9 @@ import com.paq.repository.ForumThreadRepository;
 import com.paq.service.ForumThreadService;
 import com.paq.service.PermissionService;
 import com.paq.utils.DTOMapper;
+import com.paq.utils.constant.RoleEnum;
 import com.paq.utils.error.IdInvalidException;
+import com.paq.utils.error.PermissionException;
 
 @Service
 public class ForumThreadServiceImpl implements ForumThreadService {
@@ -73,7 +75,7 @@ public class ForumThreadServiceImpl implements ForumThreadService {
 
     @Override
     public ResForumThreadDTO updateThread(int id, ReqForumThreadDTO request) {
-        this.permissionService.requireAdmin();
+        //this.permissionService.requireAdmin();
 
         ForumThread thread = this.threadRepo.getThreadById(id);
         if (thread == null) {
@@ -83,6 +85,12 @@ public class ForumThreadServiceImpl implements ForumThreadService {
         ForumCategory category = this.categoryRepo.getCategoryById(request.getCategoryId());
         if (category == null) {
             throw new IdInvalidException("Forum category không tồn tại");
+        }
+        User currentUser = this.permissionService.getCurrentUser();
+
+        if (!thread.getCreatedBy().getId().equals(currentUser.getId())
+                && currentUser.getRole() != RoleEnum.ADMIN) {
+            throw new PermissionException("Bạn không có quyền thao tác chủ đề này");
         }
 
         thread.setTitle(request.getTitle());
@@ -110,11 +118,17 @@ public class ForumThreadServiceImpl implements ForumThreadService {
 
     @Override
     public void deleteThread(int id) {
-        this.permissionService.requireAdmin();
+        //this.permissionService.requireAdmin();
 
         ForumThread thread = this.threadRepo.getThreadById(id);
         if (thread == null) {
             throw new IdInvalidException("Forum thread không tồn tại");
+        }
+        User currentUser = this.permissionService.getCurrentUser();
+
+        if (!thread.getCreatedBy().getId().equals(currentUser.getId())
+                && currentUser.getRole() != RoleEnum.ADMIN) {
+            throw new PermissionException("Bạn không có quyền thao tác chủ đề này");
         }
 
         this.threadRepo.deleteThread(id);

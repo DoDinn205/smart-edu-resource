@@ -18,6 +18,7 @@ import com.paq.repository.ForumThreadRepository;
 import com.paq.service.ForumPostService;
 import com.paq.service.PermissionService;
 import com.paq.utils.DTOMapper;
+import com.paq.utils.constant.RoleEnum;
 import com.paq.utils.error.IdInvalidException;
 import com.paq.utils.error.PermissionException;
 
@@ -84,11 +85,17 @@ public class ForumPostServiceImpl implements ForumPostService {
 
     @Override
     public ResForumPostDTO updatePost(int id, ReqForumPostDTO request) {
-        this.permissionService.requireAdmin();
+        //this.permissionService.requireAdmin();
 
         ForumPost post = this.postRepo.getPostById(id);
         if (post == null) {
             throw new IdInvalidException("Forum post không tồn tại");
+        }
+        User currentUser = this.permissionService.getCurrentUser();
+
+        if (!post.getUserId().getId().equals(currentUser.getId())
+                && currentUser.getRole() != RoleEnum.ADMIN) {
+            throw new PermissionException("Bạn không có quyền thao tác bài viết này");
         }
 
         post.setContent(request.getContent());
@@ -99,11 +106,17 @@ public class ForumPostServiceImpl implements ForumPostService {
 
     @Override
     public void deletePost(int id) {
-        this.permissionService.requireAdmin();
+        //this.permissionService.requireAdmin();
 
         ForumPost post = this.postRepo.getPostById(id);
         if (post == null) {
             throw new IdInvalidException("Forum post không tồn tại");
+        }
+        User currentUser = this.permissionService.getCurrentUser();
+
+        if (!post.getUserId().getId().equals(currentUser.getId())
+                && currentUser.getRole() != RoleEnum.ADMIN) {
+            throw new PermissionException("Bạn không có quyền thao tác bài viết này");
         }
 
         this.postRepo.deletePost(id);
