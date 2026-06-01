@@ -45,6 +45,7 @@ import LecturerDashboard from "./screens/Lecturer/LecturerDashboard/LecturerDash
 import LecturerCourse from "./screens/Lecturer/LecturerCourse/LecturerCourse";
 import LecturerLesson from "./screens/Lecturer/LecturerCourse/LecturerLesson";
 import LecturerResource from "./screens/Lecturer/LecturerResource/LecturerResource";
+import LecturerResourceForm from "./screens/Lecturer/LecturerResource/LecturerResourceForm";
 import LecturerQuiz from "./screens/Lecturer/LecturerQuiz/LecturerQuiz";
 import LecturerChat from "./screens/Lecturer/LecturerChat/LecturerChat";
 import LecturerChatParticipants from "./screens/Lecturer/LecturerChat/LecturerChatParticipants";
@@ -70,6 +71,8 @@ const AppLayout = () => {
                 <Route path="/lecturer/courses" element={<LecturerLayout><LecturerCourse /></LecturerLayout>} />
                 <Route path="/lecturer/courses/:id/lessons" element={<LecturerLayout><LecturerLesson /></LecturerLayout>} />
                 <Route path="/lecturer/resources" element={<LecturerLayout><LecturerResource /></LecturerLayout>} />
+                <Route path="/lecturer/resources/create" element={<LecturerLayout><LecturerResourceForm /></LecturerLayout>} />
+                <Route path="/lecturer/resources/:id/edit" element={<LecturerLayout><LecturerResourceForm /></LecturerLayout>} />
                 <Route path="/lecturer/quizzes" element={<LecturerLayout><LecturerQuiz /></LecturerLayout>} />
                 <Route path="/lecturer/chat" element={<LecturerLayout><LecturerChat /></LecturerLayout>} />
                 <Route path="/lecturer/chat/:id/participants" element={<LecturerLayout><LecturerChatParticipants /></LecturerLayout>} />

@@ -55,6 +55,16 @@ public class ApiLecturerResourceController {
         return ResponseEntity.ok(res);
     }
 
+    @GetMapping("/resources/{id}")
+    public ResponseEntity<ResResponse<ResResourceDTO>> getLecturerResourceById(@PathVariable("id") int id) {
+        ResResponse<ResResourceDTO> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Lấy thông tin học liệu thành công");
+        res.setData(this.resourceService.getLecturerResourceById(id));
+
+        return ResponseEntity.ok(res);
+    }
+
     @PostMapping(path = "/resources", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResResponse<ResResourceDTO>> createResource(@Valid @ModelAttribute ReqResourceDTO request) {
         ResResponse<ResResourceDTO> res = new ResResponse<>();

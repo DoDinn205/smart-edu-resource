@@ -4,13 +4,9 @@
  */
 package com.paq.repository.impl;
 
-import com.paq.pojo.Resource;
-import com.paq.pojo.ResourceRelation;
-import com.paq.repository.ResourceRepository;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import jakarta.persistence.NoResultException;
+
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +15,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.paq.pojo.Resource;
+import com.paq.pojo.ResourceRelation;
+import com.paq.repository.ResourceRepository;
+
+import jakarta.persistence.NoResultException;
 
 /**
  *
@@ -151,8 +153,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     @Override
     public Resource addOrUpdateResource(Resource resource) {
         Session s = this.factory.getObject().getCurrentSession();
-        s.merge(resource);
-        return resource;
+        return s.merge(resource);
     }
 
     @Override
@@ -182,7 +183,6 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     public void replaceRelations(Resource source, List<Resource> relatedResources) {
         Session s = this.factory.getObject().getCurrentSession();
 
-        // Xóa các relation cũ
         Query<?> deleteQ = s.createQuery(
                 "DELETE FROM ResourceRelation r WHERE r.sourceId.id = :sourceId"
         );
@@ -210,6 +210,67 @@ public class ResourceRepositoryImpl implements ResourceRepository {
         q.setParameter("id", resourceId);
 
         q.setMaxResults(5);
+
+        return q.getResultList();
+    }
+
+    @Override
+    public List<Resource> getSuggestedResources(int resourceId, int limit) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        String sql = "SELECT candidate.* "
+                + "FROM resource candidate "
+                + "WHERE candidate.id <> :resourceId "
+                + "AND candidate.is_deleted = false "
+                + "AND NOT EXISTS ("
+                + "SELECT 1 FROM resource_relation relation "
+                + "WHERE relation.source_id = :resourceId "
+                + "AND relation.related_id = candidate.id"
+                + ") "
+                + "AND ("
+                + "EXISTS ("
+                + "SELECT 1 FROM resource_topic candidate_topic "
+                + "JOIN resource_topic source_topic ON source_topic.topic_id = candidate_topic.topic_id "
+                + "WHERE candidate_topic.resource_id = candidate.id "
+                + "AND source_topic.resource_id = :resourceId"
+                + ") "
+                + "OR EXISTS ("
+                + "SELECT 1 FROM resource_tag_map candidate_tag "
+                + "JOIN resource_tag_map source_tag ON source_tag.tag_id = candidate_tag.tag_id "
+                + "WHERE candidate_tag.resource_id = candidate.id "
+                + "AND source_tag.resource_id = :resourceId"
+                + ") "
+                + "OR EXISTS ("
+                + "SELECT 1 FROM resource_subject candidate_subject "
+                + "JOIN resource_subject source_subject ON source_subject.subject_id = candidate_subject.subject_id "
+                + "WHERE candidate_subject.resource_id = candidate.id "
+                + "AND source_subject.resource_id = :resourceId"
+                + ")"
+                + ") "
+                + "ORDER BY ("
+                + "3 * ("
+                + "SELECT COUNT(*) FROM resource_topic candidate_topic "
+                + "JOIN resource_topic source_topic ON source_topic.topic_id = candidate_topic.topic_id "
+                + "WHERE candidate_topic.resource_id = candidate.id "
+                + "AND source_topic.resource_id = :resourceId"
+                + ") "
+                + "+ 2 * ("
+                + "SELECT COUNT(*) FROM resource_tag_map candidate_tag "
+                + "JOIN resource_tag_map source_tag ON source_tag.tag_id = candidate_tag.tag_id "
+                + "WHERE candidate_tag.resource_id = candidate.id "
+                + "AND source_tag.resource_id = :resourceId"
+                + ") "
+                + "+ ("
+                + "SELECT COUNT(*) FROM resource_subject candidate_subject "
+                + "JOIN resource_subject source_subject ON source_subject.subject_id = candidate_subject.subject_id "
+                + "WHERE candidate_subject.resource_id = candidate.id "
+                + "AND source_subject.resource_id = :resourceId"
+                + ")"
+                + ") DESC, candidate.created_at DESC, candidate.id DESC";
+
+        Query<Resource> q = s.createNativeQuery(sql, Resource.class);
+        q.setParameter("resourceId", resourceId);
+        q.setMaxResults(limit);
 
         return q.getResultList();
     }

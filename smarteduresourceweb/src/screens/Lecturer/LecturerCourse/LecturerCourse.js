@@ -31,6 +31,26 @@ const LecturerCourse = () => {
     const currentPage = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
     const [totalPages, setTotalPages] = useState(1);
 
+    const toDateInputValue = (value) => {
+        if (!value) return "";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        return date.toISOString().slice(0, 10);
+    };
+
+    const formatDate = (value) => {
+        if (!value) return "—";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "—";
+        return date.toLocaleDateString('vi-VN');
+    };
+
+    const levelLabels = {
+        BEGINNER: "Cơ bản",
+        INTERMEDIATE: "Trung bình",
+        ADVANCED: "Nâng cao",
+    };
+
     useEffect(() => {
         if (!user || (user.role !== "LECTURER" && user.role !== "ADMIN")) {
             nav('/login'); return;
@@ -73,7 +93,15 @@ const LecturerCourse = () => {
 
     const handleOpenCreate = () => {
         setEditingCourse(null);
-        setFormData({});
+        setFormData({
+            name: "",
+            description: "",
+            subjectId: "",
+            price: 0,
+            startDate: "",
+            endDate: "",
+            targetLevel: "",
+        });
         setShowModal(true);
     };
 
@@ -84,6 +112,9 @@ const LecturerCourse = () => {
             description: course.description || "",
             subjectId: course.subjectId || "",
             price: course.price || 0,
+            startDate: toDateInputValue(course.startDate),
+            endDate: toDateInputValue(course.endDate),
+            targetLevel: course.targetLevel || "",
         });
         setShowModal(true);
     };
@@ -189,6 +220,8 @@ const LecturerCourse = () => {
                             <th>ID</th>
                             <th>Tên khóa học</th>
                             <th>Môn học</th>
+                            <th>Thời gian</th>
+                            <th>Cấp độ</th>
                             <th>Giá</th>
                             <th>Hành động</th>
                         </tr>
@@ -199,6 +232,8 @@ const LecturerCourse = () => {
                                 <td>{c.id}</td>
                                 <td>{c.name}</td>
                                 <td>{c.subject?.name || "—"}</td>
+                                <td>{formatDate(c.startDate)} - {formatDate(c.endDate)}</td>
+                                <td>{levelLabels[c.targetLevel] || "—"}</td>
                                 <td>
                                     {c.isPaid ? (
                                         <span className="text-secondary fw-bold">
@@ -229,7 +264,7 @@ const LecturerCourse = () => {
                             </tr>
                         ))}
                         {courses.length === 0 && (
-                            <tr><td colSpan="6" className="text-center text-muted py-3">Chưa có khóa học</td></tr>
+                            <tr><td colSpan="7" className="text-center text-muted py-3">Chưa có khóa học</td></tr>
                         )}
                     </tbody>
                 </Table>
@@ -279,6 +314,35 @@ const LecturerCourse = () => {
                                 ))}
                             </Form.Select>
                         </Form.Group>
+                        <Row>
+                            <Col md={4}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Ngày bắt đầu</Form.Label>
+                                    <Form.Control type="date" value={formData.startDate || ''}
+                                        onChange={e => setFormData({ ...formData, startDate: e.target.value })} />
+                                </Form.Group>
+                            </Col>
+                            <Col md={4}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Ngày kết thúc</Form.Label>
+                                    <Form.Control type="date" value={formData.endDate || ''}
+                                        min={formData.startDate || undefined}
+                                        onChange={e => setFormData({ ...formData, endDate: e.target.value })} />
+                                </Form.Group>
+                            </Col>
+                            <Col md={4}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Trình độ mục tiêu</Form.Label>
+                                    <Form.Select value={formData.targetLevel || ''}
+                                        onChange={e => setFormData({ ...formData, targetLevel: e.target.value })}>
+                                        <option value="">-- Chọn trình độ --</option>
+                                        <option value="BEGINNER">Cơ bản</option>
+                                        <option value="INTERMEDIATE">Trung bình</option>
+                                        <option value="ADVANCED">Nâng cao</option>
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
+                        </Row>
                         <Form.Group className="mb-3">
                             <Form.Label>Mô tả</Form.Label>
                             <Form.Control as="textarea" rows={4} value={formData.description || ''}
@@ -342,3 +406,5 @@ const LecturerCourse = () => {
 }
 
 export default LecturerCourse;
+
+

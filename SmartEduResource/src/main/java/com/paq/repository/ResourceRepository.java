@@ -31,6 +31,8 @@ public interface ResourceRepository {
 
     List<Resource> getRelatedResources(int resourceId);
 
+    List<Resource> getSuggestedResources(int resourceId, int limit);
+
     void replaceRelations(Resource source, List<Resource> relatedResources);
 
 }

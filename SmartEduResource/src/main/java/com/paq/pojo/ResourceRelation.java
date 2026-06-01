@@ -27,8 +27,7 @@ import java.io.Serializable;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "ResourceRelation.findAll", query = "SELECT r FROM ResourceRelation r"),
-    @NamedQuery(name = "ResourceRelation.findById", query = "SELECT r FROM ResourceRelation r WHERE r.id = :id"),
-    @NamedQuery(name = "ResourceRelation.findByRelatedType", query = "SELECT r FROM ResourceRelation r WHERE r.relatedType = :relatedType")})
+    @NamedQuery(name = "ResourceRelation.findById", query = "SELECT r FROM ResourceRelation r WHERE r.id = :id")})
 public class ResourceRelation implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -37,8 +36,6 @@ public class ResourceRelation implements Serializable {
     @Basic(optional = false)
     @Column(name = "id")
     private Integer id;
-    @Column(name = "related_type")
-    private Integer relatedType;
     @JoinColumn(name = "related_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Resource relatedId;
@@ -59,14 +56,6 @@ public class ResourceRelation implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Integer getRelatedType() {
-        return relatedType;
-    }
-
-    public void setRelatedType(Integer relatedType) {
-        this.relatedType = relatedType;
     }
 
     public Resource getRelatedId() {
