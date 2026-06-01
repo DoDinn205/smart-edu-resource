@@ -17,6 +17,7 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Date;
@@ -26,7 +27,9 @@ import java.util.Date;
  * @author paqvi
  */
 @Entity
-@Table(name = "chat_participant")
+@Table(name = "chat_participant", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_chat_participant_room_user", columnNames = {"room_id", "user_id"})
+})
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "ChatParticipant.findAll", query = "SELECT c FROM ChatParticipant c"),

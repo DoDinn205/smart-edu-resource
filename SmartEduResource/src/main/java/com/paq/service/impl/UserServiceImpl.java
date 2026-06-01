@@ -371,7 +371,11 @@ public class UserServiceImpl implements UserService {
 
     private void applyLecturerFields(Lecturer lecturer, ReqLecturerDTO request) {
         lecturer.setDegree(request.getDegree());
-        lecturer.setCertificateUrl(request.getCertificateUrl());
+        if (request.getCertificate() != null && !request.getCertificate().isEmpty()) {
+            lecturer.setCertificateUrl(this.uploadLecturerCertificate(request.getCertificate()));
+        } else if (request.getCertificateUrl() != null && !request.getCertificateUrl().isBlank()) {
+            lecturer.setCertificateUrl(request.getCertificateUrl());
+        }
         lecturer.setSpecialization(request.getSpecialization());
         lecturer.setBio(request.getBio());
         if (request.getIsApprove() != null) {
@@ -379,6 +383,23 @@ public class UserServiceImpl implements UserService {
             lecturer.setApproveAt(Boolean.TRUE.equals(request.getIsApprove()) ? new Date() : null);
         } else if (lecturer.getId() == null) {
             lecturer.setIsApprove(Boolean.FALSE);
+        }
+    }
+
+    private String uploadLecturerCertificate(MultipartFile certificate) {
+        String contentType = certificate.getContentType();
+        if (!"application/pdf".equalsIgnoreCase(contentType)) {
+            throw new IllegalArgumentException("Chứng chỉ phải là file PDF");
+        }
+
+        try {
+            Map res = this.cloudinary.uploader().upload(certificate.getBytes(),
+                    ObjectUtils.asMap(
+                            "resource_type", "raw",
+                            "folder", "lecturer-certificates"));
+            return res.get("secure_url").toString();
+        } catch (IOException ex) {
+            throw new IllegalArgumentException("Không thể upload chứng chỉ: " + ex.getMessage());
         }
     }
 

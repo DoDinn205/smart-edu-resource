@@ -5,6 +5,7 @@ import { useNavigate , useSearchParams} from "react-router-dom";
 import { MyUserContext } from "../../../configs/Context";
 import { authApis, endpoints } from "../../../configs/Apis";
 import MySpinner from "../../../components/common/MySpinner";
+import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
 import "../Admin.css";
 
 const AdminLecturer = () => {
@@ -15,6 +16,9 @@ const AdminLecturer = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingLecturer, setEditingLecturer] = useState(null);
     const [formData, setFormData] = useState({});
+    const [certificateFile, setCertificateFile] = useState(null);
+    const { isSubmitting, runSubmission } = useSubmissionGuard();
+    const { isSubmitting: isUpdatingApproval, runSubmission: runApprovalUpdate } = useSubmissionGuard();
     const nav = useNavigate();
     const [q] = useSearchParams();
     const kwParam = q.get("kw") || "";
@@ -51,24 +55,28 @@ const AdminLecturer = () => {
     };
 
     const handleApprove = async (id, approved) => {
-        try {
-            setErr("");
-            await authApis().put(endpoints['admin-lecturer-approval'](id), { isApproved: approved });
-            loadLecturers();
-        } catch (ex) {
-            console.error(ex);
-            setErr("Lỗi khi cập nhật trạng thái duyệt.");
-        }
+        await runApprovalUpdate(async () => {
+            try {
+                setErr("");
+                await authApis().put(endpoints['admin-lecturer-approval'](id), { isApproved: approved });
+                loadLecturers();
+            } catch (ex) {
+                console.error(ex);
+                setErr("Lỗi khi cập nhật trạng thái duyệt.");
+            }
+        });
     };
 
     const handleOpenCreate = () => {
         setEditingLecturer(null);
         setFormData({});
+        setCertificateFile(null);
         setShowModal(true);
     };
 
     const handleOpenEdit = (lec) => {
         setEditingLecturer(lec);
+        setCertificateFile(null);
         setFormData({
             fullName: lec.user?.fullName || "",
             email: lec.user?.email || "",
@@ -84,24 +92,36 @@ const AdminLecturer = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            setErr("");
-            if (editingLecturer) {
-                await authApis().put(endpoints['admin-lecturer-detail'](editingLecturer.id), formData);
-                if (formData.userId) {
-                    await authApis().put(endpoints['admin-user-status'](formData.userId), {
-                        isActive: formData.isActive
+        await runSubmission(async () => {
+            try {
+                setErr("");
+                const payload = new FormData();
+                ["fullName", "email", "username", "password", "phone", "degree", "specialization", "bio"]
+                    .forEach(field => {
+                        if (formData[field] !== undefined && formData[field] !== "") {
+                            payload.append(field, formData[field]);
+                        }
                     });
+                if (certificateFile) {
+                    payload.append("certificate", certificateFile);
                 }
-            } else {
-                await authApis().post(endpoints['admin-lecturers'], formData);
+                if (editingLecturer) {
+                    await authApis().put(endpoints['admin-lecturer-detail'](editingLecturer.id), payload);
+                    if (formData.userId) {
+                        await authApis().put(endpoints['admin-user-status'](formData.userId), {
+                            isActive: formData.isActive
+                        });
+                    }
+                } else {
+                    await authApis().post(endpoints['admin-lecturers'], payload);
+                }
+                setShowModal(false);
+                loadLecturers();
+            } catch (ex) {
+                console.error(ex);
+                setErr("Có lỗi xảy ra khi lưu giảng viên.");
             }
-            setShowModal(false);
-            loadLecturers();
-        } catch (ex) {
-            console.error(ex);
-            setErr("Có lỗi xảy ra khi lưu giảng viên.");
-        }
+        });
     };
 
     const handleDelete = async (id) => {
@@ -118,9 +138,7 @@ const AdminLecturer = () => {
     const fields = [
         { field: "fullName", label: "Họ tên", type: "text" },
         { field: "email", label: "Email", type: "email" },
-        { field: "degree", label: "Trình độ học vấn", type: "text" },
         { field: "specialization", label: "Chuyên môn", type: "text" },
-        { field: "certificateUrl", label: "Link Portfolio/Chứng chỉ", type: "text" },
     ];
 
     const handleSearch = (e) => {
@@ -209,6 +227,7 @@ const AdminLecturer = () => {
                                           size="sm"
                                           className="me-1"
                                           onClick={() => handleApprove(lec.id, true)}
+                                          disabled={isUpdatingApproval}
                                         >
                                           <i className="bi bi-check-lg"></i> Duyệt
                                         </Button>
@@ -219,6 +238,7 @@ const AdminLecturer = () => {
                                           size="sm"
                                           className="me-1"
                                           onClick={() => handleApprove(lec.id, false)}
+                                          disabled={isUpdatingApproval}
                                         >
                                           <i className="bi bi-x-circle"></i> Hủy duyệt
                                         </Button>
@@ -270,6 +290,36 @@ const AdminLecturer = () => {
                                 />
                             </Form.Group>
                         ))}
+                        <Form.Group className="mb-3">
+                            <Form.Label>Trình độ học vấn</Form.Label>
+                            <Form.Select
+                                value={formData.degree || ""}
+                                onChange={e => setFormData({ ...formData, degree: e.target.value })}
+                                required
+                            >
+                                <option value="">Chọn trình độ</option>
+                                <option value="MASTER">Thạc sĩ</option>
+                                <option value="PHD">Tiến sĩ</option>
+                                <option value="ASSOCPROF">Phó giáo sư</option>
+                                <option value="PROFESSOR">Giáo sư</option>
+                            </Form.Select>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Chứng chỉ (PDF)</Form.Label>
+                            <Form.Control
+                                type="file"
+                                accept="application/pdf,.pdf"
+                                onChange={e => setCertificateFile(e.target.files?.[0] || null)}
+                                required={!editingLecturer}
+                            />
+                            {editingLecturer && formData.certificateUrl && (
+                                <Form.Text>
+                                    <a href={formData.certificateUrl} target="_blank" rel="noreferrer">
+                                        Xem chứng chỉ hiện tại
+                                    </a>
+                                </Form.Text>
+                            )}
+                        </Form.Group>
                         {!editingLecturer && (
                             <>
                                 <Form.Group className="mb-3">
@@ -298,8 +348,10 @@ const AdminLecturer = () => {
                         )}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button>
-                        <Button variant="primary" type="submit">Lưu</Button>
+                        <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Hủy</Button>
+                        <Button variant="primary" type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Đang lưu..." : "Lưu"}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>

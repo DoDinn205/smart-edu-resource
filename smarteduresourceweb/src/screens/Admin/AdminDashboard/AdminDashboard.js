@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState } from "react";
-import { Col, Row, ListGroup, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 import { MyUserContext } from "../../../configs/Context";
 import { authApis, endpoints } from "../../../configs/Apis";
 import MySpinner from "../../../components/common/MySpinner";
+import AdminReport from "../AdminReport/AdminReport";
 import "../Admin.css";
 
 const AdminDashboard = () => {
@@ -26,7 +26,7 @@ const AdminDashboard = () => {
                 setStats({
                     totalStudents: 0, totalLecturers: 0,
                     totalCourses: 0, totalResources: 0,
-                    pendingLecturers: 0, totalPayments: 0
+                    pendingLecturers: 0
                 });
             } finally {
                 setLoading(false);
@@ -58,10 +58,6 @@ const AdminDashboard = () => {
             icon: "bi-hourglass-split",
             value: stats?.pendingLecturers || 0,
             label: "Chờ duyệt"
-        }, {
-            icon: "bi-wallet2",
-            value: stats?.totalPayments || 0,
-            label: "Giao dịch"
         },
     ];
 
@@ -78,43 +74,7 @@ const AdminDashboard = () => {
                 ))}
             </div>
 
-            <Row className="g-4">
-                <Col lg={6}>
-                    <div className="admin-panel">
-                        <div className="panel-header">Truy cập nhanh (Quản lý Người dùng & Dữ liệu)</div>
-                        <ListGroup variant="flush">
-                            <ListGroup.Item action onClick={() => nav('/admin/lecturers')}>
-                                <i className="bi bi-person-badge me-2"></i> Duyệt / Quản lý Giảng viên
-                                {stats?.pendingLecturers > 0 && (
-                                    <Badge bg="danger" className="ms-2">{stats.pendingLecturers}</Badge>
-                                )}
-                            </ListGroup.Item>
-                            <ListGroup.Item action onClick={() => nav('/admin/students')}>
-                                <i className="bi bi-people me-2"></i> Quản lý Sinh viên
-                            </ListGroup.Item>
-                            <ListGroup.Item action onClick={() => nav('/admin/categories')}>
-                                <i className="bi bi-tags me-2"></i> Quản lý Danh mục
-                            </ListGroup.Item>
-                        </ListGroup>
-                    </div>
-                </Col>
-                <Col lg={6}>
-                    <div className="admin-panel">
-                        <div className="panel-header">Truy cập nhanh (Hoạt động & Thống kê)</div>
-                        <ListGroup variant="flush">
-                            <ListGroup.Item action onClick={() => nav('/admin/payments')}>
-                                <i className="bi bi-wallet2 me-2"></i> Quản lý Giao dịch
-                            </ListGroup.Item>
-                            <ListGroup.Item action onClick={() => nav('/admin/forum')}>
-                                <i className="bi bi-chat-left-text me-2"></i> Quản lý Diễn đàn
-                            </ListGroup.Item>
-                            <ListGroup.Item action onClick={() => nav('/admin/reports')}>
-                                <i className="bi bi-bar-chart me-2"></i> Báo cáo Thống kê
-                            </ListGroup.Item>
-                        </ListGroup>
-                    </div>
-                </Col>
-            </Row>
+            <AdminReport />
         </>
     );
 }

@@ -47,6 +47,13 @@ public class DashboardRepositoryImpl implements DashboardRepository {
     }
 
     @Override
+    public long countPendingLecturers() {
+        return this.count("SELECT COUNT(l.id) FROM Lecturer l JOIN l.userId u "
+                + "WHERE (u.isActive = true OR u.isActive IS NULL) "
+                + "AND (l.isApprove = false OR l.isApprove IS NULL)");
+    }
+
+    @Override
     public long countCourses() {
         return this.count("SELECT COUNT(c.id) FROM Course c WHERE c.isDeleted = false OR c.isDeleted IS NULL");
     }

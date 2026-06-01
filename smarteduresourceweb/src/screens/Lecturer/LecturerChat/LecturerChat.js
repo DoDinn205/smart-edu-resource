@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { MyUserContext } from "../../../configs/Context";
 import { authApis, endpoints } from "../../../configs/Apis";
 import MySpinner from "../../../components/common/MySpinner";
+import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
 import "../Lecturer.css";
 
 const LecturerChat = () => {
@@ -15,6 +16,7 @@ const LecturerChat = () => {
     const [err, setErr] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [formData, setFormData] = useState({});
+    const { isSubmitting, runSubmission } = useSubmissionGuard();
 
     const nav = useNavigate();
     const [q] = useSearchParams();
@@ -70,15 +72,17 @@ const LecturerChat = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            setErr("");
-            await authApis().post(endpoints['lecturer-chat-rooms'], formData);
-            setShowModal(false);
-            loadChatRooms();
-        } catch (ex) {
-            console.error(ex);
-            setErr("Có lỗi xảy ra khi tạo phòng chat.");
-        }
+        await runSubmission(async () => {
+            try {
+                setErr("");
+                await authApis().post(endpoints['lecturer-chat-rooms'], formData);
+                setShowModal(false);
+                loadChatRooms();
+            } catch (ex) {
+                console.error(ex);
+                setErr("Có lỗi xảy ra khi tạo phòng chat.");
+            }
+        });
     };
 
     const handleDelete = async (id) => {
@@ -229,8 +233,10 @@ const LecturerChat = () => {
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button>
-                        <Button variant="primary" type="submit">Tạo</Button>
+                        <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Hủy</Button>
+                        <Button variant="primary" type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Đang tạo..." : "Tạo"}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>

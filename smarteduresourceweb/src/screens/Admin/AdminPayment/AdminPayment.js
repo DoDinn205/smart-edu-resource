@@ -1,10 +1,11 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Badge, Button, Form, Table , InputGroup, Pagination} from "react-bootstrap";
-import { useNavigate , useSearchParams} from "react-router-dom";
+import { Alert, Badge, Button, Form, Table, InputGroup, Pagination } from "react-bootstrap";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { MyUserContext } from "../../../configs/Context";
 import { authApis, endpoints } from "../../../configs/Apis";
 import MySpinner from "../../../components/common/MySpinner";
+import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
 import "../Admin.css";
 
 const AdminPayment = () => {
@@ -12,6 +13,7 @@ const AdminPayment = () => {
     const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState("");
+    const { isSubmitting: isUpdatingStatus, runSubmission: runStatusUpdate } = useSubmissionGuard();
     const nav = useNavigate();
     const [q] = useSearchParams();
     const kwParam = q.get("kw") || "";
@@ -50,21 +52,37 @@ const AdminPayment = () => {
     };
 
     const handleUpdateStatus = async (id, status) => {
-        try {
-            setErr("");
-            await authApis().put(endpoints['admin-payment-status'](id), { status });
-            loadPayments();
-        } catch (ex) {
-            console.error(ex);
-            setErr("Lỗi khi cập nhật trạng thái.");
-        }
+        await runStatusUpdate(async () => {
+            try {
+                setErr("");
+                await authApis().put(`${endpoints['admin-payment-status'](id)}?status=${status}`);
+                loadPayments();
+            } catch (ex) {
+                console.error(ex);
+                setErr("Lỗi khi cập nhật trạng thái.");
+            }
+        });
     };
 
     const statusVariant = (status) => {
-        if (status === "COMPLETED") return "success";
+        if (status === "SUCCESS") return "success";
         if (status === "PENDING") return "warning";
         if (status === "CANCELLED") return "danger";
+        if (status === "REFUNDED") return "info";
         return "secondary";
+    };
+
+    const statusLabel = (status) => {
+        if (status === "SUCCESS") return "Thành công";
+        if (status === "PENDING") return "Chờ xử lý";
+        if (status === "CANCELLED") return "Đã hủy";
+        if (status === "REFUNDED") return "Đã hoàn tiền";
+        return status || "—";
+    };
+
+    const formatDateTime = (value) => {
+        if (!value) return "—";
+        return new Date(value).toLocaleString("vi-VN");
     };
 
     const handleSearch = (e) => {
@@ -105,15 +123,18 @@ const AdminPayment = () => {
             {err && <Alert variant="danger">{err}</Alert>}
 
             <div className="admin-panel">
-                <Table hover responsive className="mb-0">
+                <Table hover responsive striped className="mb-0 align-middle">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Người dùng</th>
+                            <th>Sinh viên</th>
                             <th>Khóa học</th>
+                            <th>Mã giao dịch</th>
+                            <th>Phương thức</th>
                             <th>Số tiền</th>
                             <th>Trạng thái</th>
                             <th>Ngày tạo</th>
+                            <th>Ngày thanh toán</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
@@ -121,31 +142,43 @@ const AdminPayment = () => {
                         {payments.map(p => (
                             <tr key={p.id}>
                                 <td>{p.id}</td>
-                                <td>{p.userName || "—"}</td>
-                                <td>{p.courseName || "—"}</td>
-                                <td>{p.amount?.toLocaleString('vi-VN')} đ</td>
                                 <td>
-                                    <Badge bg={statusVariant(p.status)}>{p.status}</Badge>
+                                    <div className="fw-semibold">{p.user?.fullName || "—"}</div>
+                                    <div className="small text-muted">
+                                        {p.studentCode || p.user?.username || "—"}
+                                    </div>
+                                    {p.user?.email && <div className="small text-muted">{p.user.email}</div>}
                                 </td>
-                                <td style={{ fontSize: '0.85rem' }}>{p.createdDate || "—"}</td>
+                                <td>{p.courseName || "—"}</td>
+                                <td>{p.transactionCode || "—"}</td>
+                                <td>{p.paymentMethod || "—"}</td>
+                                <td className="text-nowrap">{p.amount?.toLocaleString('vi-VN') || 0} đ</td>
                                 <td>
+                                    <Badge bg={statusVariant(p.status)}>{statusLabel(p.status)}</Badge>
+                                </td>
+                                <td className="small text-nowrap">{formatDateTime(p.createdAt)}</td>
+                                <td className="small text-nowrap">{formatDateTime(p.paidAt)}</td>
+                                <td className="text-nowrap">
                                     {p.status === "PENDING" && (
-                                        <>
+                                        <div className="d-flex gap-2">
                                             <Button variant="success" size="sm" className="me-1"
-                                                onClick={() => handleUpdateStatus(p.id, "COMPLETED")}>
-                                                <i className="bi bi-check-lg"></i>
+                                                onClick={() => handleUpdateStatus(p.id, "SUCCESS")} disabled={isUpdatingStatus}>
+                                                <i className="bi bi-check-lg me-1"></i>
+                                                Xác nhận
                                             </Button>
                                             <Button variant="danger" size="sm"
-                                                onClick={() => handleUpdateStatus(p.id, "CANCELLED")}>
-                                                <i className="bi bi-x-lg"></i>
+                                                onClick={() => handleUpdateStatus(p.id, "CANCELLED")} disabled={isUpdatingStatus}>
+                                                <i className="bi bi-x-lg me-1"></i>
+                                                Hủy
                                             </Button>
-                                        </>
+                                        </div>
                                     )}
+                                    {p.status !== "PENDING" && <span className="text-muted">—</span>}
                                 </td>
                             </tr>
                         ))}
                         {payments.length === 0 && (
-                            <tr><td colSpan="7" className="text-center text-muted py-3">Chưa có giao dịch</td></tr>
+                            <tr><td colSpan="11" className="text-center text-muted py-3">Chưa có giao dịch</td></tr>
                         )}
                     </tbody>
                 </Table>

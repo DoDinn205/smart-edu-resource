@@ -5,6 +5,7 @@ public class ResDashboardDTO {
     private Long totalUsers;
     private Long totalStudents;
     private Long totalLecturers;
+    private Long pendingLecturers;
     private Long totalCourses;
     private Long totalResources;
     private Long totalQuizzes;
@@ -39,6 +40,14 @@ public class ResDashboardDTO {
 
     public void setTotalLecturers(Long totalLecturers) {
         this.totalLecturers = totalLecturers;
+    }
+
+    public Long getPendingLecturers() {
+        return pendingLecturers;
+    }
+
+    public void setPendingLecturers(Long pendingLecturers) {
+        this.pendingLecturers = pendingLecturers;
     }
 
     public Long getTotalCourses() {

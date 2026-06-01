@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Alert, Badge, Button, Form, InputGroup, Pagination, Table, Tabs, Tab } from "react-bootstrap";
 import { useNavigate, useParams, Link } from "react-router-dom";
 
@@ -32,6 +32,7 @@ const LecturerChatParticipants = () => {
     const [aLoading, setALoading] = useState(false);
 
     const [inviting, setInviting] = useState(false);
+    const invitingRef = useRef(false);
 
     useEffect(() => {
         if (!user || (user.role !== "LECTURER" && user.role !== "ADMIN")) {
@@ -107,7 +108,8 @@ const LecturerChatParticipants = () => {
     };
 
     const handleAddStudent = async (studentUser) => {
-        if (!studentUser) return;
+        if (!studentUser || invitingRef.current) return;
+        invitingRef.current = true;
         setInviting(true);
         try {
             await authApis().post(endpoints['lecturer-chat-participants'](room.id), {
@@ -119,12 +121,14 @@ const LecturerChatParticipants = () => {
             console.error(ex);
             alert("Không thể thêm sinh viên vào phòng.");
         } finally {
+            invitingRef.current = false;
             setInviting(false);
         }
     };
 
     const handleRemoveStudent = async (participant) => {
-        if (!window.confirm("Xóa sinh viên này khỏi phòng chat?")) return;
+        if (invitingRef.current || !window.confirm("Xóa sinh viên này khỏi phòng chat?")) return;
+        invitingRef.current = true;
         setInviting(true);
         try {
             await authApis().delete(endpoints['lecturer-chat-participant-detail'](participant.id));
@@ -134,6 +138,7 @@ const LecturerChatParticipants = () => {
             console.error(ex);
             alert("Không thể xóa sinh viên khỏi phòng.");
         } finally {
+            invitingRef.current = false;
             setInviting(false);
         }
     };

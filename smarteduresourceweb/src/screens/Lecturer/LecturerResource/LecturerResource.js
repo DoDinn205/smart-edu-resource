@@ -15,6 +15,7 @@ const LecturerResource = () => {
     const [resourceTypes, setResourceTypes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const submittingRef = useRef(false);
     const [err, setErr] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [editingResource, setEditingResource] = useState(null);
@@ -107,9 +108,10 @@ const LecturerResource = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (isSubmitting) return;
+        if (submittingRef.current) return;
 
         try {
+            submittingRef.current = true;
             setIsSubmitting(true);
             setErr("");
             let data = new FormData();
@@ -141,6 +143,7 @@ const LecturerResource = () => {
             console.error(ex);
             setErr("Có lỗi xảy ra khi lưu học liệu.");
         } finally {
+            submittingRef.current = false;
             setIsSubmitting(false);
         }
     };

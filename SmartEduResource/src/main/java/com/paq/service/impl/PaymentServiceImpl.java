@@ -1,6 +1,7 @@
 package com.paq.service.impl;
 
 import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -67,6 +68,14 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         payment.setStatus(status);
+        if (PaymentStatusEnum.SUCCESS.equals(status)) {
+            if (payment.getPaidAt() == null) {
+                payment.setPaidAt(new Date());
+            }
+        } else if (PaymentStatusEnum.PENDING.equals(status) || PaymentStatusEnum.CANCELLED.equals(status)) {
+            payment.setPaidAt(null);
+        }
+
         return DTOMapper.toResPaymentDTO(this.paymentRepo.updatePayment(payment));
     }
 

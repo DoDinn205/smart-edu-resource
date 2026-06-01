@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { MyUserContext } from "../../../configs/Context";
 import Apis, { authApis, endpoints } from "../../../configs/Apis";
 import MySpinner from "../../../components/common/MySpinner";
+import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
 import "../Lecturer.css";
 
 const LecturerCourse = () => {
@@ -16,6 +17,7 @@ const LecturerCourse = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
     const [formData, setFormData] = useState({});
+    const { isSubmitting, runSubmission } = useSubmissionGuard();
     const [showEnrollments, setShowEnrollments] = useState(false);
     const [enrollments, setEnrollments] = useState([]);
     const [enrollmentPage, setEnrollmentPage] = useState(1);
@@ -88,19 +90,21 @@ const LecturerCourse = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            setErr("");
-            if (editingCourse) {
-                await authApis().put(endpoints['lecturer-course-detail'](editingCourse.id), formData);
-            } else {
-                await authApis().post(endpoints['lecturer-courses'], formData);
+        await runSubmission(async () => {
+            try {
+                setErr("");
+                if (editingCourse) {
+                    await authApis().put(endpoints['lecturer-course-detail'](editingCourse.id), formData);
+                } else {
+                    await authApis().post(endpoints['lecturer-courses'], formData);
+                }
+                setShowModal(false);
+                loadCourses();
+            } catch (ex) {
+                console.error(ex);
+                setErr("Có lỗi xảy ra khi lưu khóa học.");
             }
-            setShowModal(false);
-            loadCourses();
-        } catch (ex) {
-            console.error(ex);
-            setErr("Có lỗi xảy ra khi lưu khóa học.");
-        }
+        });
     };
 
     const handleDelete = async (id) => {
@@ -282,8 +286,10 @@ const LecturerCourse = () => {
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button>
-                        <Button variant="primary" type="submit">Lưu</Button>
+                        <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Hủy</Button>
+                        <Button variant="primary" type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Đang lưu..." : "Lưu"}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>

@@ -1,5 +1,5 @@
 import { useReducer } from "react";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import cookies from "react-cookies";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -40,8 +40,6 @@ import AdminLecturer from "./screens/Admin/AdminLecturer/AdminLecturer";
 import AdminCategory from "./screens/Admin/AdminCategory/AdminCategory";
 import AdminPayment from "./screens/Admin/AdminPayment/AdminPayment";
 import AdminForum from "./screens/Admin/AdminForum/AdminForum";
-import AdminReport from "./screens/Admin/AdminReport/AdminReport";
-
 import LecturerLayout from "./components/Layouts/LecturerLayout";
 import LecturerDashboard from "./screens/Lecturer/LecturerDashboard/LecturerDashboard";
 import LecturerCourse from "./screens/Lecturer/LecturerCourse/LecturerCourse";
@@ -66,7 +64,7 @@ const AppLayout = () => {
                 <Route path="/admin/categories" element={<AdminLayout><AdminCategory /></AdminLayout>} />
                 <Route path="/admin/payments" element={<AdminLayout><AdminPayment /></AdminLayout>} />
                 <Route path="/admin/forum" element={<AdminLayout><AdminForum /></AdminLayout>} />
-                <Route path="/admin/reports" element={<AdminLayout><AdminReport /></AdminLayout>} />
+                <Route path="/admin/reports" element={<Navigate to="/admin/dashboard" replace />} />
 
                 <Route path="/lecturer/dashboard" element={<LecturerLayout><LecturerDashboard /></LecturerLayout>} />
                 <Route path="/lecturer/courses" element={<LecturerLayout><LecturerCourse /></LecturerLayout>} />

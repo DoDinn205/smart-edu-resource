@@ -5,6 +5,7 @@ import { useNavigate , useSearchParams} from "react-router-dom";
 import { MyUserContext } from "../../../configs/Context";
 import { authApis, endpoints } from "../../../configs/Apis";
 import MySpinner from "../../../components/common/MySpinner";
+import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
 import "../Admin.css";
 
 const AdminUser = () => {
@@ -15,6 +16,7 @@ const AdminUser = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingStudent, setEditingStudent] = useState(null);
     const [formData, setFormData] = useState({});
+    const { isSubmitting, runSubmission } = useSubmissionGuard();
     const nav = useNavigate();
     const [q] = useSearchParams();
     const kwParam = q.get("kw") || "";
@@ -71,24 +73,26 @@ const AdminUser = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            setErr("");
-            if (editingStudent) {
-                await authApis().put(endpoints['admin-student-detail'](editingStudent.id), formData);
-                if (formData.userId) {
-                    await authApis().put(endpoints['admin-user-status'](formData.userId), {
-                        isActive: formData.isActive
-                    });
+        await runSubmission(async () => {
+            try {
+                setErr("");
+                if (editingStudent) {
+                    await authApis().put(endpoints['admin-student-detail'](editingStudent.id), formData);
+                    if (formData.userId) {
+                        await authApis().put(endpoints['admin-user-status'](formData.userId), {
+                            isActive: formData.isActive
+                        });
+                    }
+                } else {
+                    await authApis().post(endpoints['admin-students'], formData);
                 }
-            } else {
-                await authApis().post(endpoints['admin-students'], formData);
+                setShowModal(false);
+                loadStudents();
+            } catch (ex) {
+                console.error(ex);
+                setErr("Có lỗi xảy ra khi lưu sinh viên.");
             }
-            setShowModal(false);
-            loadStudents();
-        } catch (ex) {
-            console.error(ex);
-            setErr("Có lỗi xảy ra khi lưu sinh viên.");
-        }
+        });
     };
 
     const handleDelete = async (id) => {
@@ -252,8 +256,10 @@ const AdminUser = () => {
                         )}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button>
-                        <Button variant="primary" type="submit">Lưu</Button>
+                        <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Hủy</Button>
+                        <Button variant="primary" type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Đang lưu..." : "Lưu"}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>

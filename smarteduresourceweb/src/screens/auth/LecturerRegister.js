@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Alert, Button, Container, Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -10,6 +10,7 @@ const LecturerRegister = () => {
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState("");
     const [success, setSuccess] = useState("");
+    const submittingRef = useRef(false);
     const nav = useNavigate();
 
     const fields = [{
@@ -51,6 +52,7 @@ const LecturerRegister = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (submittingRef.current) return;
         setErr(""); setSuccess("");
 
         if (formData.password !== formData.confirmPassword) {
@@ -58,6 +60,7 @@ const LecturerRegister = () => {
             return;
         }
         
+        submittingRef.current = true;
         setLoading(true);
         try {
             const payload = {
@@ -86,6 +89,7 @@ const LecturerRegister = () => {
                 setErr("Có lỗi xảy ra, vui lòng thử lại.");
             }
         } finally {
+            submittingRef.current = false;
             setLoading(false);
         }
     };
@@ -109,9 +113,9 @@ const LecturerRegister = () => {
                             <Form.Label>Học vị</Form.Label>
                             <Form.Select value={formData.degree || ''} onChange={e => setFormData({ ...formData, degree: e.target.value })}>
                                 <option value="">Chọn học vị</option>
-                                <option value="BACHELOR">Cử nhân</option>
                                 <option value="MASTER">Thạc sĩ</option>
-                                <option value="DOCTOR">Tiến sĩ</option>
+                                <option value="PHD">Tiến sĩ</option>
+                                <option value="ASSOCPROF">Phó giáo sư</option>
                                 <option value="PROFESSOR">Giáo sư</option>
                             </Form.Select>
                         </Form.Group>

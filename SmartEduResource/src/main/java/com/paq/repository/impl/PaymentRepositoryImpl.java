@@ -45,8 +45,6 @@ public class PaymentRepositoryImpl implements PaymentRepository {
         CriteriaBuilder b = session.getCriteriaBuilder();
         CriteriaQuery<Payment> q = b.createQuery(Payment.class);
         Root<Payment> root = q.from(Payment.class);
-        root.fetch("enrollmentId", JoinType.LEFT).fetch("courseId", JoinType.LEFT);
-        root.fetch("enrollmentId", JoinType.LEFT).fetch("studentId", JoinType.LEFT).fetch("userId", JoinType.LEFT);
 
         Join<Object, Object> enrollment = root.join("enrollmentId", JoinType.INNER);
         Join<Object, Object> course = enrollment.join("courseId", JoinType.INNER);
