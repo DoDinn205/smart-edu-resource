@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Badge, Button, Form, Modal, Table, InputGroup, Pagination } from "react-bootstrap";
+import { Alert, Button, Form, Modal, Table, InputGroup, Pagination } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { MyUserContext } from "../../../configs/Context";
@@ -269,7 +269,7 @@ const LecturerQuiz = () => {
                                 <td>{q.id}</td>
                                 <td>{q.title}</td>
                                 <td>{q.durationMinutes} phút</td>
-                                <td><Badge bg="info">{q.questionCount || 0}</Badge></td>
+                                <td>{q.questionCount || 0}</td>
                                 <td>
                                     <Button variant="outline-info" size="sm" className="me-1"
                                         onClick={() => handleViewQuestions(q)}>

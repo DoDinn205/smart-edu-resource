@@ -13,6 +13,8 @@ public interface ResourceService {
 
     Long countLecturerResources(Map<String, String> params);
 
+    ResResourceDTO getLecturerResourceById(int id);
+
     ResResourceDTO getResourceById(int id);
 
     ResResourceDTO createResource(ReqResourceDTO request);

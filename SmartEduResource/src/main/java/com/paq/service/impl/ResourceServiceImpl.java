@@ -106,6 +106,12 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    public ResResourceDTO getLecturerResourceById(int id) {
+        this.permissionService.requireResourceOwnerOrAdmin(id);
+        return this.getResourceById(id);
+    }
+
+    @Override
     public ResResourceDTO getResourceById(int id) {
         Resource resource = this.resourceRepo.getResourceById(id);
         if (resource == null) {

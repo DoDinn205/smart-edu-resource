@@ -1,9 +1,9 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import { Alert, Button, Form, Modal, Table , InputGroup, Pagination} from "react-bootstrap";
+import { useContext, useEffect, useState } from "react";
+import { Alert, Button, Form, Table , InputGroup, Pagination} from "react-bootstrap";
 import { useNavigate , useSearchParams} from "react-router-dom";
 
 import { MyUserContext } from "../../../configs/Context";
-import Apis, { authApis, endpoints } from "../../../configs/Apis";
+import { authApis, endpoints } from "../../../configs/Apis";
 
 import MySpinner from "../../../components/common/MySpinner";
 import "../Lecturer.css";
@@ -11,16 +11,8 @@ import "../Lecturer.css";
 const LecturerResource = () => {
     const [user] = useContext(MyUserContext);
     const [resources, setResources] = useState([]);
-    const [subjects, setSubjects] = useState([]);
-    const [resourceTypes, setResourceTypes] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const submittingRef = useRef(false);
     const [err, setErr] = useState("");
-    const [showModal, setShowModal] = useState(false);
-    const [editingResource, setEditingResource] = useState(null);
-    const [formData, setFormData] = useState({});
-    const fileRef = useRef();
     const nav = useNavigate();
     const [q] = useSearchParams();
     const kwParam = q.get("kw") || "";
@@ -34,8 +26,6 @@ const LecturerResource = () => {
             nav('/login'); return;
         }
         loadResources();
-        loadSubjects();
-        loadResourceTypes();
     }, [user, nav, kwParam, currentPage]);
 
     useEffect(() => {
@@ -62,90 +52,12 @@ const LecturerResource = () => {
         }
     };
 
-    const loadSubjects = async () => {
-        try {
-            let res = await Apis.get(endpoints['subjects']);
-            setSubjects(res.data.data || []);
-        } catch (ex) {
-            console.error(ex);
-        }
-    };
-
-    const loadResourceTypes = async () => {
-        try {
-            let res = await Apis.get(endpoints['resource-types']);
-            setResourceTypes(res.data.data || []);
-        } catch (ex) {
-            console.error(ex);
-        }
-    };
-
     const handleOpenCreate = () => {
-        setEditingResource(null);
-        setFormData({});
-        setShowModal(true);
+        nav('/lecturer/resources/create');
     };
 
     const handleOpenEdit = (r) => {
-        setEditingResource(r);
-        setFormData({
-            title: r.title || "",
-            description: r.description || "",
-            fileUrl: r.fileUrl || "",
-            thumbnailUrl: r.thumbnailUrl || "",
-            format: r.format || "",
-            fileSize: r.fileSize,
-            level: r.level || "",
-            pageCount: r.pageCount,
-            subjectIds: r.subjects?.map(s => s.id) || [],
-            topicIds: r.topics?.map(t => t.id) || [],
-            tagIds: r.tags?.map(t => t.id) || [],
-            typeIds: r.types?.map(t => t.id) || [],
-            relatedResourceIds: r.relatedResources?.map(resource => resource.id) || [],
-        });
-        setShowModal(true);
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (submittingRef.current) return;
-
-        try {
-            submittingRef.current = true;
-            setIsSubmitting(true);
-            setErr("");
-            let data = new FormData();
-            Object.entries(formData).forEach(([key, value]) => {
-                if (value !== undefined && value !== null && value !== "") {
-                    if (Array.isArray(value)) {
-                        value.forEach(item => data.append(key, item));
-                    } else {
-                        data.append(key, value);
-                    }
-                }
-            });
-            if (fileRef.current && fileRef.current.files[0]) {
-                data.append("file", fileRef.current.files[0]);
-            }
-
-            if (editingResource) {
-                await authApis().put(endpoints['lecturer-resource-detail'](editingResource.id), data, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-            } else {
-                await authApis().post(endpoints['lecturer-resources'], data, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-            }
-            setShowModal(false);
-            loadResources();
-        } catch (ex) {
-            console.error(ex);
-            setErr("Có lỗi xảy ra khi lưu học liệu.");
-        } finally {
-            submittingRef.current = false;
-            setIsSubmitting(false);
-        }
+        nav(`/lecturer/resources/${r.id}/edit`);
     };
 
     const handleDelete = async (id) => {
@@ -220,13 +132,13 @@ const LecturerResource = () => {
                             <tr key={r.id}>
                                 <td>{r.id}</td>
                                 <td>{r.title}</td>
-                                <td>{r.subjects.map(s => s.name).join(", ") || "—"}</td>
+                                <td>{r.subjects?.map(s => s.name).join(", ") || "—"}</td>
                                 <td>
                                     {r.level === "BEGINNER" ? "Cơ bản" :
                                      r.level === "INTERMEDIATE" ? "Trung bình" :
                                      r.level === "ADVANCED" ? "Nâng cao" : "—"}
                                 </td>
-                                <td>{r.types.map(t => t.name).join(", ") || "—"}</td>
+                                <td>{r.types?.map(t => t.name).join(", ") || "—"}</td>
                                 <td>
                                     {r.fileUrl ? (
                                         <a href={r.fileUrl} target="_blank" rel="noreferrer" className="text-decoration-none">
@@ -254,7 +166,7 @@ const LecturerResource = () => {
                             </tr>
                         ))}
                         {resources.length === 0 && (
-                            <tr><td colSpan="5" className="text-center text-muted py-3">Chưa có học liệu</td></tr>
+                            <tr><td colSpan="8" className="text-center text-muted py-3">Chưa có học liệu</td></tr>
                         )}
                     </tbody>
                 </Table>
@@ -271,81 +183,8 @@ const LecturerResource = () => {
                     </div>
                 )}
             </div>
-
-            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-                <Modal.Header closeButton>
-                    <Modal.Title>{editingResource ? "Sửa học liệu" : "Upload học liệu"}</Modal.Title>
-                </Modal.Header>
-                <Form onSubmit={handleSubmit}>
-                    <Modal.Body>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Tiêu đề</Form.Label>
-                            <Form.Control type="text" value={formData.title || ''}
-                                onChange={e => setFormData({ ...formData, title: e.target.value })} required />
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Môn học</Form.Label>
-                            <Form.Select value={formData.subjectIds?.[0] || ''}
-                                onChange={e => setFormData({
-                                    ...formData,
-                                    subjectIds: e.target.value ? [parseInt(e.target.value)] : [],
-                                })}>
-
-                                <option value="">-- Chọn môn học --</option>
-                                {subjects.map(s => (
-                                    <option key={s.id} value={s.id}>{s.name}</option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Loại tài liệu</Form.Label>
-                            <Form.Select value={formData.typeIds?.[0] || ''}
-                                onChange={e => setFormData({
-                                    ...formData,
-                                    typeIds: e.target.value ? [parseInt(e.target.value)] : [],
-                                })}>
-                                <option value="">-- Chọn loại tài liệu --</option>
-                                {resourceTypes.map(t => (
-                                    <option key={t.id} value={t.id}>{t.name}</option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Độ khó (Level)</Form.Label>
-                            <Form.Select value={formData.level || ''}
-                                onChange={e => setFormData({ ...formData, level: e.target.value })}>
-                                <option value="">-- Chọn độ khó --</option>
-                                <option value="BEGINNER">Cơ bản (Beginner)</option>
-                                <option value="INTERMEDIATE">Trung bình (Intermediate)</option>
-                                <option value="ADVANCED">Nâng cao (Advanced)</option>
-                            </Form.Select>
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Mô tả</Form.Label>
-                            <Form.Control as="textarea" rows={3} value={formData.description || ''}
-                                onChange={e => setFormData({ ...formData, description: e.target.value })} />
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Thumbnail (Tùy chọn)</Form.Label>
-                            <Form.Control type="file" accept="image/*" onChange={e => setFormData({ ...formData, thumbnailFile: e.target.files[0] })} />
-                            {formData.thumbnailUrl && <div className="mt-2 text-muted" style={{fontSize: '0.85rem'}}>Đã có thumbnail hiện tại (chọn file mới để thay đổi)</div>}
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>File tài liệu</Form.Label>
-                            <Form.Control type="file" ref={fileRef} />
-                        </Form.Group>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Hủy</Button>
-                        <Button variant="primary" type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? <><span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Đang lưu...</> : "Lưu"}
-                        </Button>
-                    </Modal.Footer>
-                </Form>
-            </Modal>
         </>
     );
 }
 
 export default LecturerResource;
-
