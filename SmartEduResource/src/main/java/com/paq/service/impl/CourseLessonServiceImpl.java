@@ -13,6 +13,7 @@ import com.paq.repository.CourseLessonRepository;
 import com.paq.repository.CourseRepository;
 import com.paq.repository.UserRepository;
 import com.paq.service.CourseLessonService;
+import com.paq.service.NotificationPublisherService;
 import com.paq.utils.DTOMapper;
 import com.paq.utils.constant.RoleEnum;
 import com.paq.utils.error.IdInvalidException;
@@ -39,6 +40,9 @@ public class CourseLessonServiceImpl implements CourseLessonService {
 
     @Autowired
     private UserRepository userRepo;
+
+    @Autowired
+    private NotificationPublisherService notificationPublisher;
 
     @Override
     public ResCourseLearnDTO getLearnPage(int courseId, String username) {
@@ -99,6 +103,10 @@ public class CourseLessonServiceImpl implements CourseLessonService {
         lesson.setIsDeleted(false);
         this.copyFields(lesson, request, course);
         this.lessonRepo.addLesson(lesson);
+        this.notificationPublisher.notifyCourseStudents(
+                course.getId(),
+                "Khóa học có bài học mới",
+                "Bài học \"" + lesson.getTitle() + "\" vừa được thêm vào khóa học " + course.getName() + ".");
         return DTOMapper.toResCourseLessonDTO(lesson);
     }
 

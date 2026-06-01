@@ -26,6 +26,13 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     private LocalSessionFactoryBean factory;
 
     @Override
+    public Notification addNotification(Notification notification) {
+        Session s = this.factory.getObject().getCurrentSession();
+        s.persist(notification);
+        return notification;
+    }
+
+    @Override
     public List<Notification> getNotificationsByUsername(String username) {
         Session s = this.factory.getObject().getCurrentSession();
 

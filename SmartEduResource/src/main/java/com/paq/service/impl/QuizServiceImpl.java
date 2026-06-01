@@ -10,6 +10,7 @@ import com.paq.repository.CourseRepository;
 import com.paq.repository.QuizRepository;
 import com.paq.repository.UserRepository;
 import com.paq.service.PermissionService;
+import com.paq.service.NotificationPublisherService;
 import com.paq.service.QuizService;
 import com.paq.utils.DTOMapper;
 import com.paq.utils.error.IdInvalidException;
@@ -41,6 +42,9 @@ public class QuizServiceImpl implements QuizService {
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private NotificationPublisherService notificationPublisher;
 
     @Override
     public List<ResQuizDTO> getQuizzes(Map<String, String> params) {
@@ -115,7 +119,12 @@ public class QuizServiceImpl implements QuizService {
         quiz.setTotalScore(0D);
         this.copyQuizFields(quiz, request);
 
-        return DTOMapper.toResQuizDTO(this.quizRepo.addOrUpdateQuiz(quiz), true);
+        Quiz savedQuiz = this.quizRepo.addOrUpdateQuiz(quiz);
+        this.notificationPublisher.notifyCourseStudents(
+                course.getId(),
+                "Khóa học có bài kiểm tra mới",
+                "Bài kiểm tra \"" + savedQuiz.getTitle() + "\" vừa được thêm vào khóa học " + course.getName() + ".");
+        return DTOMapper.toResQuizDTO(savedQuiz, true);
     }
 
     @Override
