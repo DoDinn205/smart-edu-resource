@@ -12,7 +12,9 @@ const LecturerLayout = ({ children }) => {
 
     return (
         <DashboardLayout menus={lecturerMenus} brandTitle="Lecturer Portal" brandIcon="🎓">
-            {children}
+            <div className="lecturer-theme">
+                {children}
+            </div>
         </DashboardLayout>
     );
 };

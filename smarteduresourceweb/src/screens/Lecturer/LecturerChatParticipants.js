@@ -2,10 +2,10 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Alert, Badge, Button, Form, InputGroup, Pagination, Table, Tabs, Tab } from "react-bootstrap";
 import { useNavigate, useParams, Link } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import "../Lecturer.css";
+import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import "./Lecturer.css";
 
 const LecturerChatParticipants = () => {
     const [user] = useContext(MyUserContext);
@@ -16,7 +16,7 @@ const LecturerChatParticipants = () => {
     const [err, setErr] = useState("");
 
     const [tab, setTab] = useState("current");
-    
+
     const [participants, setParticipants] = useState([]);
     const [pPage, setPPage] = useState(1);
     const [pSearchKw, setPSearchKw] = useState("");
@@ -231,7 +231,7 @@ const LecturerChatParticipants = () => {
                             </>
                         )}
                     </Tab>
-                    
+
                     <Tab eventKey="available" title={<span><i className="bi bi-person-plus-fill me-1"></i>Thêm sinh viên</span>}>
                         {!room?.courseId ? (
                             <Alert variant="warning" className="mt-3">

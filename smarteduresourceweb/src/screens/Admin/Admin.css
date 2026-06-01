@@ -1,4 +1,30 @@
 /* ===== STATS CARDS ===== */
+.admin-theme .btn-primary {
+    background: linear-gradient(135deg, #6366f1, #818cf8) !important;
+    border-color: #6366f1 !important;
+}
+
+.admin-theme .btn-primary:hover,
+.admin-theme .btn-primary:focus {
+    background: linear-gradient(135deg, #4f46e5, #6366f1) !important;
+    border-color: #4f46e5 !important;
+}
+
+.admin-theme .btn-outline-primary,
+.admin-theme .btn-outline-info {
+    color: #6366f1;
+    border-color: #6366f1;
+}
+
+.admin-theme .btn-outline-primary:hover,
+.admin-theme .btn-outline-primary:focus,
+.admin-theme .btn-outline-info:hover,
+.admin-theme .btn-outline-info:focus {
+    color: #ffffff;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    border-color: #6366f1;
+}
+
 .admin-dashboard-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

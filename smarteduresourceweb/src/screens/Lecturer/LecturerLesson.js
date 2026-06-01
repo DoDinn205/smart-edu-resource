@@ -2,11 +2,11 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { Accordion, Alert, Badge, Button, Col, Form, Modal, Row, Table } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
-import "../Lecturer.css";
+import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import useSubmissionGuard from "../../hooks/useSubmissionGuard";
+import "./Lecturer.css";
 
 const LecturerLesson = () => {
     const { id } = useParams();
@@ -277,7 +277,7 @@ const LecturerLesson = () => {
                 </Accordion>
             )}
 
-            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+            <Modal className="lecturer-theme" show={showModal} onHide={() => setShowModal(false)} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>{editingLesson ? "Sửa bài học" : "Thêm bài học"}</Modal.Title>
                 </Modal.Header>

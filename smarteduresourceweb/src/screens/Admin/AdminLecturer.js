@@ -1,12 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Badge, Button, Form, Modal, Table , InputGroup, Pagination} from "react-bootstrap";
-import { useNavigate , useSearchParams} from "react-router-dom";
+import { Alert, Badge, Button, Form, Modal, Table, InputGroup, Pagination } from "react-bootstrap";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
-import "../Admin.css";
+import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import useSubmissionGuard from "../../hooks/useSubmissionGuard";
+import "./Admin.css";
 
 const AdminLecturer = () => {
     const [user] = useContext(MyUserContext);
@@ -58,8 +58,8 @@ const AdminLecturer = () => {
         await runApprovalUpdate(async () => {
             try {
                 setErr("");
-                await authApis().put(endpoints['admin-lecturer-approval'](id), { isApproved: approved });
-                loadLecturers();
+                await authApis().put(endpoints['admin-lecturer-approval'](id), { isApprove: approved });
+                await loadLecturers();
             } catch (ex) {
                 console.error(ex);
                 setErr("Lỗi khi cập nhật trạng thái duyệt.");
@@ -176,8 +176,8 @@ const AdminLecturer = () => {
                         </InputGroup>
                     </Form>
                     <Button style={{ backgroundColor: "#6366f1", borderColor: "#6366f1", whiteSpace: "nowrap" }} variant="primary" size="sm" onClick={handleOpenCreate}>
-                    <i className="bi bi-plus-lg me-1"></i> Thêm giảng viên
-                </Button>
+                        <i className="bi bi-plus-lg me-1"></i> Thêm giảng viên
+                    </Button>
                 </div>
             </div>
 
@@ -203,15 +203,15 @@ const AdminLecturer = () => {
                                 <td>{lec.id}</td>
                                 <td>{lec.user?.fullName}</td>
                                 <td>{lec.user?.email}</td>
-                                <td>{lec.degree || <span className="text-muted fst-italic" style={{fontSize: '0.85rem'}}>Chưa có</span>}</td>
-                                <td>{lec.specialization || <span className="text-muted fst-italic" style={{fontSize: '0.85rem'}}>Chưa có</span>}</td>
+                                <td>{lec.degree || <span className="text-muted fst-italic" style={{ fontSize: '0.85rem' }}>Chưa có</span>}</td>
+                                <td>{lec.specialization || <span className="text-muted fst-italic" style={{ fontSize: '0.85rem' }}>Chưa có</span>}</td>
                                 <td>
                                     {lec.certificateUrl ? (
                                         <a href={lec.certificateUrl} target="_blank" rel="noreferrer" className="text-decoration-none">
                                             <i className="bi bi-link-45deg"></i> Xem link
                                         </a>
                                     ) : (
-                                        <span className="text-muted fst-italic" style={{fontSize: '0.85rem'}}>Không có</span>
+                                        <span className="text-muted fst-italic" style={{ fontSize: '0.85rem' }}>Không có</span>
                                     )}
                                 </td>
                                 <td>
@@ -223,24 +223,24 @@ const AdminLecturer = () => {
                                 <td>
                                     {!lec.isApprove && (
                                         <Button
-                                          variant="success"
-                                          size="sm"
-                                          className="me-1"
-                                          onClick={() => handleApprove(lec.id, true)}
-                                          disabled={isUpdatingApproval}
+                                            variant="success"
+                                            size="sm"
+                                            className="me-1"
+                                            onClick={() => handleApprove(lec.id, true)}
+                                            disabled={isUpdatingApproval}
                                         >
-                                          <i className="bi bi-check-lg"></i> Duyệt
+                                            <i className="bi bi-check-lg"></i> Duyệt
                                         </Button>
                                     )}
                                     {lec.isApprove && (
                                         <Button
-                                          variant="warning"
-                                          size="sm"
-                                          className="me-1"
-                                          onClick={() => handleApprove(lec.id, false)}
-                                          disabled={isUpdatingApproval}
+                                            variant="warning"
+                                            size="sm"
+                                            className="me-1"
+                                            onClick={() => handleApprove(lec.id, false)}
+                                            disabled={isUpdatingApproval}
                                         >
-                                          <i className="bi bi-x-circle"></i> Hủy duyệt
+                                            <i className="bi bi-x-circle"></i> Hủy duyệt
                                         </Button>
                                     )}
                                     <Button variant="outline-primary" size="sm" className="me-1"
@@ -273,7 +273,7 @@ const AdminLecturer = () => {
                 )}
             </div>
 
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
+            <Modal className="admin-theme" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>{editingLecturer ? "Sửa giảng viên" : "Thêm giảng viên"}</Modal.Title>
                 </Modal.Header>

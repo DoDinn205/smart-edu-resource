@@ -1,12 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Form, Modal, Table , InputGroup, Pagination} from "react-bootstrap";
-import { useNavigate , useSearchParams} from "react-router-dom";
+import { Alert, Button, Form, Modal, Table, InputGroup, Pagination } from "react-bootstrap";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
-import "../Admin.css";
+import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import useSubmissionGuard from "../../hooks/useSubmissionGuard";
+import "./Admin.css";
 
 const AdminForum = () => {
     const [user] = useContext(MyUserContext);
@@ -80,7 +80,7 @@ const AdminForum = () => {
                 loadCategories();
             } catch (ex) {
                 console.error(ex);
-                setErr("Có lỗi xảy ra khi lưu danh mục.");
+                setErr(ex.response?.data?.message || "Có lỗi xảy ra khi lưu danh mục.");
             }
         });
     };
@@ -131,8 +131,8 @@ const AdminForum = () => {
                         </InputGroup>
                     </Form>
                     <Button style={{ backgroundColor: "#6366f1", borderColor: "#6366f1", whiteSpace: "nowrap" }} variant="primary" size="sm" onClick={handleOpenCreate}>
-                    <i className="bi bi-plus-lg me-1"></i> Thêm danh mục
-                </Button>
+                        <i className="bi bi-plus-lg me-1"></i> Thêm danh mục
+                    </Button>
                 </div>
             </div>
 
@@ -185,7 +185,7 @@ const AdminForum = () => {
                 )}
             </div>
 
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
+            <Modal className="admin-theme" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>{editingItem ? "Sửa" : "Thêm"} danh mục</Modal.Title>
                 </Modal.Header>

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -105,10 +106,13 @@ public class GlobalException {
         return buildResponse(HttpStatus.NOT_FOUND, "Not Found", "Dữ liệu không tồn tại");
     }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ResResponse<Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+    @ExceptionHandler(value = {
+        DataIntegrityViolationException.class,
+        ConstraintViolationException.class
+    })
+    public ResponseEntity<ResResponse<Object>> handleDataIntegrityViolation(Exception ex) {
         return buildResponse(HttpStatus.CONFLICT, "Data Integrity Violation",
-                "Dữ liệu bị trùng hoặc vi phạm ràng buộc database");
+                "Dữ liệu đã tồn tại hoặc vi phạm ràng buộc hệ thống.");
     }
 
     @ExceptionHandler(ResponseStatusException.class)

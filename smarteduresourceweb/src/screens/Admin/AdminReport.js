@@ -8,10 +8,10 @@ import {
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-import { MyUserContext } from "../../../configs/Context";
-import { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import "../Admin.css";
+import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import "./Admin.css";
 
 const COLORS = ["#6366f1", "#22c55e", "#f59e0b", "#ef4444", "#06b6d4", "#8b5cf6", "#ec4899"];
 
@@ -30,6 +30,11 @@ const AdminReport = () => {
     }, [user, nav]);
 
     const loadStats = async () => {
+        if (fromDate && toDate && toDate < fromDate) {
+            setErr("Đến ngày phải lớn hơn hoặc bằng từ ngày.");
+            return;
+        }
+
         try {
             setLoading(true);
             setErr("");
@@ -116,7 +121,8 @@ const AdminReport = () => {
         <>
             <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
                 <h4 className="mb-0">Báo cáo & Thống kê</h4>
-                <Button variant="success" size="sm" onClick={handleExportExcel} disabled={!stats}>
+                <Button size="sm" onClick={handleExportExcel} disabled={!stats}
+                    style={{ backgroundColor: '#7c3aed', borderColor: '#7c3aed', color: '#fff' }}>
                     <i className="bi bi-file-earmark-excel me-1"></i> Xuất Excel
                 </Button>
             </div>
@@ -137,7 +143,8 @@ const AdminReport = () => {
                         <Col md={4}>
                             <Form.Group>
                                 <Form.Label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#64748b' }}>Đến ngày</Form.Label>
-                                <Form.Control type="date" value={toDate} onChange={e => setToDate(e.target.value)} />
+                                <Form.Control type="date" min={fromDate || undefined} value={toDate}
+                                    onChange={e => setToDate(e.target.value)} />
                             </Form.Group>
                         </Col>
                         <Col md={4}>

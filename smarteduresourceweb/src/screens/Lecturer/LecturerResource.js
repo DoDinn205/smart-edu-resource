@@ -1,12 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Form, Table , InputGroup, Pagination} from "react-bootstrap";
-import { useNavigate , useSearchParams} from "react-router-dom";
+import { Alert, Button, Form, Table, InputGroup, Pagination } from "react-bootstrap";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import { authApis, endpoints } from "../../../configs/Apis";
+import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
 
-import MySpinner from "../../../components/common/MySpinner";
-import "../Lecturer.css";
+import MySpinner from "../../components/common/MySpinner";
+import "./Lecturer.css";
 
 const LecturerResource = () => {
     const [user] = useContext(MyUserContext);
@@ -106,8 +106,8 @@ const LecturerResource = () => {
                         </InputGroup>
                     </Form>
                     <Button style={{ backgroundColor: "#6366f1", borderColor: "#6366f1", whiteSpace: "nowrap" }} variant="primary" size="sm" onClick={handleOpenCreate}>
-                    <i className="bi bi-plus-lg me-1"></i> Upload học liệu
-                </Button>
+                        <i className="bi bi-plus-lg me-1"></i> Upload học liệu
+                    </Button>
                 </div>
             </div>
 
@@ -135,8 +135,8 @@ const LecturerResource = () => {
                                 <td>{r.subjects?.map(s => s.name).join(", ") || "—"}</td>
                                 <td>
                                     {r.level === "BEGINNER" ? "Cơ bản" :
-                                     r.level === "INTERMEDIATE" ? "Trung bình" :
-                                     r.level === "ADVANCED" ? "Nâng cao" : "—"}
+                                        r.level === "INTERMEDIATE" ? "Trung bình" :
+                                            r.level === "ADVANCED" ? "Nâng cao" : "—"}
                                 </td>
                                 <td>{r.types?.map(t => t.name).join(", ") || "—"}</td>
                                 <td>

@@ -2,11 +2,11 @@ import { useContext, useEffect, useState } from "react";
 import { Alert, Badge, Button, Col, Form, Modal, Row, Table, Pagination, InputGroup } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import Apis, { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
-import "../Lecturer.css";
+import { MyUserContext } from "../../configs/Context";
+import Apis, { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import useSubmissionGuard from "../../hooks/useSubmissionGuard";
+import "./Lecturer.css";
 
 const LecturerCourse = () => {
     const [user] = useContext(MyUserContext);
@@ -282,7 +282,7 @@ const LecturerCourse = () => {
                 )}
             </div>
 
-            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+            <Modal className="lecturer-theme" show={showModal} onHide={() => setShowModal(false)} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>{editingCourse ? "Sửa khóa học" : "Tạo khóa học"}</Modal.Title>
                 </Modal.Header>
@@ -358,7 +358,7 @@ const LecturerCourse = () => {
                 </Form>
             </Modal>
 
-            <Modal show={showEnrollments} onHide={() => setShowEnrollments(false)} size="lg">
+            <Modal className="lecturer-theme" show={showEnrollments} onHide={() => setShowEnrollments(false)} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>Học viên - {selectedCourse?.name}</Modal.Title>
                 </Modal.Header>

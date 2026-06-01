@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Alert, Button, Form, Row, Col, Badge, ListGroup, InputGroup, Spinner } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
-import { MyUserContext } from "../../../configs/Context";
-import Apis, { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import "../Lecturer.css";
+import { MyUserContext } from "../../configs/Context";
+import Apis, { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import "./Lecturer.css";
 
 const LecturerResourceForm = () => {
     const [user] = useContext(MyUserContext);

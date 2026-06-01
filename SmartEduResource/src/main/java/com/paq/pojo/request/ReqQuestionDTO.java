@@ -3,7 +3,6 @@ package com.paq.pojo.request;
 import com.paq.utils.constant.QuestionTypeEnum;
 import java.util.List;
 
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -11,10 +10,6 @@ public class ReqQuestionDTO {
 
     @NotBlank(message = "Content không được để trống")
     private String content;
-
-    @NotNull(message = "Score không được để trống")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Score phải lớn hơn 0")
-    private Double score;
 
     private String explanation;
 
@@ -29,14 +24,6 @@ public class ReqQuestionDTO {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public Double getScore() {
-        return score;
-    }
-
-    public void setScore(Double score) {
-        this.score = score;
     }
 
     public String getExplanation() {

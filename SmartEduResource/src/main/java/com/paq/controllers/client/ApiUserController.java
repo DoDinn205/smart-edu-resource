@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,9 +64,9 @@ public class ApiUserController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
-    @PostMapping(path = "/register/lecturer", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/register/lecturer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResResponse<ResLecturerDTO>> registerLecturer(
-            @Valid @RequestBody ReqLecturerDTO request) {
+            @Valid @ModelAttribute ReqLecturerDTO request) {
         ResResponse<ResLecturerDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.CREATED.value());
         res.setMessage("Đăng ký giảng viên thành công, vui lòng chờ admin duyệt");

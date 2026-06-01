@@ -4,6 +4,7 @@ import com.paq.utils.constant.DegreeEnum;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +31,7 @@ public class ReqLecturerDTO {
     @Size(max = 20, message = "Số điện thoại tối đa 20 ký tự")
     private String phone;
 
+    @NotNull(message = "Học vị không được để trống")
     private DegreeEnum degree;
 
     @Size(max = 255, message = "Certificate URL tối đa 255 ký tự")
@@ -37,6 +39,7 @@ public class ReqLecturerDTO {
 
     private MultipartFile certificate;
 
+    @NotBlank(message = "Chuyên môn không được để trống")
     @Size(max = 255, message = "Chuyên môn tối đa 255 ký tự")
     private String specialization;
 

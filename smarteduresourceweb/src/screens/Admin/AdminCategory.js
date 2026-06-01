@@ -2,11 +2,11 @@ import { useContext, useEffect, useState } from "react";
 import { Alert, Button, Form, Modal, Nav, Table } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
-import "../Admin.css";
+import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import useSubmissionGuard from "../../hooks/useSubmissionGuard";
+import "./Admin.css";
 
 const AdminCategory = () => {
     const [user] = useContext(MyUserContext);
@@ -94,7 +94,7 @@ const AdminCategory = () => {
                 loadItems();
             } catch (ex) {
                 console.error(ex);
-                setErr("Có lỗi xảy ra khi lưu.");
+                setErr(ex.response?.data?.message || "Có lỗi xảy ra khi lưu.");
             }
         });
     };
@@ -180,7 +180,7 @@ const AdminCategory = () => {
                 </div>
             )}
 
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
+            <Modal className="admin-theme" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>{editingItem ? "Sửa" : "Thêm"} {currentTab.label}</Modal.Title>
                 </Modal.Header>
