@@ -25,6 +25,7 @@ import com.paq.repository.LearningResultRepository;
 import com.paq.repository.QuizRepository;
 import com.paq.repository.UserRepository;
 import com.paq.service.LearningResultService;
+import com.paq.service.NotificationPublisherService;
 import com.paq.service.PermissionService;
 import com.paq.utils.DTOMapper;
 import com.paq.utils.constant.RoleEnum;
@@ -51,6 +52,9 @@ public class LearningResultServiceImpl implements LearningResultService {
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private NotificationPublisherService notificationPublisher;
 
     @Autowired
     private Environment env;
@@ -154,6 +158,13 @@ public class LearningResultServiceImpl implements LearningResultService {
 
         enrollment.setLecturerFeedback(feedback);
         Enrollment savedEnrollment = this.enrollmentRepo.addOrUpdateEnrollment(enrollment);
+        if (feedback != null && !feedback.isBlank()) {
+            this.notificationPublisher.notifyUser(
+                    savedEnrollment.getStudentId().getUserId(),
+                    "Bạn có nhận xét mới từ giảng viên",
+                    "Giảng viên vừa cập nhật nhận xét cho khóa học "
+                            + savedEnrollment.getCourseId().getName() + ".");
+        }
         
         return this.toProgressDTO(savedEnrollment, savedEnrollment.getCourseId().getId());
     }

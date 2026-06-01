@@ -41,9 +41,6 @@ import com.paq.utils.DTOMapper;
 import com.paq.utils.constant.RoleEnum;
 import com.paq.utils.error.IdInvalidException;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
-
 @Service("userDetailsService")
 public class UserServiceImpl implements UserService {
 
@@ -58,9 +55,6 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PermissionService permissionService;
-
-    @Autowired
-    private Validator validator;
 
     @Override
     public List<ResUserDTO> getUsers(Map<String, String> params) {
@@ -148,7 +142,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public ResLecturerDTO registerLecturer(ReqLecturerDTO request) {
-        this.validateLecturerRequest(request);
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new IllegalArgumentException("Mật khẩu là bắt buộc khi đăng ký giảng viên");
         }
@@ -423,16 +416,6 @@ public class UserServiceImpl implements UserService {
         }
         if (certificate.getSize() > 5L * 1024L * 1024L) {
             throw new IllegalArgumentException("Chứng chỉ tối đa 5 MB");
-        }
-    }
-
-    private void validateLecturerRequest(ReqLecturerDTO request) {
-        Set<ConstraintViolation<ReqLecturerDTO>> violations = this.validator.validate(request);
-        if (!violations.isEmpty()) {
-            String message = violations.stream()
-                    .map(ConstraintViolation::getMessage)
-                    .collect(Collectors.joining(" | "));
-            throw new IllegalArgumentException(message);
         }
     }
 

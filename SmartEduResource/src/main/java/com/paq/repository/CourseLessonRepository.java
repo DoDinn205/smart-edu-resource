@@ -7,6 +7,10 @@ public interface CourseLessonRepository {
 
     List<CourseLesson> getLessonsByCourseId(int courseId);
 
+    List<CourseLesson> getLessonsByResourceId(int resourceId);
+
+    long countResourceLessonsByCourseId(int courseId);
+
     CourseLesson getLessonById(int id);
 
     void addLesson(CourseLesson lesson);

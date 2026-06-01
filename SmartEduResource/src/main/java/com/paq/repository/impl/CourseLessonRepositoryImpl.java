@@ -27,6 +27,31 @@ public class CourseLessonRepositoryImpl implements CourseLessonRepository {
     }
 
     @Override
+    public List<CourseLesson> getLessonsByResourceId(int resourceId) {
+        Session session = this.factory.getObject().getCurrentSession();
+        Query<CourseLesson> q = session.createQuery(
+                "FROM CourseLesson cl "
+                + "WHERE cl.resourceId.id = :resourceId "
+                + "AND (cl.isDeleted = false OR cl.isDeleted IS NULL)",
+                CourseLesson.class);
+        q.setParameter("resourceId", resourceId);
+        return q.getResultList();
+    }
+
+    @Override
+    public long countResourceLessonsByCourseId(int courseId) {
+        Session session = this.factory.getObject().getCurrentSession();
+        Query<Long> q = session.createQuery(
+                "SELECT COUNT(DISTINCT cl.resourceId.id) FROM CourseLesson cl "
+                + "WHERE cl.courseId.id = :courseId "
+                + "AND cl.resourceId IS NOT NULL "
+                + "AND (cl.isDeleted = false OR cl.isDeleted IS NULL)",
+                Long.class);
+        q.setParameter("courseId", courseId);
+        return q.getSingleResult();
+    }
+
+    @Override
     public CourseLesson getLessonById(int id) {
         try {
             Session session = this.factory.getObject().getCurrentSession();
