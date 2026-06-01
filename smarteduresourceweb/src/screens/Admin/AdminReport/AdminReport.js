@@ -112,11 +112,9 @@ const AdminReport = () => {
         saveAs(new Blob([wbout], { type: "application/octet-stream" }), fileName);
     };
 
-    if (loading) return <MySpinner />;
-
     return (
         <>
-            <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
                 <h4 className="mb-0">Báo cáo & Thống kê</h4>
                 <Button variant="success" size="sm" onClick={handleExportExcel} disabled={!stats}>
                     <i className="bi bi-file-earmark-excel me-1"></i> Xuất Excel
@@ -125,7 +123,9 @@ const AdminReport = () => {
 
             {err && <Alert variant="danger">{err}</Alert>}
 
-            <div className="admin-panel" style={{ padding: '1rem 1.3rem' }}>
+            {loading && <MySpinner />}
+
+            {!loading && <div className="admin-panel" style={{ padding: '1rem 1.3rem' }}>
                 <Form onSubmit={handleFilter}>
                     <Row className="align-items-end g-3">
                         <Col md={4}>
@@ -147,9 +147,9 @@ const AdminReport = () => {
                         </Col>
                     </Row>
                 </Form>
-            </div>
+            </div>}
 
-            {stats && (
+            {!loading && stats && (
                 <>
                     <div className="admin-dashboard-stats">
                         <div className="stat-card">

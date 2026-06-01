@@ -7,7 +7,6 @@ const AdminLayout = ({ children }) => {
         { title: "Giảng viên", path: "/admin/lecturers", icon: "bi-person-badge" },
         { title: "Danh mục", path: "/admin/categories", icon: "bi-tags" },
         { title: "Giao dịch", path: "/admin/payments", icon: "bi-wallet2" },
-        { title: "Báo cáo", path: "/admin/reports", icon: "bi-bar-chart-line" },
         { title: "Diễn đàn", path: "/admin/forum", icon: "bi-chat-square-text" },
     ];
 

@@ -13,6 +13,8 @@ public interface DashboardRepository {
 
     long countLecturers();
 
+    long countPendingLecturers();
+
     long countCourses();
 
     long countResources();

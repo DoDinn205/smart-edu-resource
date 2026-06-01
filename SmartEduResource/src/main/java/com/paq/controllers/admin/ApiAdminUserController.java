@@ -7,9 +7,11 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -171,8 +173,8 @@ public class ApiAdminUserController {
         return ResponseEntity.ok(res);
     }
 
-    @PostMapping("/lecturers")
-    public ResponseEntity<ResResponse<ResLecturerDTO>> createLecturer(@Valid @RequestBody ReqLecturerDTO request) {
+    @PostMapping(path = "/lecturers", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResResponse<ResLecturerDTO>> createLecturer(@Valid @ModelAttribute ReqLecturerDTO request) {
         ResResponse<ResLecturerDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.CREATED.value());
         res.setMessage("Tạo giảng viên thành công");
@@ -181,9 +183,9 @@ public class ApiAdminUserController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
-    @PutMapping("/lecturers/{id}")
+    @PutMapping(path = "/lecturers/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResResponse<ResLecturerDTO>> updateLecturer(@PathVariable int id,
-            @Valid @RequestBody ReqLecturerDTO request) {
+            @Valid @ModelAttribute ReqLecturerDTO request) {
         ResResponse<ResLecturerDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Cập nhật giảng viên thành công");

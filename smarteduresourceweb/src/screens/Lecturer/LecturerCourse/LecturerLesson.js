@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { MyUserContext } from "../../../configs/Context";
 import { authApis, endpoints } from "../../../configs/Apis";
 import MySpinner from "../../../components/common/MySpinner";
+import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
 import "../Lecturer.css";
 
 const LecturerLesson = () => {
@@ -19,6 +20,7 @@ const LecturerLesson = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingLesson, setEditingLesson] = useState(null);
     const [formData, setFormData] = useState({});
+    const { isSubmitting, runSubmission } = useSubmissionGuard();
     const nav = useNavigate();
 
     useEffect(() => {
@@ -127,32 +129,34 @@ const LecturerLesson = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            setErr("");
-            const payload = {
-                courseId: formData.courseId,
-                title: formData.title,
-                chapterNum: parseInt(formData.chapterNum),
-                lessonNum: parseInt(formData.lessonNum),
-                isFree: formData.isFree,
-                resourceId: formData.resourceId ? parseInt(formData.resourceId) : null,
-                quizId: formData.quizId ? parseInt(formData.quizId) : null,
-            };
-            if (editingLesson) {
-                await authApis().put(endpoints['lecturer-lesson-detail'](editingLesson.id), payload);
-            } else {
-                await authApis().post(endpoints['lecturer-lessons'], payload);
+        await runSubmission(async () => {
+            try {
+                setErr("");
+                const payload = {
+                    courseId: formData.courseId,
+                    title: formData.title,
+                    chapterNum: parseInt(formData.chapterNum),
+                    lessonNum: parseInt(formData.lessonNum),
+                    isFree: formData.isFree,
+                    resourceId: formData.resourceId ? parseInt(formData.resourceId) : null,
+                    quizId: formData.quizId ? parseInt(formData.quizId) : null,
+                };
+                if (editingLesson) {
+                    await authApis().put(endpoints['lecturer-lesson-detail'](editingLesson.id), payload);
+                } else {
+                    await authApis().post(endpoints['lecturer-lessons'], payload);
+                }
+                setShowModal(false);
+                loadLessons();
+            } catch (ex) {
+                console.error(ex);
+                if (ex.response && ex.response.data && ex.response.data.message) {
+                    setErr(ex.response.data.message);
+                } else {
+                    setErr("Có lỗi xảy ra khi lưu bài học.");
+                }
             }
-            setShowModal(false);
-            loadLessons();
-        } catch (ex) {
-            console.error(ex);
-            if (ex.response && ex.response.data && ex.response.data.message) {
-                setErr(ex.response.data.message);
-            } else {
-                setErr("Có lỗi xảy ra khi lưu bài học.");
-            }
-        }
+        });
     };
 
     const handleDelete = async (lessonId) => {
@@ -339,8 +343,10 @@ const LecturerLesson = () => {
                         </Row>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button>
-                        <Button variant="primary" type="submit">Lưu</Button>
+                        <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Hủy</Button>
+                        <Button variant="primary" type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Đang lưu..." : "Lưu"}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>

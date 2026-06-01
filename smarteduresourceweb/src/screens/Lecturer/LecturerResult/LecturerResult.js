@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Row, Col, Table, Form, Button, Modal, Badge, ProgressBar, Accordion, InputGroup, Pagination } from 'react-bootstrap';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authApis, endpoints } from '../../../configs/Apis';
@@ -24,6 +24,7 @@ const LecturerResult = () => {
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [feedback, setFeedback] = useState('');
     const [savingFeedback, setSavingFeedback] = useState(false);
+    const savingFeedbackRef = useRef(false);
 
     useEffect(() => {
         setSearchKw(kwParam);
@@ -95,7 +96,8 @@ const LecturerResult = () => {
     };
 
     const handleSaveFeedback = async () => {
-        if (!selectedStudent) return;
+        if (!selectedStudent || savingFeedbackRef.current) return;
+        savingFeedbackRef.current = true;
         setSavingFeedback(true);
         try {
             await authApis().post(endpoints['lecturer-progress-feedback'](selectedStudent.enrollmentId), {
@@ -110,6 +112,7 @@ const LecturerResult = () => {
             console.error(ex);
             alert('Lỗi khi lưu nhận xét');
         } finally {
+            savingFeedbackRef.current = false;
             setSavingFeedback(false);
         }
     };

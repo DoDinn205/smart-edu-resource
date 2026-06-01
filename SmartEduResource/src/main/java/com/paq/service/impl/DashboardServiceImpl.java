@@ -31,6 +31,7 @@ public class DashboardServiceImpl implements DashboardService {
         dto.setTotalUsers(this.dashboardRepo.countActiveUsers());
         dto.setTotalStudents(this.resolveStudentCount());
         dto.setTotalLecturers(this.resolveLecturerCount());
+        dto.setPendingLecturers(this.dashboardRepo.countPendingLecturers());
         dto.setTotalCourses(this.dashboardRepo.countCourses());
         dto.setTotalResources(this.dashboardRepo.countResources());
         dto.setTotalQuizzes(this.dashboardRepo.countQuizzes());

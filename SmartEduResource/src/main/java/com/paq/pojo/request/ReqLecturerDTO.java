@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import org.springframework.web.multipart.MultipartFile;
 
 public class ReqLecturerDTO {
 
@@ -33,6 +34,8 @@ public class ReqLecturerDTO {
 
     @Size(max = 255, message = "Certificate URL tối đa 255 ký tự")
     private String certificateUrl;
+
+    private MultipartFile certificate;
 
     @Size(max = 255, message = "Chuyên môn tối đa 255 ký tự")
     private String specialization;
@@ -94,6 +97,14 @@ public class ReqLecturerDTO {
 
     public void setCertificateUrl(String certificateUrl) {
         this.certificateUrl = certificateUrl;
+    }
+
+    public MultipartFile getCertificate() {
+        return certificate;
+    }
+
+    public void setCertificate(MultipartFile certificate) {
+        this.certificate = certificate;
     }
 
     public String getSpecialization() {

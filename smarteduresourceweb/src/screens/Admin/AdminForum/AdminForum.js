@@ -5,6 +5,7 @@ import { useNavigate , useSearchParams} from "react-router-dom";
 import { MyUserContext } from "../../../configs/Context";
 import { authApis, endpoints } from "../../../configs/Apis";
 import MySpinner from "../../../components/common/MySpinner";
+import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
 import "../Admin.css";
 
 const AdminForum = () => {
@@ -15,6 +16,7 @@ const AdminForum = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [formData, setFormData] = useState({});
+    const { isSubmitting, runSubmission } = useSubmissionGuard();
     const nav = useNavigate();
     const [q] = useSearchParams();
     const kwParam = q.get("kw") || "";
@@ -66,19 +68,21 @@ const AdminForum = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            setErr("");
-            if (editingItem) {
-                await authApis().put(endpoints['admin-forum-category-detail'](editingItem.id), formData);
-            } else {
-                await authApis().post(endpoints['admin-forum-categories'], formData);
+        await runSubmission(async () => {
+            try {
+                setErr("");
+                if (editingItem) {
+                    await authApis().put(endpoints['admin-forum-category-detail'](editingItem.id), formData);
+                } else {
+                    await authApis().post(endpoints['admin-forum-categories'], formData);
+                }
+                setShowModal(false);
+                loadCategories();
+            } catch (ex) {
+                console.error(ex);
+                setErr("Có lỗi xảy ra khi lưu danh mục.");
             }
-            setShowModal(false);
-            loadCategories();
-        } catch (ex) {
-            console.error(ex);
-            setErr("Có lỗi xảy ra khi lưu danh mục.");
-        }
+        });
     };
 
     const handleDelete = async (id) => {
@@ -199,8 +203,10 @@ const AdminForum = () => {
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button>
-                        <Button variant="primary" type="submit">Lưu</Button>
+                        <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Hủy</Button>
+                        <Button variant="primary" type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Đang lưu..." : "Lưu"}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>

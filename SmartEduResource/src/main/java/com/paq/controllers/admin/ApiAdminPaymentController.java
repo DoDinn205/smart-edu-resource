@@ -22,8 +22,6 @@ import com.paq.service.PaymentService;
 import com.paq.utils.DTOMapper;
 import com.paq.utils.constant.PaymentStatusEnum;
 
-import jakarta.validation.constraints.NotNull;
-
 @RestController
 @RequestMapping("/api/secure/admin")
 public class ApiAdminPaymentController {
@@ -73,7 +71,7 @@ public class ApiAdminPaymentController {
     @PutMapping("/payments/{id}/status")
     public ResponseEntity<ResResponse<ResPaymentDTO>> updatePaymentStatus(
             @PathVariable int id,
-            @NotNull(message = "Status khong duoc de trong") @RequestParam PaymentStatusEnum status) {
+            @RequestParam PaymentStatusEnum status) {
         ResResponse<ResPaymentDTO> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Cập nhật trạng thái giao dịch thành công");

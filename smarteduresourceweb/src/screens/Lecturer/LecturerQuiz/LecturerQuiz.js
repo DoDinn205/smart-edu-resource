@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { MyUserContext } from "../../../configs/Context";
 import { authApis, endpoints } from "../../../configs/Apis";
 import MySpinner from "../../../components/common/MySpinner";
+import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
 import "../Lecturer.css";
 
 const LecturerQuiz = () => {
@@ -22,6 +23,8 @@ const LecturerQuiz = () => {
     const [showQModal, setShowQModal] = useState(false);
     const [editingQ, setEditingQ] = useState(null);
     const [qFormData, setQFormData] = useState({});
+    const { isSubmitting, runSubmission } = useSubmissionGuard();
+    const { isSubmitting: isSubmittingQuestion, runSubmission: runQuestionSubmission } = useSubmissionGuard();
     const nav = useNavigate();
     const [q] = useSearchParams();
     const kwParam = q.get("kw") || "";
@@ -89,19 +92,21 @@ const LecturerQuiz = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            setErr("");
-            if (editingQuiz) {
-                await authApis().put(endpoints['lecturer-quiz-detail'](editingQuiz.id), formData);
-            } else {
-                await authApis().post(endpoints['lecturer-quizzes'], formData);
+        await runSubmission(async () => {
+            try {
+                setErr("");
+                if (editingQuiz) {
+                    await authApis().put(endpoints['lecturer-quiz-detail'](editingQuiz.id), formData);
+                } else {
+                    await authApis().post(endpoints['lecturer-quizzes'], formData);
+                }
+                setShowModal(false);
+                loadQuizzes();
+            } catch (ex) {
+                console.error(ex);
+                setErr("Có lỗi xảy ra khi lưu quiz.");
             }
-            setShowModal(false);
-            loadQuizzes();
-        } catch (ex) {
-            console.error(ex);
-            setErr("Có lỗi xảy ra khi lưu quiz.");
-        }
+        });
     };
 
     const handleDelete = async (id) => {
@@ -178,18 +183,20 @@ const LecturerQuiz = () => {
 
     const handleSubmitQuestion = async (e) => {
         e.preventDefault();
-        try {
-            if (editingQ) {
-                await authApis().put(endpoints['lecturer-question-detail'](editingQ.id), qFormData);
-            } else {
-                await authApis().post(endpoints['lecturer-quiz-questions'](selectedQuiz.id), qFormData);
+        await runQuestionSubmission(async () => {
+            try {
+                if (editingQ) {
+                    await authApis().put(endpoints['lecturer-question-detail'](editingQ.id), qFormData);
+                } else {
+                    await authApis().post(endpoints['lecturer-quiz-questions'](selectedQuiz.id), qFormData);
+                }
+                setShowQModal(false);
+                handleViewQuestions(selectedQuiz);
+            } catch (ex) {
+                console.error(ex);
+                setErr("Có lỗi xảy ra khi lưu câu hỏi.");
             }
-            setShowQModal(false);
-            handleViewQuestions(selectedQuiz);
-        } catch (ex) {
-            console.error(ex);
-            setErr("Có lỗi xảy ra khi lưu câu hỏi.");
-        }
+        });
     };
 
     const handleDeleteQuestion = async (qId) => {
@@ -332,8 +339,10 @@ const LecturerQuiz = () => {
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button>
-                        <Button variant="primary" type="submit">Lưu</Button>
+                        <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Hủy</Button>
+                        <Button variant="primary" type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Đang lưu..." : "Lưu"}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>
@@ -455,8 +464,10 @@ const LecturerQuiz = () => {
                         )}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowQModal(false)}>Hủy</Button>
-                        <Button variant="primary" type="submit">Lưu</Button>
+                        <Button variant="secondary" onClick={() => setShowQModal(false)} disabled={isSubmittingQuestion}>Hủy</Button>
+                        <Button variant="primary" type="submit" disabled={isSubmittingQuestion}>
+                            {isSubmittingQuestion ? "Đang lưu..." : "Lưu"}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>
