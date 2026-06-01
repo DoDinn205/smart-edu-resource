@@ -2,11 +2,11 @@ import { useContext, useEffect, useState } from "react";
 import { Alert, Badge, Button, Form, InputGroup, Modal, Pagination, Table } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
-import "../Lecturer.css";
+import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import useSubmissionGuard from "../../hooks/useSubmissionGuard";
+import "./Lecturer.css";
 
 const LecturerChat = () => {
     const [user] = useContext(MyUserContext);
@@ -202,7 +202,7 @@ const LecturerChat = () => {
                 )}
             </div>
 
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
+            <Modal className="lecturer-theme" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Tạo phòng chat</Modal.Title>
                 </Modal.Header>

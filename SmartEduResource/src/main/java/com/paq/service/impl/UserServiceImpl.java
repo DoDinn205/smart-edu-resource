@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
@@ -40,6 +41,9 @@ import com.paq.utils.DTOMapper;
 import com.paq.utils.constant.RoleEnum;
 import com.paq.utils.error.IdInvalidException;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+
 @Service("userDetailsService")
 public class UserServiceImpl implements UserService {
 
@@ -54,6 +58,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private Validator validator;
 
     @Override
     public List<ResUserDTO> getUsers(Map<String, String> params) {
@@ -139,11 +146,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public ResLecturerDTO registerLecturer(ReqLecturerDTO request) {
+        this.validateLecturerRequest(request);
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new IllegalArgumentException("Mật khẩu là bắt buộc khi đăng ký giảng viên");
         }
         this.validateUniqueUser(request.getUsername(), request.getEmail(), null);
+        String certificateUrl = this.uploadLecturerCertificate(request.getCertificate());
 
         User user = this.buildBaseUser(request.getFullName(), request.getUsername(), request.getEmail(),
                 request.getPhone(), request.getPassword(), RoleEnum.LECTURER);
@@ -152,7 +162,7 @@ public class UserServiceImpl implements UserService {
         Lecturer lecturer = new Lecturer();
         lecturer.setUserId(user);
         lecturer.setDegree(request.getDegree());
-        lecturer.setCertificateUrl(request.getCertificateUrl());
+        lecturer.setCertificateUrl(certificateUrl);
         lecturer.setSpecialization(request.getSpecialization());
         lecturer.setBio(request.getBio());
         lecturer.setIsApprove(Boolean.FALSE);
@@ -387,10 +397,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private String uploadLecturerCertificate(MultipartFile certificate) {
-        String contentType = certificate.getContentType();
-        if (!"application/pdf".equalsIgnoreCase(contentType)) {
-            throw new IllegalArgumentException("Chứng chỉ phải là file PDF");
-        }
+        this.validateLecturerCertificate(certificate, true);
 
         try {
             Map res = this.cloudinary.uploader().upload(certificate.getBytes(),
@@ -400,6 +407,32 @@ public class UserServiceImpl implements UserService {
             return res.get("secure_url").toString();
         } catch (IOException ex) {
             throw new IllegalArgumentException("Không thể upload chứng chỉ: " + ex.getMessage());
+        }
+    }
+
+    private void validateLecturerCertificate(MultipartFile certificate, boolean required) {
+        if (certificate == null || certificate.isEmpty()) {
+            if (required) {
+                throw new IllegalArgumentException("Chứng chỉ PDF là bắt buộc");
+            }
+            return;
+        }
+
+        if (!"application/pdf".equalsIgnoreCase(certificate.getContentType())) {
+            throw new IllegalArgumentException("Chứng chỉ phải là file PDF");
+        }
+        if (certificate.getSize() > 5L * 1024L * 1024L) {
+            throw new IllegalArgumentException("Chứng chỉ tối đa 5 MB");
+        }
+    }
+
+    private void validateLecturerRequest(ReqLecturerDTO request) {
+        Set<ConstraintViolation<ReqLecturerDTO>> violations = this.validator.validate(request);
+        if (!violations.isEmpty()) {
+            String message = violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(" | "));
+            throw new IllegalArgumentException(message);
         }
     }
 

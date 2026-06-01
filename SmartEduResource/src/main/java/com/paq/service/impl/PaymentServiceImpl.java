@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +84,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public ResPaymentStatsDTO getPaymentStats(Map<String, String> params) {
         this.permissionService.requireAdmin();
+        this.validateDateRange(params);
 
         ResPaymentStatsDTO dto = new ResPaymentStatsDTO();
         dto.setTotalRevenue(this.paymentRepo.getTotalRevenue(params));
@@ -112,5 +115,29 @@ public class PaymentServiceImpl implements PaymentService {
         dto.setUserRoleCounts(this.paymentRepo.countPaymentsByUserRole(params));
 
         return dto;
+    }
+
+    private void validateDateRange(Map<String, String> params) {
+        if (params == null) {
+            return;
+        }
+
+        Date fromDate = this.parseDate(params.get("fromDate"));
+        Date toDate = this.parseDate(params.get("toDate"));
+        if (fromDate != null && toDate != null && toDate.before(fromDate)) {
+            throw new IllegalArgumentException("Đến ngày phải lớn hơn hoặc bằng từ ngày.");
+        }
+    }
+
+    private Date parseDate(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd").parse(value);
+        } catch (ParseException ex) {
+            throw new IllegalArgumentException("Ngày phải có định dạng yyyy-MM-dd.");
+        }
     }
 }

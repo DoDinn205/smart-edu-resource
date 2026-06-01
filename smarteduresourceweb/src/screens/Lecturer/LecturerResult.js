@@ -1,9 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Col, Table, Form, Button, Modal, Badge, ProgressBar, Accordion, InputGroup, Pagination } from 'react-bootstrap';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { authApis, endpoints } from '../../../configs/Apis';
-import MySpinner from '../../../components/common/MySpinner';
-import '../Lecturer.css';
+import { authApis, endpoints } from '../../configs/Apis';
+import MySpinner from '../../components/common/MySpinner';
+import useSubmissionGuard from '../../hooks/useSubmissionGuard';
+import './Lecturer.css';
 
 const LecturerResult = () => {
     const [courses, setCourses] = useState([]);
@@ -23,8 +24,7 @@ const LecturerResult = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [feedback, setFeedback] = useState('');
-    const [savingFeedback, setSavingFeedback] = useState(false);
-    const savingFeedbackRef = useRef(false);
+    const { isSubmitting: savingFeedback, runSubmission: runFeedbackSubmission } = useSubmissionGuard();
 
     useEffect(() => {
         setSearchKw(kwParam);
@@ -96,25 +96,21 @@ const LecturerResult = () => {
     };
 
     const handleSaveFeedback = async () => {
-        if (!selectedStudent || savingFeedbackRef.current) return;
-        savingFeedbackRef.current = true;
-        setSavingFeedback(true);
-        try {
-            await authApis().post(endpoints['lecturer-progress-feedback'](selectedStudent.enrollmentId), {
-                feedback: feedback
-            });
-            alert('Đã lưu nhận xét');
-            setProgressList(progressList.map(p =>
-                p.enrollmentId === selectedStudent.enrollmentId ? { ...p, lecturerFeedback: feedback } : p
-            ));
-            setShowModal(false);
-        } catch (ex) {
-            console.error(ex);
-            alert('Lỗi khi lưu nhận xét');
-        } finally {
-            savingFeedbackRef.current = false;
-            setSavingFeedback(false);
-        }
+        if (!selectedStudent) return;
+        await runFeedbackSubmission(async () => {
+            try {
+                await authApis().post(endpoints['lecturer-progress-feedback'](selectedStudent.enrollmentId), {
+                    feedback: feedback
+                });
+                setProgressList(currentProgress => currentProgress.map(p =>
+                    p.enrollmentId === selectedStudent.enrollmentId ? { ...p, lecturerFeedback: feedback } : p
+                ));
+                setShowModal(false);
+            } catch (ex) {
+                console.error(ex);
+                alert('Lỗi khi lưu nhận xét');
+            }
+        });
     };
 
     return (
@@ -226,7 +222,7 @@ const LecturerResult = () => {
             </div>
 
             {/* Modal Chi tiết */}
-            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+            <Modal className="lecturer-theme" show={showModal} onHide={() => setShowModal(false)} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>Chi tiết học tập - {selectedStudent?.studentUser?.fullName}</Modal.Title>
                 </Modal.Header>
@@ -288,9 +284,9 @@ const LecturerResult = () => {
                     </Form.Group>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowModal(false)}>Đóng</Button>
+                    <Button variant="secondary" onClick={() => setShowModal(false)} disabled={savingFeedback}>Đóng</Button>
                     <Button variant="primary" onClick={handleSaveFeedback} disabled={savingFeedback}>
-                        {savingFeedback ? <MySpinner /> : 'Lưu nhận xét'}
+                        {savingFeedback ? 'Đang lưu...' : 'Lưu nhận xét'}
                     </Button>
                 </Modal.Footer>
             </Modal>

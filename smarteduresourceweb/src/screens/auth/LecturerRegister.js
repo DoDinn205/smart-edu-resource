@@ -10,6 +10,7 @@ const LecturerRegister = () => {
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState("");
     const [success, setSuccess] = useState("");
+    const [certificateFile, setCertificateFile] = useState(null);
     const submittingRef = useRef(false);
     const nav = useNavigate();
 
@@ -47,7 +48,7 @@ const LecturerRegister = () => {
         field: "specialization",
         label: "Chuyên môn",
         type: "text",
-        required: false
+        required: true
     }];
 
     const handleSubmit = async (e) => {
@@ -59,20 +60,33 @@ const LecturerRegister = () => {
             setErr("Mật khẩu xác nhận không khớp.");
             return;
         }
+
+        if (!certificateFile) {
+            setErr("Vui lòng tải lên chứng chỉ PDF.");
+            return;
+        }
+
+        if (certificateFile.type !== "application/pdf") {
+            setErr("Chứng chỉ phải là file PDF.");
+            return;
+        }
+
+        if (certificateFile.size > 5 * 1024 * 1024) {
+            setErr("Chứng chỉ tối đa 5 MB.");
+            return;
+        }
         
         submittingRef.current = true;
         setLoading(true);
         try {
-            const payload = {
-                fullName: formData.fullName,
-                username: formData.username,
-                email: formData.email,
-                password: formData.password,
-                phone: formData.phone || null,
-                specialization: formData.specialization || null,
-                degree: formData.degree || null,
-                bio: formData.bio || null,
-            };
+            const payload = new FormData();
+            ["fullName", "username", "email", "password", "phone", "specialization", "degree", "bio"]
+                .forEach(field => {
+                    if (formData[field] !== undefined && formData[field] !== "") {
+                        payload.append(field, formData[field]);
+                    }
+                });
+            payload.append("certificate", certificateFile);
             await Apis.post(endpoints['lecturer-register'], payload);
             setSuccess("Đăng ký thành công! Vui lòng chờ admin duyệt tài khoản.");
             setTimeout(() => nav('/login'), 3000);
@@ -111,13 +125,19 @@ const LecturerRegister = () => {
                         ))}
                         <Form.Group className="mb-3">
                             <Form.Label>Học vị</Form.Label>
-                            <Form.Select value={formData.degree || ''} onChange={e => setFormData({ ...formData, degree: e.target.value })}>
+                            <Form.Select value={formData.degree || ''} onChange={e => setFormData({ ...formData, degree: e.target.value })} required>
                                 <option value="">Chọn học vị</option>
                                 <option value="MASTER">Thạc sĩ</option>
                                 <option value="PHD">Tiến sĩ</option>
                                 <option value="ASSOCPROF">Phó giáo sư</option>
                                 <option value="PROFESSOR">Giáo sư</option>
                             </Form.Select>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Chứng chỉ (PDF)</Form.Label>
+                            <Form.Control type="file" accept="application/pdf,.pdf"
+                                onChange={e => setCertificateFile(e.target.files?.[0] || null)} required />
+                            <Form.Text className="text-muted">Chỉ nhận file PDF, tối đa 5 MB.</Form.Text>
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Giới thiệu bản thân</Form.Label>

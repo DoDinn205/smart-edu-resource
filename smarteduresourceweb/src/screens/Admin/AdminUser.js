@@ -1,12 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Badge, Button, Form, Modal, Table , InputGroup, Pagination} from "react-bootstrap";
-import { useNavigate , useSearchParams} from "react-router-dom";
+import { Alert, Badge, Button, Form, Modal, Table, InputGroup, Pagination } from "react-bootstrap";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
-import "../Admin.css";
+import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import useSubmissionGuard from "../../hooks/useSubmissionGuard";
+import "./Admin.css";
 
 const AdminUser = () => {
     const [user] = useContext(MyUserContext);
@@ -149,8 +149,8 @@ const AdminUser = () => {
                         </InputGroup>
                     </Form>
                     <Button style={{ backgroundColor: "#6366f1", borderColor: "#6366f1", whiteSpace: "nowrap" }} variant="primary" size="sm" onClick={handleOpenCreate}>
-                    <i className="bi bi-plus-lg me-1"></i> Thêm sinh viên
-                </Button>
+                        <i className="bi bi-plus-lg me-1"></i> Thêm sinh viên
+                    </Button>
                 </div>
             </div>
 
@@ -211,7 +211,7 @@ const AdminUser = () => {
                 )}
             </div>
 
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
+            <Modal className="admin-theme" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>{editingStudent ? "Sửa sinh viên" : "Thêm sinh viên"}</Modal.Title>
                 </Modal.Header>

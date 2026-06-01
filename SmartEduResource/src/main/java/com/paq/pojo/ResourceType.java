@@ -44,7 +44,7 @@ public class ResourceType implements Serializable {
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 100)
-    @Column(name = "name")
+    @Column(name = "name", unique = true, nullable = false)
     private String name;
     @Column(name = "is_deleted")
     private Boolean isDeleted;

@@ -18,8 +18,10 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class QuestionServiceImpl implements QuestionService {
 
     @Autowired
@@ -34,6 +36,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public List<ResQuestionDTO> getQuestionsByQuizId(int quizId) {
         this.permissionService.requireQuizOwnerOrAdmin(quizId);
+        this.redistributeQuestionScores(quizId);
         return this.questionRepo.getQuestionsByQuizId(quizId).stream()
                 .map(q -> DTOMapper.toResQuestionDTO(q, true))
                 .collect(Collectors.toList());
@@ -47,10 +50,11 @@ public class QuestionServiceImpl implements QuestionService {
         Question question = new Question();
         question.setIsDeleted(Boolean.FALSE);
         question.setQuizId(quiz);
+        question.setScore(0D);
         this.copyQuestionFields(question, request);
 
         Question savedQuestion = this.questionRepo.addOrUpdateQuestion(question);
-        this.refreshQuizTotalScore(quizId);
+        this.redistributeQuestionScores(quizId);
 
         return DTOMapper.toResQuestionDTO(savedQuestion, true);
     }
@@ -62,7 +66,7 @@ public class QuestionServiceImpl implements QuestionService {
 
         this.copyQuestionFields(question, request);
         Question savedQuestion = this.questionRepo.addOrUpdateQuestion(question);
-        this.refreshQuizTotalScore(question.getQuizId().getId());
+        this.redistributeQuestionScores(question.getQuizId().getId());
 
         return DTOMapper.toResQuestionDTO(savedQuestion, true);
     }
@@ -73,7 +77,7 @@ public class QuestionServiceImpl implements QuestionService {
         this.permissionService.requireQuizOwnerOrAdmin(question.getQuizId().getId());
 
         this.questionRepo.deleteQuestion(id);
-        this.refreshQuizTotalScore(question.getQuizId().getId());
+        this.redistributeQuestionScores(question.getQuizId().getId());
     }
 
     private Quiz getExistingQuiz(int quizId) {
@@ -96,7 +100,6 @@ public class QuestionServiceImpl implements QuestionService {
 
     private void copyQuestionFields(Question question, ReqQuestionDTO request) {
         question.setContent(request.getContent());
-        question.setScore(request.getScore());
         question.setExplanation(request.getExplanation());
         question.setType(request.getType());
 
@@ -118,15 +121,13 @@ public class QuestionServiceImpl implements QuestionService {
         }
     }
 
-    private void refreshQuizTotalScore(int quizId) {
+    private void redistributeQuestionScores(int quizId) {
         Quiz quiz = this.getExistingQuiz(quizId);
-        double totalScore = this.questionRepo.getQuestionsByQuizId(quizId).stream()
-                .map(Question::getScore)
-                .filter(score -> score != null)
-                .mapToDouble(Double::doubleValue)
-                .sum();
+        List<Question> questions = this.questionRepo.getQuestionsByQuizId(quizId);
+        double questionScore = questions.isEmpty() ? 0D : 10D / questions.size();
 
-        quiz.setTotalScore(totalScore);
+        questions.forEach(question -> question.setScore(questionScore));
+        quiz.setTotalScore(questions.isEmpty() ? 0D : 10D);
         this.quizRepo.addOrUpdateQuiz(quiz);
     }
 }

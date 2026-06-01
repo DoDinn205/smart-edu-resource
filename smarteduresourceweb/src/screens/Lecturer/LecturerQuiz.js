@@ -2,11 +2,11 @@ import { useContext, useEffect, useState } from "react";
 import { Alert, Button, Form, Modal, Table, InputGroup, Pagination } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import useSubmissionGuard from "../../../hooks/useSubmissionGuard";
-import "../Lecturer.css";
+import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import useSubmissionGuard from "../../hooks/useSubmissionGuard";
+import "./Lecturer.css";
 
 const LecturerQuiz = () => {
     const [user] = useContext(MyUserContext);
@@ -156,7 +156,7 @@ const LecturerQuiz = () => {
 
     const handleCreateQuestion = () => {
         setEditingQ(null);
-        setQFormData({ score: 1, type: "SINGLE_CHOICE", options: getInitialOptions("SINGLE_CHOICE") });
+        setQFormData({ type: "SINGLE_CHOICE", options: getInitialOptions("SINGLE_CHOICE") });
         setShowQModal(true);
     };
 
@@ -164,7 +164,6 @@ const LecturerQuiz = () => {
         setEditingQ(q);
         setQFormData({
             content: q.content || "",
-            score: q.score || 1,
             explanation: q.explanation || "",
             type: q.type || "SINGLE_CHOICE",
             options: getInitialOptions(q.type || "SINGLE_CHOICE", q.answers || q.options),
@@ -191,7 +190,7 @@ const LecturerQuiz = () => {
                     await authApis().post(endpoints['lecturer-quiz-questions'](selectedQuiz.id), qFormData);
                 }
                 setShowQModal(false);
-                handleViewQuestions(selectedQuiz);
+                await Promise.all([handleViewQuestions(selectedQuiz), loadQuizzes()]);
             } catch (ex) {
                 console.error(ex);
                 setErr("Có lỗi xảy ra khi lưu câu hỏi.");
@@ -203,7 +202,7 @@ const LecturerQuiz = () => {
         if (!window.confirm("Xóa câu hỏi này?")) return;
         try {
             await authApis().delete(endpoints['lecturer-question-detail'](qId));
-            handleViewQuestions(selectedQuiz);
+            await Promise.all([handleViewQuestions(selectedQuiz), loadQuizzes()]);
         } catch (ex) {
             console.error(ex);
             setErr("Không thể xóa câu hỏi.");
@@ -222,6 +221,11 @@ const LecturerQuiz = () => {
         if (kwParam) params.set("kw", kwParam);
         if (page > 1) params.set("page", page);
         nav(`?${params.toString()}`);
+    };
+
+    const handleCloseQuestions = () => {
+        setShowQuestions(false);
+        loadQuizzes();
     };
 
     if (loading) return <MySpinner />;
@@ -305,7 +309,7 @@ const LecturerQuiz = () => {
                 )}
             </div>
 
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
+            <Modal className="lecturer-theme" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>{editingQuiz ? "Sửa quiz" : "Tạo quiz"}</Modal.Title>
                 </Modal.Header>
@@ -347,7 +351,7 @@ const LecturerQuiz = () => {
                 </Form>
             </Modal>
 
-            <Modal show={showQuestions && !showQModal} onHide={() => setShowQuestions(false)} size="lg">
+            <Modal className="lecturer-theme" show={showQuestions && !showQModal} onHide={handleCloseQuestions} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>Câu hỏi - {selectedQuiz?.title}</Modal.Title>
                 </Modal.Header>
@@ -391,7 +395,7 @@ const LecturerQuiz = () => {
                 </Modal.Body>
             </Modal>
 
-            <Modal show={showQModal} onHide={() => setShowQModal(false)}>
+            <Modal className="lecturer-theme" show={showQModal} onHide={() => setShowQModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>{editingQ ? "Sửa câu hỏi" : "Thêm câu hỏi"}</Modal.Title>
                 </Modal.Header>
@@ -401,11 +405,6 @@ const LecturerQuiz = () => {
                             <Form.Label>Nội dung câu hỏi</Form.Label>
                             <Form.Control as="textarea" rows={3} value={qFormData.content || ''}
                                 onChange={e => setQFormData({ ...qFormData, content: e.target.value })} required />
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Điểm</Form.Label>
-                            <Form.Control type="number" min={0.1} step={0.1} value={qFormData.score || 1}
-                                onChange={e => setQFormData({ ...qFormData, score: parseFloat(e.target.value) })} required />
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Loại câu hỏi</Form.Label>

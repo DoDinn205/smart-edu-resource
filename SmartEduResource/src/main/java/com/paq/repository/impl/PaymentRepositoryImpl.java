@@ -1,16 +1,5 @@
 package com.paq.repository.impl;
 
-import com.paq.pojo.Payment;
-import com.paq.repository.PaymentRepository;
-import com.paq.utils.constant.PaymentMethodEnum;
-import com.paq.utils.constant.PaymentStatusEnum;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -18,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +15,20 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
-
 import org.springframework.transaction.annotation.Transactional;
+
+import com.paq.pojo.Payment;
+import com.paq.repository.PaymentRepository;
+import com.paq.utils.constant.PaymentMethodEnum;
+import com.paq.utils.constant.PaymentStatusEnum;
+
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 @Repository
 @PropertySource("classpath:configs.properties")
@@ -160,7 +162,7 @@ public class PaymentRepositoryImpl implements PaymentRepository {
         Root<Payment> root = q.from(Payment.class);
 
         q.select(b.sum(root.get("amount")));
-        q.where(this.buildPredicates(normalizedParams, b, root).toArray(Predicate[]::new));
+        q.where(this.buildRevenuePredicates(normalizedParams, b, root).toArray(Predicate[]::new));
 
         return this.safeLong(session.createQuery(q).getSingleResult());
     }
@@ -194,23 +196,23 @@ public class PaymentRepositoryImpl implements PaymentRepository {
         CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
         Root<Payment> root = q.from(Payment.class);
 
-        List<Predicate> predicates = this.buildPredicates(params, b, root);
+        List<Predicate> predicates = this.buildRevenuePredicates(params, b, root);
         predicates.add(b.equal(root.get("status"), PaymentStatusEnum.SUCCESS));
 
         q.multiselect(
-                b.function("YEAR", Integer.class, root.get("createdAt")),
-                b.function("MONTH", Integer.class, root.get("createdAt")),
+                b.function("YEAR", Integer.class, root.get("paidAt")),
+                b.function("MONTH", Integer.class, root.get("paidAt")),
                 b.sum(root.get("amount")),
                 b.count(root.get("id"))
         );
         q.where(predicates.toArray(Predicate[]::new));
         q.groupBy(
-                b.function("YEAR", Integer.class, root.get("createdAt")),
-                b.function("MONTH", Integer.class, root.get("createdAt"))
+                b.function("YEAR", Integer.class, root.get("paidAt")),
+                b.function("MONTH", Integer.class, root.get("paidAt"))
         );
         q.orderBy(
-                b.asc(b.function("YEAR", Integer.class, root.get("createdAt"))),
-                b.asc(b.function("MONTH", Integer.class, root.get("createdAt")))
+                b.asc(b.function("YEAR", Integer.class, root.get("paidAt"))),
+                b.asc(b.function("MONTH", Integer.class, root.get("paidAt")))
         );
 
         return session.createQuery(q).getResultList();
@@ -257,6 +259,18 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     }
 
     private List<Predicate> buildPredicates(Map<String, String> params, CriteriaBuilder b, Root<Payment> root) {
+        return this.buildPredicates(params, b, root, "createdAt");
+    }
+
+    private List<Predicate> buildRevenuePredicates(Map<String, String> params, CriteriaBuilder b,
+            Root<Payment> root) {
+        List<Predicate> predicates = this.buildPredicates(params, b, root, "paidAt");
+        predicates.add(b.isNotNull(root.get("paidAt")));
+        return predicates;
+    }
+
+    private List<Predicate> buildPredicates(Map<String, String> params, CriteriaBuilder b, Root<Payment> root,
+            String dateField) {
         List<Predicate> predicates = new ArrayList<>();
         Join<Object, Object> enrollment = root.join("enrollmentId", JoinType.INNER);
         Join<Object, Object> course = enrollment.join("courseId", JoinType.INNER);
@@ -291,12 +305,12 @@ public class PaymentRepositoryImpl implements PaymentRepository {
 
         Date fromDate = this.parseDate(params.get("fromDate"));
         if (fromDate != null) {
-            predicates.add(b.greaterThanOrEqualTo(root.get("createdAt"), fromDate));
+            predicates.add(b.greaterThanOrEqualTo(root.get(dateField), fromDate));
         }
 
         Date toDate = this.parseDate(params.get("toDate"));
         if (toDate != null) {
-            predicates.add(b.lessThan(root.get("createdAt"), this.nextDate(toDate)));
+            predicates.add(b.lessThan(root.get(dateField), this.nextDate(toDate)));
         }
 
         return predicates;
@@ -310,7 +324,7 @@ public class PaymentRepositoryImpl implements PaymentRepository {
         try {
             return new SimpleDateFormat("yyyy-MM-dd").parse(value);
         } catch (ParseException ex) {
-            throw new IllegalArgumentException("Ngay phai co dinh dang yyyy-MM-dd");
+            throw new IllegalArgumentException("Ngày phải có định dạng yyyy-MM-dd");
         }
     }
 

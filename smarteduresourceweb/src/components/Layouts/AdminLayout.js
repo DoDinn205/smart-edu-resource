@@ -12,7 +12,9 @@ const AdminLayout = ({ children }) => {
 
     return (
         <DashboardLayout menus={adminMenus} brandTitle="Admin Panel" brandIcon="🛡️">
-            {children}
+            <div className="admin-theme">
+                {children}
+            </div>
         </DashboardLayout>
     );
 };

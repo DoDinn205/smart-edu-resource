@@ -64,11 +64,9 @@ const Login = () => {
                             <Form.Label>Mật khẩu</Form.Label>
                             <Form.Control type="password" placeholder="Nhập mật khẩu" value={formData.password || ''} onChange={e => setFormData({ ...formData, password: e.target.value })} required />
                         </Form.Group>
-                        <Form.Check type="checkbox" label="Ghi nhớ đăng nhập" className="mb-3" id="remember" />
                         {loading ? <MySpinner /> : <Button type="submit" className="btn-submit">Đăng nhập</Button>}
                     </Form>
                     <div className="text-center mt-3">
-                        <p className="mb-1"><Link to="/forgot-password" className="auth-link">Quên mật khẩu?</Link></p>
                         <p className="mb-0">Chưa có tài khoản? <Link to="/register/student" className="auth-link">Đăng ký</Link></p>
                     </div>
                 </div>
