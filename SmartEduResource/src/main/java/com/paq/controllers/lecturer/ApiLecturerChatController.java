@@ -68,6 +68,15 @@ public class ApiLecturerChatController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
+    @GetMapping("/chat-rooms/{id}")
+    public ResponseEntity<ResResponse<ResChatRoomDTO>> getRoomById(@PathVariable("id") int id) {
+        ResResponse<ResChatRoomDTO> res = new ResResponse<>();
+        res.setStatusCode(HttpStatus.OK.value());
+        res.setMessage("Lấy thông tin phòng chat thành công");
+        res.setData(this.roomService.getRoomById(id));
+        return ResponseEntity.ok(res);
+    }
+
     @PutMapping("/chat-rooms/{id}")
     public ResponseEntity<ResResponse<ResChatRoomDTO>> updateRoom(
             @PathVariable("id") int id,
@@ -101,10 +110,10 @@ public class ApiLecturerChatController {
     }
 
     @GetMapping("/chat-rooms/{roomId}/participants")
-    public ResponseEntity<ResResponse<List<ResChatParticipantDTO>>> getParticipants(
+    public ResponseEntity<ResResponse<ResPageDTO<ResChatParticipantDTO>>> getParticipants(
             @PathVariable("roomId") int roomId,
             @RequestParam Map<String, String> params) {
-        ResResponse<List<ResChatParticipantDTO>> res = new ResResponse<>();
+        ResResponse<ResPageDTO<ResChatParticipantDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Lay danh sach nguoi tham gia phong chat thanh cong");
         res.setData(this.participantService.getParticipantsByRoomId(roomId, params));

@@ -12,6 +12,8 @@ public interface ChatParticipantRepository {
 
     ChatParticipant getParticipantByRoomIdAndUserId(int roomId, int userId);
 
+    Long countParticipantsByRoomId(int roomId, Map<String, String> params);
+
     Long countStudentParticipantsByRoomId(int roomId);
 
     ChatParticipant addParticipant(ChatParticipant participant);

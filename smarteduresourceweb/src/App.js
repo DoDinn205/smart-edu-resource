@@ -49,6 +49,7 @@ import LecturerLesson from "./screens/Lecturer/LecturerCourse/LecturerLesson";
 import LecturerResource from "./screens/Lecturer/LecturerResource/LecturerResource";
 import LecturerQuiz from "./screens/Lecturer/LecturerQuiz/LecturerQuiz";
 import LecturerChat from "./screens/Lecturer/LecturerChat/LecturerChat";
+import LecturerChatParticipants from "./screens/Lecturer/LecturerChat/LecturerChatParticipants";
 import LecturerResult from "./screens/Lecturer/LecturerResult/LecturerResult";
 
 const AppLayout = () => {
@@ -73,6 +74,8 @@ const AppLayout = () => {
                 <Route path="/lecturer/resources" element={<LecturerLayout><LecturerResource /></LecturerLayout>} />
                 <Route path="/lecturer/quizzes" element={<LecturerLayout><LecturerQuiz /></LecturerLayout>} />
                 <Route path="/lecturer/chat" element={<LecturerLayout><LecturerChat /></LecturerLayout>} />
+                <Route path="/lecturer/chat/:id/participants" element={<LecturerLayout><LecturerChatParticipants /></LecturerLayout>} />
+                <Route path="/lecturer/chat/messages" element={<LecturerLayout><Chat /></LecturerLayout>} />
                 <Route path="/lecturer/results" element={<LecturerLayout><LecturerResult /></LecturerLayout>} />
             </Routes>
         );

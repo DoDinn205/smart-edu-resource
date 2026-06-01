@@ -38,30 +38,30 @@ const AdminDashboard = () => {
     if (loading) return <MySpinner />;
 
     const cards = [
-        { 
-            icon: "bi-people", 
-            value: stats?.totalStudents || 0, 
-            label: "Sinh viên" 
-        },{ 
-            icon: "bi-person-badge", 
-            value: stats?.totalLecturers || 0, 
-            label: "Giảng viên" 
-        },{ 
-            icon: "bi-journal-bookmark", 
-            value: stats?.totalCourses || 0, 
-            label: "Khóa học" 
-        },{ 
-            icon: "bi-file-earmark-text", 
-            value: stats?.totalResources || 0, 
-            label: "Học liệu" 
-        },{
-            icon: "bi-hourglass-split", 
-            value: stats?.pendingLecturers || 0, 
-            label: "Chờ duyệt" 
-        },{
-            icon: "bi-wallet2", 
-            value: stats?.totalPayments || 0, 
-            label: "Giao dịch" 
+        {
+            icon: "bi-people",
+            value: stats?.totalStudents || 0,
+            label: "Sinh viên"
+        }, {
+            icon: "bi-person-badge",
+            value: stats?.totalLecturers || 0,
+            label: "Giảng viên"
+        }, {
+            icon: "bi-journal-bookmark",
+            value: stats?.totalCourses || 0,
+            label: "Khóa học"
+        }, {
+            icon: "bi-file-earmark-text",
+            value: stats?.totalResources || 0,
+            label: "Học liệu"
+        }, {
+            icon: "bi-hourglass-split",
+            value: stats?.pendingLecturers || 0,
+            label: "Chờ duyệt"
+        }, {
+            icon: "bi-wallet2",
+            value: stats?.totalPayments || 0,
+            label: "Giao dịch"
         },
     ];
 
@@ -81,10 +81,10 @@ const AdminDashboard = () => {
             <Row className="g-4">
                 <Col lg={6}>
                     <div className="admin-panel">
-                        <div className="panel-header">Truy cập nhanh</div>
+                        <div className="panel-header">Truy cập nhanh (Quản lý Người dùng & Dữ liệu)</div>
                         <ListGroup variant="flush">
                             <ListGroup.Item action onClick={() => nav('/admin/lecturers')}>
-                                <i className="bi bi-person-badge me-2"></i> Duyệt Giảng viên
+                                <i className="bi bi-person-badge me-2"></i> Duyệt / Quản lý Giảng viên
                                 {stats?.pendingLecturers > 0 && (
                                     <Badge bg="danger" className="ms-2">{stats.pendingLecturers}</Badge>
                                 )}
@@ -95,23 +95,21 @@ const AdminDashboard = () => {
                             <ListGroup.Item action onClick={() => nav('/admin/categories')}>
                                 <i className="bi bi-tags me-2"></i> Quản lý Danh mục
                             </ListGroup.Item>
-                            <ListGroup.Item action onClick={() => nav('/admin/payments')}>
-                                <i className="bi bi-wallet2 me-2"></i> Quản lý Giao dịch
-                            </ListGroup.Item>
                         </ListGroup>
                     </div>
                 </Col>
                 <Col lg={6}>
                     <div className="admin-panel">
-                        <div className="panel-header">Hoạt động gần đây</div>
+                        <div className="panel-header">Truy cập nhanh (Hoạt động & Thống kê)</div>
                         <ListGroup variant="flush">
-                            <ListGroup.Item style={{ fontSize: '0.85rem' }}>
-                                <i className="bi bi-check-circle text-success me-2"></i>
-                                Giảng viên mới đăng ký chờ duyệt
+                            <ListGroup.Item action onClick={() => nav('/admin/payments')}>
+                                <i className="bi bi-wallet2 me-2"></i> Quản lý Giao dịch
                             </ListGroup.Item>
-                            <ListGroup.Item style={{ fontSize: '0.85rem' }}>
-                                <i className="bi bi-wallet text-primary me-2"></i>
-                                Giao dịch thanh toán mới
+                            <ListGroup.Item action onClick={() => nav('/admin/forum')}>
+                                <i className="bi bi-chat-left-text me-2"></i> Quản lý Diễn đàn
+                            </ListGroup.Item>
+                            <ListGroup.Item action onClick={() => nav('/admin/reports')}>
+                                <i className="bi bi-bar-chart me-2"></i> Báo cáo Thống kê
                             </ListGroup.Item>
                         </ListGroup>
                     </div>

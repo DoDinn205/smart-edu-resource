@@ -70,10 +70,14 @@ const AdminLecturer = () => {
     const handleOpenEdit = (lec) => {
         setEditingLecturer(lec);
         setFormData({
-            firstName: lec.userId?.firstName || "",
-            lastName: lec.userId?.lastName || "",
-            email: lec.userId?.email || "",
-            department: lec.department || "",
+            fullName: lec.user?.fullName || "",
+            email: lec.user?.email || "",
+            username: lec.user?.username || "",
+            specialization: lec.specialization || "",
+            degree: lec.degree || "",
+            certificateUrl: lec.certificateUrl || "",
+            isActive: lec.user?.isActive !== false,
+            userId: lec.user?.id
         });
         setShowModal(true);
     };
@@ -84,6 +88,11 @@ const AdminLecturer = () => {
             setErr("");
             if (editingLecturer) {
                 await authApis().put(endpoints['admin-lecturer-detail'](editingLecturer.id), formData);
+                if (formData.userId) {
+                    await authApis().put(endpoints['admin-user-status'](formData.userId), {
+                        isActive: formData.isActive
+                    });
+                }
             } else {
                 await authApis().post(endpoints['admin-lecturers'], formData);
             }
@@ -107,10 +116,11 @@ const AdminLecturer = () => {
     };
 
     const fields = [
-        { field: "firstName", label: "Họ", type: "text" },
-        { field: "lastName", label: "Tên", type: "text" },
+        { field: "fullName", label: "Họ tên", type: "text" },
         { field: "email", label: "Email", type: "email" },
-        { field: "department", label: "Khoa/Bộ môn", type: "text" },
+        { field: "degree", label: "Trình độ học vấn", type: "text" },
+        { field: "specialization", label: "Chuyên môn", type: "text" },
+        { field: "certificateUrl", label: "Link Portfolio/Chứng chỉ", type: "text" },
     ];
 
     const handleSearch = (e) => {
@@ -162,7 +172,9 @@ const AdminLecturer = () => {
                             <th>ID</th>
                             <th>Họ tên</th>
                             <th>Email</th>
-                            <th>Khoa</th>
+                            <th>Trình độ</th>
+                            <th>Chuyên môn</th>
+                            <th>Portfolio</th>
                             <th>Trạng thái</th>
                             <th>Hành động</th>
                         </tr>
@@ -171,26 +183,44 @@ const AdminLecturer = () => {
                         {lecturers.map(lec => (
                             <tr key={lec.id}>
                                 <td>{lec.id}</td>
-                                <td>{lec.userId?.firstName} {lec.userId?.lastName}</td>
-                                <td>{lec.userId?.email}</td>
-                                <td>{lec.department}</td>
+                                <td>{lec.user?.fullName}</td>
+                                <td>{lec.user?.email}</td>
+                                <td>{lec.degree || <span className="text-muted fst-italic" style={{fontSize: '0.85rem'}}>Chưa có</span>}</td>
+                                <td>{lec.specialization || <span className="text-muted fst-italic" style={{fontSize: '0.85rem'}}>Chưa có</span>}</td>
                                 <td>
-                                    {lec.isApproved ?
+                                    {lec.certificateUrl ? (
+                                        <a href={lec.certificateUrl} target="_blank" rel="noreferrer" className="text-decoration-none">
+                                            <i className="bi bi-link-45deg"></i> Xem link
+                                        </a>
+                                    ) : (
+                                        <span className="text-muted fst-italic" style={{fontSize: '0.85rem'}}>Không có</span>
+                                    )}
+                                </td>
+                                <td>
+                                    {lec.isApprove ?
                                         <Badge bg="success">Đã duyệt</Badge> :
                                         <Badge bg="warning" text="dark">Chờ duyệt</Badge>
                                     }
                                 </td>
                                 <td>
-                                    {!lec.isApproved && (
-                                        <Button variant="success" size="sm" className="me-1"
-                                            onClick={() => handleApprove(lec.id, true)}>
-                                            <i className="bi bi-check-lg"></i> Duyệt
+                                    {!lec.isApprove && (
+                                        <Button
+                                          variant="success"
+                                          size="sm"
+                                          className="me-1"
+                                          onClick={() => handleApprove(lec.id, true)}
+                                        >
+                                          <i className="bi bi-check-lg"></i> Duyệt
                                         </Button>
                                     )}
-                                    {lec.isApproved && (
-                                        <Button variant="outline-warning" size="sm" className="me-1"
-                                            onClick={() => handleApprove(lec.id, false)}>
-                                            <i className="bi bi-x-lg"></i>
+                                    {lec.isApprove && (
+                                        <Button
+                                          variant="warning"
+                                          size="sm"
+                                          className="me-1"
+                                          onClick={() => handleApprove(lec.id, false)}
+                                        >
+                                          <i className="bi bi-x-circle"></i> Hủy duyệt
                                         </Button>
                                     )}
                                     <Button variant="outline-primary" size="sm" className="me-1"
@@ -253,6 +283,18 @@ const AdminLecturer = () => {
                                         onChange={e => setFormData({ ...formData, password: e.target.value })} required />
                                 </Form.Group>
                             </>
+                        )}
+                        {editingLecturer && (
+                            <Form.Group className="mb-3">
+                                <Form.Label>Trạng thái tài khoản (Hệ thống)</Form.Label>
+                                <Form.Check
+                                    type="switch"
+                                    id="status-switch"
+                                    label={formData.isActive ? "Đang hoạt động" : "Khóa tài khoản"}
+                                    checked={formData.isActive}
+                                    onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
+                                />
+                            </Form.Group>
                         )}
                     </Modal.Body>
                     <Modal.Footer>

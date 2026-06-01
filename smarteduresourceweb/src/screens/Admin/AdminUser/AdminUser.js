@@ -59,10 +59,12 @@ const AdminUser = () => {
     const handleOpenEdit = (s) => {
         setEditingStudent(s);
         setFormData({
-            firstName: s.userId?.firstName || "",
-            lastName: s.userId?.lastName || "",
-            email: s.userId?.email || "",
+            fullName: s.user?.fullName || "",
+            email: s.user?.email || "",
             studentCode: s.studentCode || "",
+            username: s.user?.username || "",
+            isActive: s.user?.isActive !== false,
+            userId: s.user?.id
         });
         setShowModal(true);
     };
@@ -73,6 +75,11 @@ const AdminUser = () => {
             setErr("");
             if (editingStudent) {
                 await authApis().put(endpoints['admin-student-detail'](editingStudent.id), formData);
+                if (formData.userId) {
+                    await authApis().put(endpoints['admin-user-status'](formData.userId), {
+                        isActive: formData.isActive
+                    });
+                }
             } else {
                 await authApis().post(endpoints['admin-students'], formData);
             }
@@ -96,8 +103,7 @@ const AdminUser = () => {
     };
 
     const fields = [
-        { field: "firstName", label: "Họ", type: "text" },
-        { field: "lastName", label: "Tên", type: "text" },
+        { field: "fullName", label: "Họ tên", type: "text" },
         { field: "email", label: "Email", type: "email" },
         { field: "studentCode", label: "Mã sinh viên", type: "text" },
     ];
@@ -117,6 +123,8 @@ const AdminUser = () => {
     };
 
     if (loading) return <MySpinner />;
+
+    console.log(students);
 
     return (
         <>
@@ -160,12 +168,12 @@ const AdminUser = () => {
                         {students.map(s => (
                             <tr key={s.id}>
                                 <td>{s.id}</td>
-                                <td>{s.userId?.firstName} {s.userId?.lastName}</td>
-                                <td>{s.userId?.email}</td>
+                                <td>{s.user?.fullName}</td>
+                                <td>{s.user?.email}</td>
                                 <td>{s.studentCode}</td>
                                 <td>
-                                    <Badge bg={s.userId?.isActive ? "success" : "secondary"}>
-                                        {s.userId?.isActive ? "Hoạt động" : "Khóa"}
+                                    <Badge bg={s.user?.isActive ? "success" : "secondary"}>
+                                        {s.user?.isActive ? "Hoạt động" : "Khóa"}
                                     </Badge>
                                 </td>
                                 <td>
@@ -229,6 +237,18 @@ const AdminUser = () => {
                                         onChange={e => setFormData({ ...formData, password: e.target.value })} required />
                                 </Form.Group>
                             </>
+                        )}
+                        {editingStudent && (
+                            <Form.Group className="mb-3">
+                                <Form.Label>Trạng thái tài khoản (Hệ thống)</Form.Label>
+                                <Form.Check
+                                    type="switch"
+                                    id="status-switch"
+                                    label={formData.isActive ? "Đang hoạt động" : "Khóa tài khoản"}
+                                    checked={formData.isActive}
+                                    onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
+                                />
+                            </Form.Group>
                         )}
                     </Modal.Body>
                     <Modal.Footer>
