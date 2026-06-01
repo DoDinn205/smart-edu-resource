@@ -1282,7 +1282,7 @@ body {
 /* === CHAT === */
 .chat-layout {
     display: flex;
-    height: calc(100vh - 70px);
+    height: calc(100vh - 160px);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;

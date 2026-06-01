@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Form, InputGroup, Modal, Pagination, Table } from "react-bootstrap";
+import { Alert, Badge, Button, Form, InputGroup, Modal, Pagination, Table } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { MyUserContext } from "../../../configs/Context";
@@ -15,13 +15,6 @@ const LecturerChat = () => {
     const [err, setErr] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [formData, setFormData] = useState({});
-
-    // Invite Modal State
-    const [showInvite, setShowInvite] = useState(false);
-    const [inviteRoom, setInviteRoom] = useState(null);
-    const [availableStudents, setAvailableStudents] = useState([]);
-    const [currentParticipants, setCurrentParticipants] = useState([]);
-    const [inviting, setInviting] = useState(false);
 
     const nav = useNavigate();
     const [q] = useSearchParams();
@@ -73,62 +66,6 @@ const LecturerChat = () => {
     const handleOpenCreate = () => {
         setFormData({ type: "GROUP" });
         setShowModal(true);
-    };
-
-    const handleOpenInvite = async (room) => {
-        setInviteRoom(room);
-        setShowInvite(true);
-        setAvailableStudents([]);
-        setCurrentParticipants([]);
-
-        try {
-            const enrollRes = await authApis().get(endpoints['lecturer-course-enrollments'](room.courseId));
-            const enrollments = enrollRes.data.data?.items || [];
-
-            const partRes = await authApis().get(endpoints['lecturer-chat-participants'](room.id));
-            const participants = partRes.data.data || [];
-            setCurrentParticipants(participants.filter(p => p.user?.role === "STUDENT"));
-
-            const participantIds = participants.map(p => p.user?.id);
-
-            const available = enrollments.filter(e => e.user && !participantIds.includes(e.user.id));
-            setAvailableStudents(available);
-        } catch (ex) {
-            console.error(ex);
-            alert("Lỗi tải danh sách sinh viên. Vui lòng thử lại.");
-        }
-    };
-
-    const handleAddStudent = async (studentUser) => {
-        if (!studentUser) return;
-        setInviting(true);
-        try {
-            await authApis().post(endpoints['lecturer-chat-participants'](inviteRoom.id), {
-                userId: studentUser.id
-            });
-            await handleOpenInvite(inviteRoom);
-            await loadChatRooms();
-        } catch (ex) {
-            console.error(ex);
-            alert("Không thể thêm sinh viên vào phòng.");
-        } finally {
-            setInviting(false);
-        }
-    };
-
-    const handleRemoveStudent = async (participant) => {
-        if (!window.confirm("Xóa sinh viên này khỏi phòng chat?")) return;
-        setInviting(true);
-        try {
-            await authApis().delete(endpoints['lecturer-chat-participant-detail'](participant.id));
-            await handleOpenInvite(inviteRoom);
-            await loadChatRooms();
-        } catch (ex) {
-            console.error(ex);
-            alert("Không thể xóa sinh viên khỏi phòng.");
-        } finally {
-            setInviting(false);
-        }
     };
 
     const handleSubmit = async (e) => {
@@ -189,7 +126,7 @@ const LecturerChat = () => {
                             </Button>
                         </InputGroup>
                     </Form>
-                    <Button variant="primary" size="sm" onClick={handleOpenCreate} style={{ whiteSpace: "nowrap" }}>
+                    <Button variant="primary" size="sm" onClick={handleOpenCreate} style={{ backgroundColor: '#6366f1', borderColor: '#6366f1', whiteSpace: 'nowrap' }}>
                         <i className="bi bi-plus-lg me-1"></i> Tạo phòng chat
                     </Button>
                 </div>
@@ -202,11 +139,11 @@ const LecturerChat = () => {
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Tên phòng</th>
-                            <th>Loại</th>
-                            <th>Khóa học</th>
-                            <th>Thành viên</th>
-                            <th>Hành động</th>
+                            <th>TÊN PHÒNG</th>
+                            <th>LOẠI</th>
+                            <th>KHÓA HỌC</th>
+                            <th>THÀNH VIÊN</th>
+                            <th>HÀNH ĐỘNG</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -214,18 +151,25 @@ const LecturerChat = () => {
                             <tr key={room.id}>
                                 <td>{room.id}</td>
                                 <td>{room.name}</td>
-                                <td>{room.type || "GROUP"}</td>
-                                <td>{room.courseName || "Chưa gắn"}</td>
-                                <td>{room.participantCount || 0}</td>
                                 <td>
-                                    <Button variant="outline-primary" size="sm" className="me-2"
-                                        onClick={() => handleOpenInvite(room)}
-                                        disabled={!room.courseId}
+                                    <Badge bg={room.type === 'CLASS' ? 'info' : 'secondary'}>
+                                        {room.type || "GROUP"}
+                                    </Badge>
+                                </td>
+                                <td>{room.courseName || "Chưa gắn"}</td>
+                                <td>
+                                    <Badge bg="primary" pill>
+                                        <i className="bi bi-people-fill me-1"></i> {room.participantCount || 0}
+                                    </Badge>
+                                </td>
+                                <td>
+                                    <Button variant="outline-primary" size="sm" className="me-1"
+                                        onClick={() => nav(`/lecturer/chat/${room.id}/participants`)}
                                         title="Quản lý thành viên">
                                         <i className="bi bi-person-plus"></i>
                                     </Button>
-                                    <Button variant="outline-success" size="sm" className="me-2"
-                                        onClick={() => nav(`/chat?room=${room.id}`)} title="Vào phòng">
+                                    <Button variant="outline-success" size="sm" className="me-1"
+                                        onClick={() => nav(`/lecturer/chat/messages?room=${room.id}`)} title="Vào phòng">
                                         <i className="bi bi-chat-dots"></i>
                                     </Button>
                                     <Button variant="outline-danger" size="sm"
@@ -289,65 +233,6 @@ const LecturerChat = () => {
                         <Button variant="primary" type="submit">Tạo</Button>
                     </Modal.Footer>
                 </Form>
-            </Modal>
-
-            <Modal show={showInvite} onHide={() => setShowInvite(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Quản lý thành viên: {inviteRoom?.name}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <h6 className="fw-bold mb-3">Thành viên hiện tại</h6>
-                    {currentParticipants.length === 0 ? (
-                        <p className="text-muted small">Phòng chưa có thành viên nào.</p>
-                    ) : (
-                        <Table size="sm" hover className="mb-4">
-                            <tbody>
-                                {currentParticipants.map(p => (
-                                    <tr key={p.id || p.userId}>
-                                        <td className="align-middle">
-                                            {p.user?.fullName || p.fullName || `User ID: ${p.userId}`}
-                                        </td>
-                                        <td className="align-middle text-end">
-                                            <Button size="sm" variant="outline-danger"
-                                                onClick={() => handleRemoveStudent(p)}
-                                                disabled={inviting}>
-                                                Xóa
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
-                    )}
-
-                    <h6 className="fw-bold mb-3 border-top pt-3">Thêm sinh viên mới</h6>
-                    {availableStudents.length === 0 ? (
-                        <p className="text-muted small">Không có sinh viên nào có thể thêm.</p>
-                    ) : (
-                        <Table size="sm" hover>
-                            <tbody>
-                                {availableStudents.map(e => (
-                                    <tr key={e.id}>
-                                        <td className="align-middle">
-                                            {e.user?.fullName} <br />
-                                            <small className="text-muted">{e.studentCode}</small>
-                                        </td>
-                                        <td className="align-middle text-end">
-                                            <Button size="sm" variant="outline-primary"
-                                                onClick={() => handleAddStudent(e.user)}
-                                                disabled={inviting}>
-                                                Thêm
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
-                    )}
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowInvite(false)}>Đóng</Button>
-                </Modal.Footer>
             </Modal>
         </>
     );
