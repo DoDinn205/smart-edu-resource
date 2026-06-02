@@ -6,6 +6,7 @@ package com.paq.repository.impl;
 
 import com.paq.pojo.LearningLog;
 import com.paq.repository.LearningLogRepository;
+import jakarta.persistence.NoResultException;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -30,6 +31,40 @@ public class LearningLogRepositoryImpl implements LearningLogRepository {
         Session s = this.factory.getObject().getCurrentSession();
         s.persist(log);
         return log;
+    }
+
+    @Override
+    public LearningLog getCompletedLog(int enrollmentId, int resourceId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        Query<LearningLog> q = s.createQuery(
+                "FROM LearningLog l "
+                + "WHERE l.enrollmentId.id = :enrollmentId "
+                + "AND l.resourceId.id = :resourceId "
+                + "AND l.completionStatus = 1 "
+                + "ORDER BY l.endTime DESC",
+                LearningLog.class
+        );
+        q.setParameter("enrollmentId", enrollmentId);
+        q.setParameter("resourceId", resourceId);
+        q.setMaxResults(1);
+        try {
+            return q.getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+        }
+    }
+
+    @Override
+    public long countCompletedResourcesByEnrollmentId(int enrollmentId) {
+        Session s = this.factory.getObject().getCurrentSession();
+        Query<Long> q = s.createQuery(
+                "SELECT COUNT(DISTINCT l.resourceId.id) FROM LearningLog l "
+                + "WHERE l.enrollmentId.id = :enrollmentId "
+                + "AND l.completionStatus = 1",
+                Long.class
+        );
+        q.setParameter("enrollmentId", enrollmentId);
+        return q.getSingleResult();
     }
 
     @Override

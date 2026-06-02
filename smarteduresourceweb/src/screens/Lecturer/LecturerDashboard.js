@@ -2,10 +2,10 @@ import { useContext, useEffect, useState } from "react";
 import { Col, ListGroup, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import "../Lecturer.css";
+import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import "./Lecturer.css";
 
 const LecturerDashboard = () => {
     const [user] = useContext(MyUserContext);

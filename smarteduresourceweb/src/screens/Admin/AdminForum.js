@@ -1,11 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Form, Modal, Table , InputGroup, Pagination} from "react-bootstrap";
-import { useNavigate , useSearchParams} from "react-router-dom";
+import { Alert, Button, Form, Modal, Table, InputGroup, Pagination } from "react-bootstrap";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import "../Admin.css";
+import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import useSubmissionGuard from "../../hooks/useSubmissionGuard";
+import "./Admin.css";
 
 const AdminForum = () => {
     const [user] = useContext(MyUserContext);
@@ -15,6 +16,7 @@ const AdminForum = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [formData, setFormData] = useState({});
+    const { isSubmitting, runSubmission } = useSubmissionGuard();
     const nav = useNavigate();
     const [q] = useSearchParams();
     const kwParam = q.get("kw") || "";
@@ -66,19 +68,21 @@ const AdminForum = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            setErr("");
-            if (editingItem) {
-                await authApis().put(endpoints['admin-forum-category-detail'](editingItem.id), formData);
-            } else {
-                await authApis().post(endpoints['admin-forum-categories'], formData);
+        await runSubmission(async () => {
+            try {
+                setErr("");
+                if (editingItem) {
+                    await authApis().put(endpoints['admin-forum-category-detail'](editingItem.id), formData);
+                } else {
+                    await authApis().post(endpoints['admin-forum-categories'], formData);
+                }
+                setShowModal(false);
+                loadCategories();
+            } catch (ex) {
+                console.error(ex);
+                setErr(ex.response?.data?.message || "Có lỗi xảy ra khi lưu danh mục.");
             }
-            setShowModal(false);
-            loadCategories();
-        } catch (ex) {
-            console.error(ex);
-            setErr("Có lỗi xảy ra khi lưu danh mục.");
-        }
+        });
     };
 
     const handleDelete = async (id) => {
@@ -127,8 +131,8 @@ const AdminForum = () => {
                         </InputGroup>
                     </Form>
                     <Button style={{ backgroundColor: "#6366f1", borderColor: "#6366f1", whiteSpace: "nowrap" }} variant="primary" size="sm" onClick={handleOpenCreate}>
-                    <i className="bi bi-plus-lg me-1"></i> Thêm danh mục
-                </Button>
+                        <i className="bi bi-plus-lg me-1"></i> Thêm danh mục
+                    </Button>
                 </div>
             </div>
 
@@ -181,7 +185,7 @@ const AdminForum = () => {
                 )}
             </div>
 
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
+            <Modal className="admin-theme" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>{editingItem ? "Sửa" : "Thêm"} danh mục</Modal.Title>
                 </Modal.Header>
@@ -199,8 +203,10 @@ const AdminForum = () => {
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button>
-                        <Button variant="primary" type="submit">Lưu</Button>
+                        <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Hủy</Button>
+                        <Button variant="primary" type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Đang lưu..." : "Lưu"}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>

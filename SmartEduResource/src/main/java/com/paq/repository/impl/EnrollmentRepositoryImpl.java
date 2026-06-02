@@ -133,6 +133,14 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
         if (params != null && params.containsKey("status")) {
             hql += " AND e.status = :status";
         }
+        
+        if (params != null && params.containsKey("kw") && !params.get("kw").isEmpty()) {
+            hql += " AND (LOWER(e.studentId.userId.fullName) LIKE :kw OR LOWER(e.studentId.userId.username) LIKE :kw)";
+        }
+        
+        if (params != null && params.containsKey("excludeRoomId")) {
+            hql += " AND e.studentId.userId.id NOT IN (SELECT p.userId.id FROM ChatParticipant p WHERE p.roomId.id = :excludeRoomId)";
+        }
 
         hql += " ORDER BY e.enrollDate DESC";
 
@@ -141,6 +149,14 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
 
         if (params != null && params.containsKey("status")) {
             q.setParameter("status", params.get("status"));
+        }
+        
+        if (params != null && params.containsKey("kw") && !params.get("kw").isEmpty()) {
+            q.setParameter("kw", "%" + params.get("kw").toLowerCase() + "%");
+        }
+        
+        if (params != null && params.containsKey("excludeRoomId")) {
+            q.setParameter("excludeRoomId", Integer.parseInt(params.get("excludeRoomId")));
         }
 
         if (params != null && params.containsKey("page")) {
@@ -162,12 +178,28 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
         if (params != null && params.containsKey("status")) {
             hql += " AND e.status = :status";
         }
+        
+        if (params != null && params.containsKey("kw") && !params.get("kw").isEmpty()) {
+            hql += " AND (LOWER(e.studentId.userId.fullName) LIKE :kw OR LOWER(e.studentId.userId.username) LIKE :kw)";
+        }
+        
+        if (params != null && params.containsKey("excludeRoomId")) {
+            hql += " AND e.studentId.userId.id NOT IN (SELECT p.userId.id FROM ChatParticipant p WHERE p.roomId.id = :excludeRoomId)";
+        }
 
         Query<Long> q = s.createQuery(hql, Long.class);
         q.setParameter("courseId", courseId);
 
         if (params != null && params.containsKey("status")) {
             q.setParameter("status", params.get("status"));
+        }
+        
+        if (params != null && params.containsKey("kw") && !params.get("kw").isEmpty()) {
+            q.setParameter("kw", "%" + params.get("kw").toLowerCase() + "%");
+        }
+        
+        if (params != null && params.containsKey("excludeRoomId")) {
+            q.setParameter("excludeRoomId", Integer.parseInt(params.get("excludeRoomId")));
         }
 
         return q.getSingleResult();

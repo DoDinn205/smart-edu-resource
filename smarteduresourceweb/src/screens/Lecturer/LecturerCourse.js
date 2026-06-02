@@ -2,10 +2,11 @@ import { useContext, useEffect, useState } from "react";
 import { Alert, Badge, Button, Col, Form, Modal, Row, Table, Pagination, InputGroup } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import Apis, { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import "../Lecturer.css";
+import { MyUserContext } from "../../configs/Context";
+import Apis, { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import useSubmissionGuard from "../../hooks/useSubmissionGuard";
+import "./Lecturer.css";
 
 const LecturerCourse = () => {
     const [user] = useContext(MyUserContext);
@@ -16,6 +17,7 @@ const LecturerCourse = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
     const [formData, setFormData] = useState({});
+    const { isSubmitting, runSubmission } = useSubmissionGuard();
     const [showEnrollments, setShowEnrollments] = useState(false);
     const [enrollments, setEnrollments] = useState([]);
     const [enrollmentPage, setEnrollmentPage] = useState(1);
@@ -28,6 +30,26 @@ const LecturerCourse = () => {
     const pageParam = Number.parseInt(q.get("page"), 10);
     const currentPage = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
     const [totalPages, setTotalPages] = useState(1);
+
+    const toDateInputValue = (value) => {
+        if (!value) return "";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        return date.toISOString().slice(0, 10);
+    };
+
+    const formatDate = (value) => {
+        if (!value) return "—";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "—";
+        return date.toLocaleDateString('vi-VN');
+    };
+
+    const levelLabels = {
+        BEGINNER: "Cơ bản",
+        INTERMEDIATE: "Trung bình",
+        ADVANCED: "Nâng cao",
+    };
 
     useEffect(() => {
         if (!user || (user.role !== "LECTURER" && user.role !== "ADMIN")) {
@@ -71,7 +93,15 @@ const LecturerCourse = () => {
 
     const handleOpenCreate = () => {
         setEditingCourse(null);
-        setFormData({});
+        setFormData({
+            name: "",
+            description: "",
+            subjectId: "",
+            price: 0,
+            startDate: "",
+            endDate: "",
+            targetLevel: "",
+        });
         setShowModal(true);
     };
 
@@ -82,25 +112,30 @@ const LecturerCourse = () => {
             description: course.description || "",
             subjectId: course.subjectId || "",
             price: course.price || 0,
+            startDate: toDateInputValue(course.startDate),
+            endDate: toDateInputValue(course.endDate),
+            targetLevel: course.targetLevel || "",
         });
         setShowModal(true);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            setErr("");
-            if (editingCourse) {
-                await authApis().put(endpoints['lecturer-course-detail'](editingCourse.id), formData);
-            } else {
-                await authApis().post(endpoints['lecturer-courses'], formData);
+        await runSubmission(async () => {
+            try {
+                setErr("");
+                if (editingCourse) {
+                    await authApis().put(endpoints['lecturer-course-detail'](editingCourse.id), formData);
+                } else {
+                    await authApis().post(endpoints['lecturer-courses'], formData);
+                }
+                setShowModal(false);
+                loadCourses();
+            } catch (ex) {
+                console.error(ex);
+                setErr("Có lỗi xảy ra khi lưu khóa học.");
             }
-            setShowModal(false);
-            loadCourses();
-        } catch (ex) {
-            console.error(ex);
-            setErr("Có lỗi xảy ra khi lưu khóa học.");
-        }
+        });
     };
 
     const handleDelete = async (id) => {
@@ -185,6 +220,8 @@ const LecturerCourse = () => {
                             <th>ID</th>
                             <th>Tên khóa học</th>
                             <th>Môn học</th>
+                            <th>Thời gian</th>
+                            <th>Cấp độ</th>
                             <th>Giá</th>
                             <th>Hành động</th>
                         </tr>
@@ -195,6 +232,8 @@ const LecturerCourse = () => {
                                 <td>{c.id}</td>
                                 <td>{c.name}</td>
                                 <td>{c.subject?.name || "—"}</td>
+                                <td>{formatDate(c.startDate)} - {formatDate(c.endDate)}</td>
+                                <td>{levelLabels[c.targetLevel] || "—"}</td>
                                 <td>
                                     {c.isPaid ? (
                                         <span className="text-secondary fw-bold">
@@ -225,7 +264,7 @@ const LecturerCourse = () => {
                             </tr>
                         ))}
                         {courses.length === 0 && (
-                            <tr><td colSpan="6" className="text-center text-muted py-3">Chưa có khóa học</td></tr>
+                            <tr><td colSpan="7" className="text-center text-muted py-3">Chưa có khóa học</td></tr>
                         )}
                     </tbody>
                 </Table>
@@ -243,7 +282,7 @@ const LecturerCourse = () => {
                 )}
             </div>
 
-            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+            <Modal className="lecturer-theme" show={showModal} onHide={() => setShowModal(false)} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>{editingCourse ? "Sửa khóa học" : "Tạo khóa học"}</Modal.Title>
                 </Modal.Header>
@@ -275,6 +314,35 @@ const LecturerCourse = () => {
                                 ))}
                             </Form.Select>
                         </Form.Group>
+                        <Row>
+                            <Col md={4}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Ngày bắt đầu</Form.Label>
+                                    <Form.Control type="date" value={formData.startDate || ''}
+                                        onChange={e => setFormData({ ...formData, startDate: e.target.value })} />
+                                </Form.Group>
+                            </Col>
+                            <Col md={4}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Ngày kết thúc</Form.Label>
+                                    <Form.Control type="date" value={formData.endDate || ''}
+                                        min={formData.startDate || undefined}
+                                        onChange={e => setFormData({ ...formData, endDate: e.target.value })} />
+                                </Form.Group>
+                            </Col>
+                            <Col md={4}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Trình độ mục tiêu</Form.Label>
+                                    <Form.Select value={formData.targetLevel || ''}
+                                        onChange={e => setFormData({ ...formData, targetLevel: e.target.value })}>
+                                        <option value="">-- Chọn trình độ --</option>
+                                        <option value="BEGINNER">Cơ bản</option>
+                                        <option value="INTERMEDIATE">Trung bình</option>
+                                        <option value="ADVANCED">Nâng cao</option>
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
+                        </Row>
                         <Form.Group className="mb-3">
                             <Form.Label>Mô tả</Form.Label>
                             <Form.Control as="textarea" rows={4} value={formData.description || ''}
@@ -282,13 +350,15 @@ const LecturerCourse = () => {
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button>
-                        <Button variant="primary" type="submit">Lưu</Button>
+                        <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Hủy</Button>
+                        <Button variant="primary" type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Đang lưu..." : "Lưu"}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>
 
-            <Modal show={showEnrollments} onHide={() => setShowEnrollments(false)} size="lg">
+            <Modal className="lecturer-theme" show={showEnrollments} onHide={() => setShowEnrollments(false)} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>Học viên - {selectedCourse?.name}</Modal.Title>
                 </Modal.Header>
@@ -336,3 +406,5 @@ const LecturerCourse = () => {
 }
 
 export default LecturerCourse;
+
+

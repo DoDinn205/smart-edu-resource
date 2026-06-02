@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
@@ -139,11 +140,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public ResLecturerDTO registerLecturer(ReqLecturerDTO request) {
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new IllegalArgumentException("Mật khẩu là bắt buộc khi đăng ký giảng viên");
         }
         this.validateUniqueUser(request.getUsername(), request.getEmail(), null);
+        String certificateUrl = this.uploadLecturerCertificate(request.getCertificate());
 
         User user = this.buildBaseUser(request.getFullName(), request.getUsername(), request.getEmail(),
                 request.getPhone(), request.getPassword(), RoleEnum.LECTURER);
@@ -152,7 +155,7 @@ public class UserServiceImpl implements UserService {
         Lecturer lecturer = new Lecturer();
         lecturer.setUserId(user);
         lecturer.setDegree(request.getDegree());
-        lecturer.setCertificateUrl(request.getCertificateUrl());
+        lecturer.setCertificateUrl(certificateUrl);
         lecturer.setSpecialization(request.getSpecialization());
         lecturer.setBio(request.getBio());
         lecturer.setIsApprove(Boolean.FALSE);
@@ -371,7 +374,11 @@ public class UserServiceImpl implements UserService {
 
     private void applyLecturerFields(Lecturer lecturer, ReqLecturerDTO request) {
         lecturer.setDegree(request.getDegree());
-        lecturer.setCertificateUrl(request.getCertificateUrl());
+        if (request.getCertificate() != null && !request.getCertificate().isEmpty()) {
+            lecturer.setCertificateUrl(this.uploadLecturerCertificate(request.getCertificate()));
+        } else if (request.getCertificateUrl() != null && !request.getCertificateUrl().isBlank()) {
+            lecturer.setCertificateUrl(request.getCertificateUrl());
+        }
         lecturer.setSpecialization(request.getSpecialization());
         lecturer.setBio(request.getBio());
         if (request.getIsApprove() != null) {
@@ -379,6 +386,36 @@ public class UserServiceImpl implements UserService {
             lecturer.setApproveAt(Boolean.TRUE.equals(request.getIsApprove()) ? new Date() : null);
         } else if (lecturer.getId() == null) {
             lecturer.setIsApprove(Boolean.FALSE);
+        }
+    }
+
+    private String uploadLecturerCertificate(MultipartFile certificate) {
+        this.validateLecturerCertificate(certificate, true);
+
+        try {
+            Map res = this.cloudinary.uploader().upload(certificate.getBytes(),
+                    ObjectUtils.asMap(
+                            "resource_type", "raw",
+                            "folder", "lecturer-certificates"));
+            return res.get("secure_url").toString();
+        } catch (IOException ex) {
+            throw new IllegalArgumentException("Không thể upload chứng chỉ: " + ex.getMessage());
+        }
+    }
+
+    private void validateLecturerCertificate(MultipartFile certificate, boolean required) {
+        if (certificate == null || certificate.isEmpty()) {
+            if (required) {
+                throw new IllegalArgumentException("Chứng chỉ PDF là bắt buộc");
+            }
+            return;
+        }
+
+        if (!"application/pdf".equalsIgnoreCase(certificate.getContentType())) {
+            throw new IllegalArgumentException("Chứng chỉ phải là file PDF");
+        }
+        if (certificate.getSize() > 5L * 1024L * 1024L) {
+            throw new IllegalArgumentException("Chứng chỉ tối đa 5 MB");
         }
     }
 

@@ -22,6 +22,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
@@ -36,7 +37,9 @@ import com.paq.utils.constant.EnrollmentStatusEnum;
  * @author paqvi
  */
 @Entity
-@Table(name = "enrollment")
+@Table(name = "enrollment", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_enrollment_course_student", columnNames = {"course_id", "student_id"})
+})
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Enrollment.findAll", query = "SELECT e FROM Enrollment e"),

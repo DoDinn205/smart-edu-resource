@@ -12,6 +12,8 @@ import java.util.List;
  * @author Admin
  */
 public interface NotificationRepository {
+    Notification addNotification(Notification notification);
+
     List<Notification> getNotificationsByUsername(String username);
 
     Notification getNotificationById(int id);

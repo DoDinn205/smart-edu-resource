@@ -65,7 +65,7 @@ const Chat = () => {
     if (loading) return <MySpinner />;
 
     return (
-        <Container className="py-4">
+        <Container fluid className="p-0">
             <h2 style={{ fontSize: '1.35rem', fontWeight: 700, marginBottom: '16px' }}>Tin nhắn</h2>
             <div className="chat-layout">
                 <div className="chat-sidebar">

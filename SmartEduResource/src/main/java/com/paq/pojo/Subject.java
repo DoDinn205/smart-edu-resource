@@ -56,7 +56,7 @@ public class Subject implements Serializable {
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 200)
-    @Column(name = "name")
+    @Column(name = "name", unique = true, nullable = false)
     private String name;
     @Lob
     @Size(max = 65535)

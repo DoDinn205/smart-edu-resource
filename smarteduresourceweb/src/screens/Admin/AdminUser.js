@@ -1,20 +1,22 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Badge, Button, Form, Modal, Table , InputGroup, Pagination} from "react-bootstrap";
-import { useNavigate , useSearchParams} from "react-router-dom";
+import { Alert, Badge, Button, Form, Modal, Table, InputGroup, Pagination } from "react-bootstrap";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { MyUserContext } from "../../../configs/Context";
-import { authApis, endpoints } from "../../../configs/Apis";
-import MySpinner from "../../../components/common/MySpinner";
-import "../Admin.css";
+import { MyUserContext } from "../../configs/Context";
+import { authApis, endpoints } from "../../configs/Apis";
+import MySpinner from "../../components/common/MySpinner";
+import useSubmissionGuard from "../../hooks/useSubmissionGuard";
+import "./Admin.css";
 
-const AdminLecturer = () => {
+const AdminUser = () => {
     const [user] = useContext(MyUserContext);
-    const [lecturers, setLecturers] = useState([]);
+    const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState("");
     const [showModal, setShowModal] = useState(false);
-    const [editingLecturer, setEditingLecturer] = useState(null);
+    const [editingStudent, setEditingStudent] = useState(null);
     const [formData, setFormData] = useState({});
+    const { isSubmitting, runSubmission } = useSubmissionGuard();
     const nav = useNavigate();
     const [q] = useSearchParams();
     const kwParam = q.get("kw") || "";
@@ -25,92 +27,89 @@ const AdminLecturer = () => {
 
     useEffect(() => {
         if (!user || user.role !== "ADMIN") { nav('/login'); return; }
-        loadLecturers();
+        loadStudents();
     }, [user, nav, kwParam, currentPage]);
 
     useEffect(() => {
         setSearchKw(kwParam);
     }, [kwParam]);
 
-    const loadLecturers = async () => {
+    const loadStudents = async () => {
         try {
             setLoading(true);
             setErr("");
-            let url = endpoints['admin-lecturers'] + `?page=${currentPage}`;
+            let url = endpoints['admin-students'] + `?page=${currentPage}`;
             if (kwParam) url += `&kw=${kwParam}`;
             let res = await authApis().get(url);
             const pageData = res.data.data;
-            setLecturers(pageData?.items || []);
+            setStudents(pageData?.items || []);
             setTotalPages(pageData?.totalPages || 1);
         } catch (ex) {
             console.error(ex);
-            setErr("Không thể tải danh sách giảng viên.");
+            setErr("Không thể tải danh sách sinh viên.");
         } finally {
             setLoading(false);
         }
     };
 
-    const handleApprove = async (id, approved) => {
-        try {
-            setErr("");
-            await authApis().put(endpoints['admin-lecturer-approval'](id), { isApproved: approved });
-            loadLecturers();
-        } catch (ex) {
-            console.error(ex);
-            setErr("Lỗi khi cập nhật trạng thái duyệt.");
-        }
-    };
-
     const handleOpenCreate = () => {
-        setEditingLecturer(null);
+        setEditingStudent(null);
         setFormData({});
         setShowModal(true);
     };
 
-    const handleOpenEdit = (lec) => {
-        setEditingLecturer(lec);
+    const handleOpenEdit = (s) => {
+        setEditingStudent(s);
         setFormData({
-            firstName: lec.userId?.firstName || "",
-            lastName: lec.userId?.lastName || "",
-            email: lec.userId?.email || "",
-            department: lec.department || "",
+            fullName: s.user?.fullName || "",
+            email: s.user?.email || "",
+            studentCode: s.studentCode || "",
+            username: s.user?.username || "",
+            isActive: s.user?.isActive !== false,
+            userId: s.user?.id
         });
         setShowModal(true);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            setErr("");
-            if (editingLecturer) {
-                await authApis().put(endpoints['admin-lecturer-detail'](editingLecturer.id), formData);
-            } else {
-                await authApis().post(endpoints['admin-lecturers'], formData);
+        await runSubmission(async () => {
+            try {
+                setErr("");
+                if (editingStudent) {
+                    await authApis().put(endpoints['admin-student-detail'](editingStudent.id), formData);
+                    if (formData.userId) {
+                        await authApis().put(endpoints['admin-user-status'](formData.userId), {
+                            isActive: formData.isActive
+                        });
+                    }
+                } else {
+                    await authApis().post(endpoints['admin-students'], formData);
+                }
+                setShowModal(false);
+                loadStudents();
+            } catch (ex) {
+                console.error(ex);
+                setErr("Có lỗi xảy ra khi lưu sinh viên.");
             }
-            setShowModal(false);
-            loadLecturers();
-        } catch (ex) {
-            console.error(ex);
-            setErr("Có lỗi xảy ra khi lưu giảng viên.");
-        }
+        });
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Bạn có chắc chắn muốn xóa giảng viên này?")) return;
+        if (!window.confirm("Bạn có chắc chắn muốn xóa sinh viên này?")) return;
         try {
-            await authApis().delete(endpoints['admin-lecturer-detail'](id));
-            loadLecturers();
+            await authApis().delete(endpoints['admin-student-detail'](id));
+            loadStudents();
         } catch (ex) {
             console.error(ex);
-            setErr("Không thể xóa giảng viên.");
+            setErr("Không thể xóa sinh viên.");
         }
     };
 
     const fields = [
-        { field: "firstName", label: "Họ", type: "text" },
-        { field: "lastName", label: "Tên", type: "text" },
+        { field: "fullName", label: "Họ tên", type: "text" },
         { field: "email", label: "Email", type: "email" },
-        { field: "department", label: "Khoa/Bộ môn", type: "text" },
+        { field: "studentCode", label: "Mã sinh viên", type: "text" },
     ];
 
     const handleSearch = (e) => {
@@ -129,10 +128,12 @@ const AdminLecturer = () => {
 
     if (loading) return <MySpinner />;
 
+    console.log(students);
+
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h4 className="mb-0">Quản lý Giảng viên</h4>
+                <h4 className="mb-0">Quản lý Sinh viên</h4>
                 <div className="d-flex align-items-center w-50">
                     <Form onSubmit={handleSearch} className="w-100 me-3">
                         <InputGroup>
@@ -148,8 +149,8 @@ const AdminLecturer = () => {
                         </InputGroup>
                     </Form>
                     <Button style={{ backgroundColor: "#6366f1", borderColor: "#6366f1", whiteSpace: "nowrap" }} variant="primary" size="sm" onClick={handleOpenCreate}>
-                    <i className="bi bi-plus-lg me-1"></i> Thêm giảng viên
-                </Button>
+                        <i className="bi bi-plus-lg me-1"></i> Thêm sinh viên
+                    </Button>
                 </div>
             </div>
 
@@ -162,50 +163,37 @@ const AdminLecturer = () => {
                             <th>ID</th>
                             <th>Họ tên</th>
                             <th>Email</th>
-                            <th>Khoa</th>
+                            <th>Mã SV</th>
                             <th>Trạng thái</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {lecturers.map(lec => (
-                            <tr key={lec.id}>
-                                <td>{lec.id}</td>
-                                <td>{lec.userId?.firstName} {lec.userId?.lastName}</td>
-                                <td>{lec.userId?.email}</td>
-                                <td>{lec.department}</td>
+                        {students.map(s => (
+                            <tr key={s.id}>
+                                <td>{s.id}</td>
+                                <td>{s.user?.fullName}</td>
+                                <td>{s.user?.email}</td>
+                                <td>{s.studentCode}</td>
                                 <td>
-                                    {lec.isApproved ?
-                                        <Badge bg="success">Đã duyệt</Badge> :
-                                        <Badge bg="warning" text="dark">Chờ duyệt</Badge>
-                                    }
+                                    <Badge bg={s.user?.isActive ? "success" : "secondary"}>
+                                        {s.user?.isActive ? "Hoạt động" : "Khóa"}
+                                    </Badge>
                                 </td>
                                 <td>
-                                    {!lec.isApproved && (
-                                        <Button variant="success" size="sm" className="me-1"
-                                            onClick={() => handleApprove(lec.id, true)}>
-                                            <i className="bi bi-check-lg"></i> Duyệt
-                                        </Button>
-                                    )}
-                                    {lec.isApproved && (
-                                        <Button variant="outline-warning" size="sm" className="me-1"
-                                            onClick={() => handleApprove(lec.id, false)}>
-                                            <i className="bi bi-x-lg"></i>
-                                        </Button>
-                                    )}
                                     <Button variant="outline-primary" size="sm" className="me-1"
-                                        onClick={() => handleOpenEdit(lec)}>
+                                        onClick={() => handleOpenEdit(s)}>
                                         <i className="bi bi-pencil"></i>
                                     </Button>
                                     <Button variant="outline-danger" size="sm"
-                                        onClick={() => handleDelete(lec.id)}>
+                                        onClick={() => handleDelete(s.id)}>
                                         <i className="bi bi-trash"></i>
                                     </Button>
                                 </td>
                             </tr>
                         ))}
-                        {lecturers.length === 0 && (
-                            <tr><td colSpan="6" className="text-center text-muted py-3">Chưa có giảng viên nào</td></tr>
+                        {students.length === 0 && (
+                            <tr><td colSpan="6" className="text-center text-muted py-3">Chưa có sinh viên nào</td></tr>
                         )}
                     </tbody>
                 </Table>
@@ -223,9 +211,9 @@ const AdminLecturer = () => {
                 )}
             </div>
 
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
+            <Modal className="admin-theme" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{editingLecturer ? "Sửa giảng viên" : "Thêm giảng viên"}</Modal.Title>
+                    <Modal.Title>{editingStudent ? "Sửa sinh viên" : "Thêm sinh viên"}</Modal.Title>
                 </Modal.Header>
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
@@ -240,7 +228,7 @@ const AdminLecturer = () => {
                                 />
                             </Form.Group>
                         ))}
-                        {!editingLecturer && (
+                        {!editingStudent && (
                             <>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Tên đăng nhập</Form.Label>
@@ -254,10 +242,24 @@ const AdminLecturer = () => {
                                 </Form.Group>
                             </>
                         )}
+                        {editingStudent && (
+                            <Form.Group className="mb-3">
+                                <Form.Label>Trạng thái tài khoản (Hệ thống)</Form.Label>
+                                <Form.Check
+                                    type="switch"
+                                    id="status-switch"
+                                    label={formData.isActive ? "Đang hoạt động" : "Khóa tài khoản"}
+                                    checked={formData.isActive}
+                                    onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
+                                />
+                            </Form.Group>
+                        )}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button>
-                        <Button variant="primary" type="submit">Lưu</Button>
+                        <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Hủy</Button>
+                        <Button variant="primary" type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Đang lưu..." : "Lưu"}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>
@@ -265,4 +267,4 @@ const AdminLecturer = () => {
     );
 }
 
-export default AdminLecturer;
+export default AdminUser;

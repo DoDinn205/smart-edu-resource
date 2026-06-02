@@ -30,7 +30,7 @@ const DashboardLayout = ({ menus, brandTitle, brandIcon, children }) => {
                         <li key={idx}>
                             <Link
                                 to={item.path}
-                                className={`nav-link ${location.pathname === item.path ? "active" : ""}`}
+                                className={`nav-link ${location.pathname.startsWith(item.path) ? "active" : ""}`}
                             >
                                 <i className={`bi ${item.icon} nav-icon`}></i>
                                 <span className="nav-label">{item.title}</span>

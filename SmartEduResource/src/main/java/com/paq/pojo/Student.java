@@ -57,7 +57,7 @@ public class Student implements Serializable {
     @Column(name = "id")
     private Integer id;
     @Size(max = 50)
-    @Column(name = "student_code")
+    @Column(name = "student_code", unique = true)
     private String studentCode;
     @Column(name = "dob")
     @Temporal(TemporalType.DATE)

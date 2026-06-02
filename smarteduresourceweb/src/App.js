@@ -1,5 +1,5 @@
 import { useReducer } from "react";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import cookies from "react-cookies";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -13,9 +13,9 @@ import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 
 import Home from "./screens/Home/Home";
-import Login from "./screens/auth/Login";
-import StudentRegister from "./screens/auth/StudentRegister";
-import LecturerRegister from "./screens/auth/LecturerRegister";
+import Login from "./screens/Auth/Login";
+import StudentRegister from "./screens/Auth/StudentRegister";
+import LecturerRegister from "./screens/Auth/LecturerRegister";
 import ResourceBrowse from "./screens/Resource/ResourceBrowse";
 import ResourceDetail from "./screens/Resource/ResourceDetail";
 import CourseBrowse from "./screens/Course/CourseBrowse";
@@ -34,22 +34,22 @@ import Chat from "./screens/Chat/Chat";
 import PaymentHistory from "./screens/Payment/PaymentHistory";
 
 import AdminLayout from "./components/Layouts/AdminLayout";
-import AdminDashboard from "./screens/Admin/AdminDashboard/AdminDashboard";
-import AdminUser from "./screens/Admin/AdminUser/AdminUser";
-import AdminLecturer from "./screens/Admin/AdminLecturer/AdminLecturer";
-import AdminCategory from "./screens/Admin/AdminCategory/AdminCategory";
-import AdminPayment from "./screens/Admin/AdminPayment/AdminPayment";
-import AdminForum from "./screens/Admin/AdminForum/AdminForum";
-import AdminReport from "./screens/Admin/AdminReport/AdminReport";
-
+import AdminDashboard from "./screens/Admin/AdminDashboard";
+import AdminUser from "./screens/Admin/AdminUser";
+import AdminLecturer from "./screens/Admin/AdminLecturer";
+import AdminCategory from "./screens/Admin/AdminCategory";
+import AdminPayment from "./screens/Admin/AdminPayment";
+import AdminForum from "./screens/Admin/AdminForum";
 import LecturerLayout from "./components/Layouts/LecturerLayout";
-import LecturerDashboard from "./screens/Lecturer/LecturerDashboard/LecturerDashboard";
-import LecturerCourse from "./screens/Lecturer/LecturerCourse/LecturerCourse";
-import LecturerLesson from "./screens/Lecturer/LecturerCourse/LecturerLesson";
-import LecturerResource from "./screens/Lecturer/LecturerResource/LecturerResource";
-import LecturerQuiz from "./screens/Lecturer/LecturerQuiz/LecturerQuiz";
-import LecturerChat from "./screens/Lecturer/LecturerChat/LecturerChat";
-import LecturerResult from "./screens/Lecturer/LecturerResult/LecturerResult";
+import LecturerDashboard from "./screens/Lecturer/LecturerDashboard";
+import LecturerCourse from "./screens/Lecturer/LecturerCourse";
+import LecturerLesson from "./screens/Lecturer/LecturerLesson";
+import LecturerResource from "./screens/Lecturer/LecturerResource";
+import LecturerResourceForm from "./screens/Lecturer/LecturerResourceForm";
+import LecturerQuiz from "./screens/Lecturer/LecturerQuiz";
+import LecturerChat from "./screens/Lecturer/LecturerChat";
+import LecturerChatParticipants from "./screens/Lecturer/LecturerChatParticipants";
+import LecturerResult from "./screens/Lecturer/LecturerResult";
 
 const AppLayout = () => {
     const { pathname } = useLocation();
@@ -65,14 +65,18 @@ const AppLayout = () => {
                 <Route path="/admin/categories" element={<AdminLayout><AdminCategory /></AdminLayout>} />
                 <Route path="/admin/payments" element={<AdminLayout><AdminPayment /></AdminLayout>} />
                 <Route path="/admin/forum" element={<AdminLayout><AdminForum /></AdminLayout>} />
-                <Route path="/admin/reports" element={<AdminLayout><AdminReport /></AdminLayout>} />
+                <Route path="/admin/reports" element={<Navigate to="/admin/dashboard" replace />} />
 
                 <Route path="/lecturer/dashboard" element={<LecturerLayout><LecturerDashboard /></LecturerLayout>} />
                 <Route path="/lecturer/courses" element={<LecturerLayout><LecturerCourse /></LecturerLayout>} />
                 <Route path="/lecturer/courses/:id/lessons" element={<LecturerLayout><LecturerLesson /></LecturerLayout>} />
                 <Route path="/lecturer/resources" element={<LecturerLayout><LecturerResource /></LecturerLayout>} />
+                <Route path="/lecturer/resources/create" element={<LecturerLayout><LecturerResourceForm /></LecturerLayout>} />
+                <Route path="/lecturer/resources/:id/edit" element={<LecturerLayout><LecturerResourceForm /></LecturerLayout>} />
                 <Route path="/lecturer/quizzes" element={<LecturerLayout><LecturerQuiz /></LecturerLayout>} />
                 <Route path="/lecturer/chat" element={<LecturerLayout><LecturerChat /></LecturerLayout>} />
+                <Route path="/lecturer/chat/:id/participants" element={<LecturerLayout><LecturerChatParticipants /></LecturerLayout>} />
+                <Route path="/lecturer/chat/messages" element={<LecturerLayout><Chat /></LecturerLayout>} />
                 <Route path="/lecturer/results" element={<LecturerLayout><LecturerResult /></LecturerLayout>} />
             </Routes>
         );

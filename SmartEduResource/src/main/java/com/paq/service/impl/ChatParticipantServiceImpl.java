@@ -13,12 +13,14 @@ import com.paq.pojo.ChatRoom;
 import com.paq.pojo.User;
 import com.paq.pojo.request.ReqChatParticipantDTO;
 import com.paq.pojo.response.ResChatParticipantDTO;
+import com.paq.pojo.response.ResPageDTO;
 import com.paq.repository.ChatParticipantRepository;
 import com.paq.repository.ChatRoomRepository;
 import com.paq.repository.EnrollmentRepository;
 import com.paq.repository.UserRepository;
 import com.paq.service.ChatParticipantService;
 import com.paq.service.PermissionService;
+import org.springframework.core.env.Environment;
 import com.paq.utils.DTOMapper;
 import com.paq.utils.constant.ChatRoomTypeEnum;
 import com.paq.utils.error.IdInvalidException;
@@ -41,18 +43,31 @@ public class ChatParticipantServiceImpl implements ChatParticipantService {
     @Autowired
     private PermissionService permissionService;
 
+    @Autowired
+    private Environment env;
+
     @Override
-    public List<ResChatParticipantDTO> getParticipantsByRoomId(int roomId, Map<String, String> params) {
+    public ResPageDTO<ResChatParticipantDTO> getParticipantsByRoomId(int roomId, Map<String, String> params) {
         this.permissionService.requireChatRoomAccess(roomId);
 
         ChatRoom room = this.roomRepo.getRoomById(roomId);
         if (room == null) {
             throw new IdInvalidException("Chat room không tồn tại");
         }
+        
+        int page = params.containsKey("page") ? Integer.parseInt(params.get("page")) : 1;
+        int pageSize = 10;
+        try {
+            pageSize = Integer.parseInt(this.env.getProperty("chat_participants.page_size", "10"));
+        } catch(Exception e) {}
 
-        return this.participantRepo.getParticipantsByRoomId(roomId, params).stream()
+        List<ResChatParticipantDTO> items = this.participantRepo.getParticipantsByRoomId(roomId, params).stream()
                 .map(DTOMapper::toResChatParticipantDTO)
                 .collect(Collectors.toList());
+        
+        Long totalItems = this.participantRepo.countParticipantsByRoomId(roomId, params);
+        
+        return DTOMapper.toResPageDTO(items, totalItems, page, pageSize);
     }
 
     @Override

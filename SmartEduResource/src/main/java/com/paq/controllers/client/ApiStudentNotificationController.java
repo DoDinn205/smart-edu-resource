@@ -4,11 +4,9 @@
  */
 package com.paq.controllers.client;
 
-import com.paq.pojo.response.ResNotificationDTO;
-import com.paq.pojo.response.ResResponse;
-import com.paq.service.StudentNotificationService;
 import java.security.Principal;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +18,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.paq.pojo.response.ResNotificationDTO;
+import com.paq.pojo.response.ResResponse;
+import com.paq.service.StudentNotificationService;
+
 /**
  *
  * @author Admin
@@ -28,9 +30,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/secure/student/notifications")
 @CrossOrigin
 public class ApiStudentNotificationController {
-    
+
     @Autowired
     private StudentNotificationService notificationService;
+
     @GetMapping
     public ResponseEntity<ResResponse<List<ResNotificationDTO>>> getMyNotifications(
             Principal principal) {
@@ -43,7 +46,7 @@ public class ApiStudentNotificationController {
         return ResponseEntity.ok(res);
     }
 
-    @PutMapping("/{id}/read")
+    @PutMapping("/{id}")
     public ResponseEntity<ResResponse<ResNotificationDTO>> markAsRead(
             @PathVariable("id") int id,
             Principal principal) {
@@ -56,7 +59,7 @@ public class ApiStudentNotificationController {
         return ResponseEntity.ok(res);
     }
 
-    @PutMapping("/read-all")
+    @PutMapping
     public ResponseEntity<ResResponse<Void>> markAllAsRead(Principal principal) {
         this.notificationService.markAllAsRead(principal.getName());
 
@@ -80,5 +83,5 @@ public class ApiStudentNotificationController {
 
         return ResponseEntity.ok(res);
     }
-    
+
 }

@@ -25,6 +25,9 @@ const CourseLearn = () => {
     // Selected lesson state
     const [activeLesson, setActiveLesson] = useState(null);
     const [expandedChapters, setExpandedChapters] = useState({});
+    const [completedResources, setCompletedResources] = useState([]);
+    const [completingResourceId, setCompletingResourceId] = useState(null);
+    const [progressErr, setProgressErr] = useState("");
 
     // Tabs: 'notes' | 'group-chat' | 'dm'
     const [activeTab, setActiveTab] = useState("group-chat");
@@ -93,6 +96,21 @@ const CourseLearn = () => {
     };
 
     const isLessonLocked = (lesson) => !lesson.isFree && !learnData?.hasAccess;
+
+    const completeResource = async () => {
+        if (!activeLesson?.resourceId || completingResourceId) return;
+
+        setProgressErr("");
+        setCompletingResourceId(activeLesson.resourceId);
+        try {
+            await authApis().post(endpoints['resource-complete'](activeLesson.resourceId));
+            setCompletedResources(items => [...new Set([...items, activeLesson.resourceId])]);
+        } catch (ex) {
+            setProgressErr(ex.response?.data?.message || "Không thể cập nhật tiến độ học tập.");
+        } finally {
+            setCompletingResourceId(null);
+        }
+    };
 
     const getLessonTypeBadge = (lesson) => {
         if (lesson.itemType === "VIDEO") return <Badge bg="danger" className="cl-type-badge">Video</Badge>;
@@ -256,8 +274,23 @@ const CourseLearn = () => {
                                     Chương {activeLesson.chapterNum} · Bài {activeLesson.lessonNum}: {activeLesson.title}
                                 </span>
                             </div>
+                            {activeLesson.resourceId && !isLessonLocked(activeLesson) && (
+                                <Button
+                                    className="cl-complete-btn"
+                                    onClick={completeResource}
+                                    disabled={completedResources.includes(activeLesson.resourceId)
+                                        || completingResourceId === activeLesson.resourceId}
+                                >
+                                    {completedResources.includes(activeLesson.resourceId)
+                                        ? "Đã hoàn thành"
+                                        : completingResourceId === activeLesson.resourceId
+                                            ? "Đang cập nhật..."
+                                            : "Đánh dấu hoàn thành"}
+                                </Button>
+                            )}
                         </div>
                     )}
+                    {progressErr && <Alert variant="danger" className="mb-0 rounded-0">{progressErr}</Alert>}
 
                     {/* Viewer area */}
                     <div className="cl-viewer">

@@ -1,4 +1,33 @@
 /* ===== STATS CARDS ===== */
+.lecturer-theme .btn-primary {
+    background: linear-gradient(135deg, #6366f1, #818cf8) !important;
+    border-color: #6366f1 !important;
+}
+
+.lecturer-theme .btn-primary:hover,
+.lecturer-theme .btn-primary:focus {
+    background: linear-gradient(135deg, #4f46e5, #6366f1) !important;
+    border-color: #4f46e5 !important;
+}
+
+.lecturer-theme .btn-outline-primary,
+.lecturer-theme .btn-outline-info,
+.lecturer-theme .btn-outline-success {
+    color: #6366f1;
+    border-color: #6366f1;
+}
+
+.lecturer-theme .btn-outline-primary:hover,
+.lecturer-theme .btn-outline-primary:focus,
+.lecturer-theme .btn-outline-info:hover,
+.lecturer-theme .btn-outline-info:focus,
+.lecturer-theme .btn-outline-success:hover,
+.lecturer-theme .btn-outline-success:focus {
+    color: #ffffff;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    border-color: #6366f1;
+}
+
 .lecturer-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

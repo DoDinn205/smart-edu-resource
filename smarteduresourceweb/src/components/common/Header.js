@@ -1,17 +1,63 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 
+import { authApis, endpoints } from "../../configs/Apis";
 import { MyUserContext } from "../../configs/Context";
 
 const Header = () => {
     const [user, dispatch] = useContext(MyUserContext);
+    const [notifications, setNotifications] = useState([]);
     const nav = useNavigate();
+
+    useEffect(() => {
+        if (user?.role !== "STUDENT") {
+            setNotifications([]);
+            return undefined;
+        }
+
+        const loadNotifications = async () => {
+            try {
+                const res = await authApis().get(endpoints['student-notifications']);
+                setNotifications(res.data.data || []);
+            } catch (ex) {
+                console.error(ex);
+            }
+        };
+
+        loadNotifications();
+        const timer = setInterval(loadNotifications, 60000);
+        return () => clearInterval(timer);
+    }, [user?.role]);
 
     const handleLogout = () => {
         dispatch({ "type": "LOGOUT" });
         nav('/login');
     };
+
+    const markAsRead = async (notification) => {
+        if (notification.isRead) return;
+
+        try {
+            await authApis().put(endpoints['student-notification-read'](notification.id));
+            setNotifications(items => items.map(item =>
+                item.id === notification.id ? { ...item, isRead: true } : item
+            ));
+        } catch (ex) {
+            console.error(ex);
+        }
+    };
+
+    const markAllAsRead = async () => {
+        try {
+            await authApis().put(endpoints['student-notifications-read-all']);
+            setNotifications(items => items.map(item => ({ ...item, isRead: true })));
+        } catch (ex) {
+            console.error(ex);
+        }
+    };
+
+    const unreadCount = notifications.filter(notification => !notification.isRead).length;
 
     return (
         <Navbar expand="lg" className="site-header">
@@ -32,6 +78,42 @@ const Header = () => {
                                 <Nav.Link as={Link} to="/register/student" className="btn-primary-auth">Đăng ký</Nav.Link>
                             </>
                         ) : (
+                            <>
+                            {user.role === "STUDENT" && (
+                                <NavDropdown
+                                    title={
+                                        <span className="notification-bell">
+                                            <i className="bi bi-bell"></i>
+                                            {unreadCount > 0 && (
+                                                <span className="notification-badge">{unreadCount > 99 ? "99+" : unreadCount}</span>
+                                            )}
+                                        </span>
+                                    }
+                                    id="notification-dropdown"
+                                    align="end"
+                                    className="notification-dropdown"
+                                >
+                                    <div className="notification-dropdown-header">
+                                        <strong>Thông báo</strong>
+                                        {unreadCount > 0 && (
+                                            <button type="button" onClick={markAllAsRead}>Đọc tất cả</button>
+                                        )}
+                                    </div>
+                                    {notifications.length === 0 ? (
+                                        <div className="notification-empty">Chưa có thông báo</div>
+                                    ) : notifications.slice(0, 8).map(notification => (
+                                        <NavDropdown.Item
+                                            key={notification.id}
+                                            onClick={() => markAsRead(notification)}
+                                            className={`notification-item ${notification.isRead ? "" : "unread"}`}
+                                        >
+                                            <strong>{notification.title}</strong>
+                                            <span>{notification.content}</span>
+                                            <small>{notification.createdAt}</small>
+                                        </NavDropdown.Item>
+                                    ))}
+                                </NavDropdown>
+                            )}
                             <NavDropdown
                                 title={
                                     <span className="d-inline-flex align-items-center gap-2">
@@ -63,6 +145,7 @@ const Header = () => {
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item onClick={handleLogout}>Đăng xuất</NavDropdown.Item>
                             </NavDropdown>
+                            </>
                         )}
                     </Nav>
                 </Navbar.Collapse>

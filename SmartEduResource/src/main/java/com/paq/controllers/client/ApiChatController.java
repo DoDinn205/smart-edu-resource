@@ -49,10 +49,10 @@ public class ApiChatController {
     }
 
     @GetMapping("/chat-rooms/{roomId}/participants")
-    public ResponseEntity<ResResponse<List<ResChatParticipantDTO>>> getParticipants(
+    public ResponseEntity<ResResponse<ResPageDTO<ResChatParticipantDTO>>> getParticipants(
             @PathVariable("roomId") int roomId,
             @RequestParam Map<String, String> params) {
-        ResResponse<List<ResChatParticipantDTO>> res = new ResResponse<>();
+        ResResponse<ResPageDTO<ResChatParticipantDTO>> res = new ResResponse<>();
         res.setStatusCode(HttpStatus.OK.value());
         res.setMessage("Lấy danh sách người tham gia phòng chat thành công");
         res.setData(this.participantService.getParticipantsByRoomId(roomId, params));

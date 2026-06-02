@@ -2,8 +2,11 @@ package com.paq.service.impl;
 
 import com.paq.pojo.Enrollment;
 import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +25,6 @@ import com.paq.utils.DTOMapper;
 import com.paq.utils.constant.PaymentMethodEnum;
 import com.paq.utils.constant.PaymentStatusEnum;
 import com.paq.utils.error.IdInvalidException;
-import java.util.Date;
 
 @Service
 @Transactional
@@ -73,12 +75,21 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         payment.setStatus(status);
+        if (PaymentStatusEnum.SUCCESS.equals(status)) {
+            if (payment.getPaidAt() == null) {
+                payment.setPaidAt(new Date());
+            }
+        } else if (PaymentStatusEnum.PENDING.equals(status) || PaymentStatusEnum.CANCELLED.equals(status)) {
+            payment.setPaidAt(null);
+        }
+
         return DTOMapper.toResPaymentDTO(this.paymentRepo.updatePayment(payment));
     }
 
     @Override
     public ResPaymentStatsDTO getPaymentStats(Map<String, String> params) {
         this.permissionService.requireAdmin();
+        this.validateDateRange(params);
 
         ResPaymentStatsDTO dto = new ResPaymentStatsDTO();
         dto.setTotalRevenue(this.paymentRepo.getTotalRevenue(params));
@@ -152,5 +163,29 @@ public class PaymentServiceImpl implements PaymentService {
         return DTOMapper.toResPaymentDTO(
                 this.paymentRepo.createPayment(payment)
         );
+    }
+
+    private void validateDateRange(Map<String, String> params) {
+        if (params == null) {
+            return;
+        }
+
+        Date fromDate = this.parseDate(params.get("fromDate"));
+        Date toDate = this.parseDate(params.get("toDate"));
+        if (fromDate != null && toDate != null && toDate.before(fromDate)) {
+            throw new IllegalArgumentException("Đến ngày phải lớn hơn hoặc bằng từ ngày.");
+        }
+    }
+
+    private Date parseDate(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd").parse(value);
+        } catch (ParseException ex) {
+            throw new IllegalArgumentException("Ngày phải có định dạng yyyy-MM-dd.");
+        }
     }
 }
