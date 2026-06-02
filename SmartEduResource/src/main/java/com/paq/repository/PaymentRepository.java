@@ -25,4 +25,8 @@ public interface PaymentRepository {
     List<Object[]> getRevenueByMonth(Map<String, String> params);
 
     Map<String, Long> countPaymentsByUserRole(Map<String, String> params);
+
+    List<Payment> getPaymentsByUsername(String username);
+
+    Payment createPayment(Payment payment);
 }

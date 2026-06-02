@@ -2,6 +2,7 @@ package com.paq.service;
 
 import com.paq.pojo.response.ResPaymentDTO;
 import com.paq.pojo.response.ResPaymentStatsDTO;
+import com.paq.utils.constant.PaymentMethodEnum;
 import com.paq.utils.constant.PaymentStatusEnum;
 import java.util.List;
 import java.util.Map;
@@ -17,4 +18,10 @@ public interface PaymentService {
     ResPaymentDTO updatePaymentStatus(int id, PaymentStatusEnum status);
 
     ResPaymentStatsDTO getPaymentStats(Map<String, String> params);
+
+    List<ResPaymentDTO> getMyPayments(String username);
+
+    ResPaymentDTO createPayment(int enrollmentId,
+            PaymentMethodEnum method,
+            String username);
 }

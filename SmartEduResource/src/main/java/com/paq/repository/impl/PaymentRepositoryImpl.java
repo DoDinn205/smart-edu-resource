@@ -323,4 +323,28 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     private long safeLong(Long value) {
         return value == null ? 0L : value;
     }
+
+    @Override
+    public List<Payment> getPaymentsByUsername(String username) {
+        Session session = this.factory.getObject().getCurrentSession();
+
+        Query<Payment> q = session.createQuery(
+                "FROM Payment p "
+                + "WHERE p.enrollmentId.studentId.userId.username = :username "
+                + "ORDER BY p.createdAt DESC",
+                Payment.class);
+
+        q.setParameter("username", username);
+
+        return q.getResultList();
+    }
+
+    @Override
+    public Payment createPayment(Payment payment) {
+        Session session = this.factory.getObject().getCurrentSession();
+
+        session.persist(payment);
+
+        return payment;
+    }
 }

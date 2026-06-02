@@ -1,5 +1,6 @@
 package com.paq.service.impl;
 
+import com.paq.pojo.Enrollment;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import com.paq.pojo.Payment;
 import com.paq.pojo.response.ResPaymentDTO;
 import com.paq.pojo.response.ResPaymentStatsDTO;
 import com.paq.pojo.response.ResRevenueByMonthDTO;
+import com.paq.repository.EnrollmentRepository;
 import com.paq.repository.PaymentRepository;
 import com.paq.service.PaymentService;
 import com.paq.service.PermissionService;
@@ -20,6 +22,7 @@ import com.paq.utils.DTOMapper;
 import com.paq.utils.constant.PaymentMethodEnum;
 import com.paq.utils.constant.PaymentStatusEnum;
 import com.paq.utils.error.IdInvalidException;
+import java.util.Date;
 
 @Service
 @Transactional
@@ -30,6 +33,9 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private EnrollmentRepository enrollmentRepo;
 
     @Override
     public List<ResPaymentDTO> getPayments(Map<String, String> params) {
@@ -103,5 +109,48 @@ public class PaymentServiceImpl implements PaymentService {
         dto.setUserRoleCounts(this.paymentRepo.countPaymentsByUserRole(params));
 
         return dto;
+    }
+
+    @Override
+    public List<ResPaymentDTO> getMyPayments(String username) {
+        return this.paymentRepo.getPaymentsByUsername(username)
+                .stream()
+                .map(DTOMapper::toResPaymentDTO)
+                .toList();
+    }
+
+    @Override
+    public ResPaymentDTO createPayment(int enrollmentId,
+            PaymentMethodEnum method,
+            String username) {
+
+        Enrollment enrollment
+                = this.enrollmentRepo.getEnrollmentById(enrollmentId);
+
+        if (enrollment == null) {
+            throw new IdInvalidException("Enrollment không tồn tại");
+        }
+
+        Payment payment = new Payment();
+
+        payment.setEnrollmentId(enrollment);
+
+        payment.setAmount(
+                enrollment.getCourseId().getPrice().longValue()
+        );
+
+        payment.setPaymentMethod(method);
+
+        payment.setStatus(PaymentStatusEnum.PENDING);
+
+        payment.setCreatedAt(new Date());
+
+        payment.setTransactionCode(
+                "PAY-" + System.currentTimeMillis()
+        );
+
+        return DTOMapper.toResPaymentDTO(
+                this.paymentRepo.createPayment(payment)
+        );
     }
 }
