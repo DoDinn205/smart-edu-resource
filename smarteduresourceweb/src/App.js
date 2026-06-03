@@ -13,9 +13,9 @@ import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
 
 import Home from "./screens/Home/Home";
-import Login from "./screens/Auth/Login";
-import StudentRegister from "./screens/Auth/StudentRegister";
-import LecturerRegister from "./screens/Auth/LecturerRegister";
+import Login from "./screens/auth/Login";
+import StudentRegister from "./screens/auth/StudentRegister";
+import LecturerRegister from "./screens/auth/LecturerRegister";
 import ResourceBrowse from "./screens/Resource/ResourceBrowse";
 import ResourceDetail from "./screens/Resource/ResourceDetail";
 import CourseBrowse from "./screens/Course/CourseBrowse";
